@@ -2677,19 +2677,56 @@ export const skills = {
       },
     },
     "tck_cang": {
+      mark: true,
       marktext: "藏",
       intro: {
-        content: "expansion",
-        markcount: "expansion",
+        // mark(dialog, storage, player) {
+        //   dialog.addAuto(
+        //     player.getCards("s", function (card) {
+        //       return card.hasGaintag("tck_cang");
+        //     })
+        //   );
+        // },
+        content(storage, player) {
+          const cardNum = player.getCards("s", function (card) {
+            return card.hasGaintag("tck_cang");
+          }).length
+          if (cardNum > 0) {
+            return `当前门扉中有${cardNum}张牌`;
+          } return "当前门扉中没有牌"
+        },
+        markcount(storage, player) {
+          return player.getCards("s", function (card) {
+            return card.hasGaintag("tck_cang");
+          }).length;
+        },
+        onunmark(storage, player) {
+          const cards = player.getCards("s", function (card) {
+            return card.hasGaintag("tck_cang");
+          });
+          if (cards.length) {
+            player.lose(cards, ui.discardPile);
+            player.$throw(cards, 1000);
+            game.log(cards, "进入了弃牌堆");
+          }
+        },
       },
-      onremove(player, skill) {
-        const cards = player.getExpansions(skill);
-        if (cards.length) {
-          player.loseToDiscardpile(cards);
-        }
-      },
-      group: ["tck_cang_discard", "tck_cang_use"],
+      group: ["tck_cang_discardBegin", "tck_cang_discard", "tck_cang_use"],
       subSkill: {
+        "discardBegin": {
+          forced: true,
+          popup: false,
+          trigger: {
+            player: "phaseDiscardBegin"
+          },
+          filter(event, player) {
+            return player.getExpansions("tck_cang").length > 0
+          },
+          async content(event, trigger, player) {
+            const cards = await player.getExpansions("tck_cang")
+            await player.loseToDiscardpile(cards)
+          },
+        },
         "discard": {
           forced: true,
           trigger: {
@@ -2699,38 +2736,31 @@ export const skills = {
             return event.getParent(2).name == 'phaseDiscard'
           },
           async content(event, trigger, player) {
-            // todo 先移除所有的‘藏’
+            // 先移除所有的‘藏’
+            const oldCards = player.getCards("s", function (card) {
+              return card.hasGaintag("tck_cang");
+            })
+            if (oldCards.length) {
+              await player.loseToDiscardpile(oldCards)
+            }
             const cards = trigger.cards
-            await player
-              .addToExpansion(cards, "gain2")
-              .gaintag.add("tck_cang")
+            // 移动到指定的特殊区域
+            player.logSkill("tck_cang");
+            game.log(player, "将", cards, "进入门扉");
+            player.loseToSpecial(cards, "tck_cang").visible = true;
           },
         },
         "use": {
-          enable: "phaseUse",
-          filter(event, player) {
-            return player.getExpansions("tck_cang").length > 0
-          },
-          chooseButton: {
-            dialog(event, player) {
-              return ui.create.dialog("藏", player.getExpansions("tuntian"), "hidden");
+          charlotte: true,
+          locked: true,
+          mod: {
+            cardEnabled2(card, player) {
+              if (get.itemtype(card) == "card" && card.hasGaintag("tck_cang")) {
+                if (!player.hasSkill("tck_cang")) {
+                  return false;
+                }
+              }
             },
-            filter(button, player) {
-              return true
-            },
-            backup(links, player) {
-              return {
-                selectCard: 1,
-                position: "x",
-                filterCard: card => player.hasUseTarget(card, true, true),
-                async content(event, trigger, player) {
-                  await player.chooseUseTarget(event.card)
-                },
-              };
-            },
-            // prompt(links, player) {
-            //   return "选择 顺手牵羊（" + get.translation(links[0]) + "）的目标";
-            // },
           },
         }
       }
