@@ -2891,6 +2891,10 @@ export const skills = {
         player: "phaseZhunbeiBefore"
       },
       async content(event, trigger, player) {
+        if (player.hasSkill("tck_dang_xian_disable")) {
+          await player.removeSkill("tck_dang_xian_disable")
+          return
+        }
         await player.addTempSkill('tck_dang_xian_sha', { player: 'phaseUseEnd' })
         // 加一个额外的出牌阶段
         await player.phaseUse()
@@ -2912,7 +2916,11 @@ export const skills = {
             const card = game.createCard('sha')
             await player.useCard(event.target, card)
           }
-        }
+        },
+        "disable": {
+          sub: true,
+          sourceSkill: "tck_dang_xian",
+        },
       }
     },
     "tck_fu_li": {
@@ -2937,15 +2945,7 @@ export const skills = {
         let cardNum = await player.countCards("h")
         await player.draw(4 - cardNum)
         // 立即执行你的回合
-        await player.phaseJudge()
-        await game.delay(1)
-        await player.phaseDraw()
-        await game.delay(1)
-        await player.phaseUse()
-        await game.delay(1)
-        await player.phaseDiscard()
-        await game.delay(1)
-        await player.phaseJieshu()
+        await player.addSkill("tck_dang_xian_disable")
         let evt = _status.event.getParent("phaseLoop", true)
         if (evt) {
           ui.clear()
@@ -2955,7 +2955,7 @@ export const skills = {
             evtx.untrigger(true)
             evtx = evtx.getParent()
           }
-          evtx.player = player
+          evtx.player = player.previous
         }
       }
     },
