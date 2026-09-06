@@ -2924,15 +2924,11 @@ export const skills = {
       }
     },
     "tck_fu_li": {
-      unique: true,
       mark: true,
       skillAnimation: true,
       limited: true,
       trigger: {
         player: "dying"
-      },
-      init(player) {
-        player.storage.tck_fu_li = false
       },
       filter(event, player) {
         if (player.storage.tck_fu_li) return false // 已使用过则不能发动
@@ -2940,7 +2936,6 @@ export const skills = {
       },
       async content(event, trigger, player) {
         await player.awakenSkill("tck_fu_li")
-        player.storage.tck_fu_li = true
         await player.recover(4 - player.hp)
         let cardNum = await player.countCards("h")
         await player.draw(4 - cardNum)
@@ -2957,11 +2952,38 @@ export const skills = {
           }
           evtx.player = player.previous
         }
+        player.storage.tck_fu_li = true
       }
     },
     "tck_zhan": {},
-    "tck_chu_zi": {},
-    "tck_ban_ren_ban_ling": {},
+    "tck_chu_zi": {
+      mod: {
+        cardname(card, player, name) {
+          if (name != "taoyuan" && (lib.card[card.name].type == "delay" || lib.card[card.name].type == "trick")) {
+            return "taoyuan"
+          }
+        }
+      }
+    },
+    "tck_ban_ren_ban_ling": {
+      mark: true,
+      skillAnimation: true,
+      limited: true,
+      trigger: {
+        player: "dying"
+      },
+      filter(event, player) {
+        if (player.storage.tck_ban_ren_ban_ling) return false // 已使用过则不能发动
+        return true
+      },
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_ban_ren_ban_ling")
+        await player.removeSkill("tck_zhan")
+        let recoverNum = player.maxHp - player.hp
+        await player.recover(recoverNum)
+        player.storage.tck_ban_ren_ban_ling = true
+      },
+    },
 
     //重制版
     "tck_r_ji_rou": {

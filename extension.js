@@ -209,6 +209,8 @@ export default function () {
             if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_EX')) {
                 lib.card.list.addArray(ex_cards.list);
             }
+
+            natureConfig.resetLib()
         },
         precontent: () => {
             groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))

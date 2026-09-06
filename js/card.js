@@ -1013,21 +1013,6 @@ export const cards = {
         }
       }
     },
-    // "tck_duo": {
-    //   image: "ext:TCK/imgs/cards/tck_duo.png",
-    //   fullskin: true,
-    //   type: "basic",
-    //   notarget: true,
-    //   nodelay: true,
-    //   content() {
-    //     event.result = "shaned";
-    //     event.getParent().delayx = false;
-    //     game.delay(0.5);
-    //   },
-    //   // async content(event, trigger, player) {
-    //   //   // todo 看闪的代码
-    //   // }
-    // },
     "tck_xiang_jiao": {
       image: "ext:TCK/imgs/cards/tck_xiang_jiao.png",
       fullskin: true,
@@ -1760,8 +1745,6 @@ export const cards = {
     "tck_xiang_jiao_pi_info": "抽中本牌者弃置本牌并失去1点体力。",
     "tck_xiang_jiao": "香蕉",
     "tck_xiang_jiao_info": "同桃，使用后变成[香蕉皮]洗回牌堆。",
-    "tck_duo": "躲",
-    "tck_duo_info": "同闪，结算后摸一张牌。",
     "tck_ju": "橘",
     "tck_ju_info": "同桃，然后判定，若为♥，则受到1点火属性伤害。（上火）",
     "tck_li": "梨",
@@ -1953,15 +1936,14 @@ export const cards = {
   },
   list: [
     //diy牌堆
-    // ['club', 6, 'tck_duo'],
-    // ['club', 6, 'tck_duo'],
-    // ['diamond', 2, 'tck_duo'],
-    // ['diamond', 7, 'tck_duo'],
-    // ['diamond', 10, 'tck_duo'],
-    // ['diamond', 11, 'tck_duo'],
-    // ['diamond', 11, 'tck_duo'],
-    // ['spade', 7, 'tck_duo'],
-
+    ['club', 6, 'shan', 'tck_duo'],
+    ['club', 6, 'shan', 'tck_duo'],
+    ['diamond', 2, 'shan', 'tck_duo'],
+    ['diamond', 7, 'shan', 'tck_duo'],
+    ['diamond', 10, 'shan', 'tck_duo'],
+    ['diamond', 11, 'shan', 'tck_duo'],
+    ['diamond', 11, 'shan', 'tck_duo'],
+    ['spade', 7, 'shan', 'tck_duo'],
     ['spade', 5, 'tck_xiang_jiao'],
     ['heart', 6, 'tck_xiang_jiao'],
     ['diamond', 7, 'tck_ju'],
