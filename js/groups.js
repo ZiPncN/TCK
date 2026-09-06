@@ -1,0 +1,25 @@
+const groups = [
+  { id: "tck_qi", short: "汽", name: "汽", config: { color: "", image: "", } },
+  { id: "tck_302", short: "302", name: "302", config: { color: "", image: "", } },
+  { id: "tck_605", short: "605", name: "605", config: { color: "", image: "", } },
+  { id: "tck_604", short: "604", name: "604", config: { color: "", image: "", } },
+  { id: "tck_shu", short: "鼠", name: "鼠", config: { color: "", image: "", } },
+  { id: "tck_yong", short: "永", name: "永", config: { color: "", image: "", } },
+  { id: "tck_shou", short: "收", name: "收", config: { color: "", image: "", } },
+  { id: "tck_jiang", short: "江", name: "江", config: { color: "", image: "", } },
+  { id: "tck_sp", short: "SP", name: "SP", config: { color: "", image: "", } },
+  { id: "tck_dong", short: "東", name: "東", config: { color: "", image: "", } },
+  { id: "tck_jue", short: "觉", name: "觉", config: { color: "", image: "", } },
+  { id: "tck_luan_ru", short: "乱", name: "乱入", config: { color: "", image: "", } },
+  { id: "tck_guai_qi", short: "奇", name: "怪奇", config: { color: "", image: "", } },
+  { id: "tck_ming", short: "命", name: "命", config: { color: "", image: "", } },
+  { id: "tck_gui", short: "鬼", name: "鬼", config: { color: "", image: "", } },
+  { id: "tck_jo", short: "JO", name: "JO", config: { color: "", image: "", } },
+  { id: "tck_qiao", short: "乔", name: "乔", config: { color: "", image: "", } },
+  { id: "tck_chou", short: "臭", name: "臭", config: { color: "", image: "", } },
+  { id: "tck_jia_mian", short: "假", name: "假面骑士", config: { color: "", image: "", } },
+  { id: "tck_long", short: "龙", name: "龙", config: { color: "", image: "", } },
+  { id: "tck_tian", short: "天", name: "天", config: { color: "", image: "", } },
+]
+
+export default groups

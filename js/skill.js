@@ -2765,7 +2765,126 @@ export const skills = {
         }
       }
     },
-
+    "tck_bao_nu": {
+      enable: ["phaseUse"],
+      usable: 1,
+      async content(event, trigger, player) {
+        await player.addTempSkill("tck_bao_nu_buff1", { player: "phaseJieshuAfter" })
+        await player.addTempSkill("tck_bao_nu_buff2", { player: "phaseJieshuAfter" })
+        await player.addTempSkill("tck_bao_nu_getdebuff", { player: "phaseUseBefore" })
+      },
+      subSkill: {
+        "buff1": {
+          mark: true,
+          intro: {
+            content: "无法闪避",
+          },
+          sub: true,
+          source: "tck_bao_nu",
+          forced: true,
+          trigger: { player: "useCard" },
+          async content(event, trigger, player) {
+            await trigger.directHit.addArray(game.players);
+          },
+        },
+        "buff2": {
+          mark: true,
+          intro: {
+            content: "伤害翻倍",
+          },
+          sub: true,
+          source: "tck_bao_nu",
+          forced: true,
+          trigger: { source: "damageBegin" },
+          async content(event, trigger, player) {
+            trigger.num *= 2
+          },
+        },
+        "getdebuff": {
+          charlotte: true,
+          forced: true,
+          popup: false,
+          trigger: {
+            player: "phaseZhunbeiBefore"
+          },
+          async content(event, trigger, player) {
+            await player.addTempSkill("tck_bao_nu_debuff", { player: "phaseJieshuAfter" })
+          },
+        },
+        "debuff": {
+          sub: true,
+          source: "tck_bao_nu",
+          mod: {
+            cardEnabled2(card) {
+              if (get.position(card) == "h") {
+                return false;
+              }
+            },
+          },
+          mark: true,
+          intro: {
+            content: "无法出牌",
+          },
+        }
+      }
+    },
+    "tck_feng_kuang_zuan_shi": {
+      enable: ["phaseUse"],
+      usable: 1,
+      filter(event, player) {
+        return player.isDamaged()
+      },
+      async content(event, trigger, player) {
+        await player.recover(1)
+        if (player.isHealthy()) {
+          await player.loseHp(2)
+        }
+      },
+    },
+    "tck_fa_xing": {
+      forced: true,
+      trigger: {
+        player: "damageBegin"
+      },
+      filter(event, player) {
+        return event.source != player && event.source.countCards("e", card => get.equiptype(card) == 1 /** 武器 */) > 0
+      },
+      async content(event, trigger, player) {
+        await trigger.cancel()
+      }
+    },
+    "tck_nan_men": {
+      enable: "chooseToUse",
+      usable: 3,
+      filterCard(card) {
+        return get.type(card) == "basic";
+      },
+      position: "h",
+      viewAs: { name: "nanman" },
+      viewAsFilter(player) {
+        if (!player.countCards("h", card => get.type(card) == "basic")) {
+          return false;
+        }
+      },
+      prompt: "基本牌当南蛮入侵"
+    },
+    "tck_men": {
+      forced: true,
+      trigger: {
+        player: "damageBegin"
+      },
+      filter(event, player) {
+        return get.name(event.card) == 'sha'
+      },
+      async content(event, trigger, player) {
+        let res = await player.judge(card => {
+          if (get.color(card) == 'black') return -1
+          return 1
+        }).forResult()
+        if (get.color(res) == 'black') return
+        await trigger.cancel()
+      }
+    },
     "tck_dang_xian": {
       forced: true,
       trigger: {
@@ -2813,14 +2932,36 @@ export const skills = {
       },
       async content(event, trigger, player) {
         await player.awakenSkill("tck_fu_li")
+        player.storage.tck_fu_li = true
         await player.recover(4 - player.hp)
         let cardNum = await player.countCards("h")
         await player.draw(4 - cardNum)
-        // TODO 立即执行你的回合
-
-        player.storage.tck_fu_li = true
+        // 立即执行你的回合
+        await player.phaseJudge()
+        await game.delay(1)
+        await player.phaseDraw()
+        await game.delay(1)
+        await player.phaseUse()
+        await game.delay(1)
+        await player.phaseDiscard()
+        await game.delay(1)
+        await player.phaseJieshu()
+        let evt = _status.event.getParent("phaseLoop", true)
+        if (evt) {
+          ui.clear()
+          let evtx = _status.event
+          while (evtx != evt) {
+            evtx.finish()
+            evtx.untrigger(true)
+            evtx = evtx.getParent()
+          }
+          evtx.player = player
+        }
       }
     },
+    "tck_zhan": {},
+    "tck_chu_zi": {},
+    "tck_ban_ren_ban_ling": {},
 
     //重制版
     "tck_r_ji_rou": {
@@ -2940,6 +3081,22 @@ export const skills = {
 
   },
   translate: {
+    "tck_zhan": "斩",
+    "tck_zhan_info": "你的杀视为砍<br/>砍命中后让对手选择1项：<br/>①弃2张牌。<br/>②额外扣1滴血。",
+    "tck_chu_zi": "厨子",
+    "tck_chu_zi_info": "你的锦都视为桃园结义。",
+    "tck_ban_ren_ban_ling": "半人半灵",
+    "tck_ban_ren_ban_ling_info": "限定技，濒死使用失去【斩】，回复至满。",
+    "tck_nan_men": "南门",
+    "tck_nan_men_info": "基本牌当南蛮入侵（限3次）。",
+    "tck_men": "门",
+    "tck_men_info": "杀入需判定为黑色。",
+    "tck_bao_nu": "暴怒",
+    "tck_bao_nu_info": "一回合一次，伤害翻倍，无法闪避，下回合无法出牌。",
+    "tck_feng_kuang_zuan_shi": "疯狂钻石",
+    "tck_feng_kuang_zuan_shi_info": "每回合可回复一颗勾玉，若到上限损失2颗勾玉。",
+    "tck_fa_xing": "发型",
+    "tck_fa_xing_info": "对手装备武器可以免疫一切伤害。",
     "tck_mi_shen": "秘神",
     "tck_mi_shen_info": "你的杀要2张闪。",
     "tck_men_fei": "门扉",
@@ -3033,7 +3190,7 @@ export const skills = {
     "tck_chuan_cheng": "传承",
     "tck_chuan_cheng_info": "觉醒技，你濒死时，增加1点体力和减1点体力上限，摸2张牌，然后选择一名角色，其获得技能“龙胆”，“雄乱”。",
     "tck_dang_xian": "当先",
-    "tck_dang_xian_info": "你会和开始前额外获得一个出牌阶段，你可于此出牌阶段视为使用一张杀。",
+    "tck_dang_xian_info": "你回合开始前额外获得一个出牌阶段，你可于此出牌阶段视为使用一张杀。",
     "tck_fu_li": "伏枥",
     "tck_fu_li_info": "限定技，你濒死时，你可将体力加至4，手牌摸至4，然后立即执行你的回合。（不触发当先）",
     "tck_shen_wei_mu": "帷幕",

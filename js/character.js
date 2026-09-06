@@ -416,6 +416,30 @@ export const characters = {
       skills: ["tck_mi_shen", "tck_men_fei", "tck_cang"],
       img: "extension/TCK/imgs/charactors/tck_moduoluoyinqinai.jpg",
     },
+    "tck_dongfangzhangzhu": {
+      sex: "male",
+      group: "tck_qiao",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_bao_nu", "tck_feng_kuang_zuan_shi", "tck_fa_xing"],
+      img: "extension/TCK/imgs/charactors/tck_dongfangzhangzhu.jpg",
+    },
+    "tck_nanmen": {
+      sex: "none",
+      group: "tck_tian",
+      hp: 2,
+      maxHp: 2,
+      skills: ["tck_nan_men", "tck_men"],
+      img: "extension/TCK/imgs/charactors/tck_nanmen.jpg",
+    },
+    "tck_hunpoyaomeng": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_zhan", "tck_chu_zi", "tck_ban_ren_ban_ling"],
+      img: "extension/TCK/imgs/charactors/tck_hunpoyaomeng.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -437,6 +461,9 @@ export const characters = {
 
   },
   translate: {
+    "tck_hunpoyaomeng": "魂魄妖梦",
+    "tck_nanmen": "南门",
+    "tck_dongfangzhangzhu": "东方仗助",
     "tck_moduoluoyinqinai": "摩多罗隐歧奈",
     "tck_xiangjiaojun": "香蕉君",
     "tck_laofeng": "老冯",
@@ -496,6 +523,8 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_hunpoyaomeng": "半人半灵的庭师",
+    "tck_dongfangzhangzhu": "东方仗助",
     "tck_moduoluoyinqinai": "摸多了硬起来",
     "tck_xiangjiaojun": "自由的那个男人",
     "tck_laofeng": "高级特工",
@@ -564,6 +593,8 @@ export const characters = {
         "tck_yinyangyan", "tck_wonianjiqingqinggongzijiudadao3200yigeyue",
         "tck_laoba", "tck_gumingdilian", "tck_laofeng",
         "tck_xiangjiaojun", "tck_moduoluoyinqinai",
+        "tck_dongfangzhangzhu", "tck_nanmen", "tck_hunpoyaomeng",
+
 
       ],
 

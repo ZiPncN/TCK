@@ -3,6 +3,8 @@ import characters from "./js/character.js"
 import skills from "./js/skill.js"
 import cards from "./js/card.js"
 import ex_cards from "./js/card_ex.js"
+import groups from "./js/groups.js"
+import natureConfig from "./js/natures.js"
 export const type = "extension";
 export default function () {
     return {
@@ -209,26 +211,7 @@ export default function () {
             }
         },
         precontent: () => {
-            game.addGroup("tck_qi", "汽", "汽", { color: "", image: "", })
-            game.addGroup("tck_302", "302", "302", { color: "", image: "", })
-            game.addGroup("tck_605", "605", "605", { color: "", image: "", })
-            game.addGroup("tck_604", "604", "604", { color: "", image: "", })
-            game.addGroup("tck_shu", "鼠", "鼠", { color: "", image: "", })
-            game.addGroup("tck_yong", "永", "永", { color: "", image: "", })
-            game.addGroup("tck_shou", "收", "收", { color: "", image: "", })
-            game.addGroup("tck_jiang", "江", "江", { color: "", image: "", })
-            game.addGroup("tck_sp", "SP", "SP", { color: "", image: "", })
-            game.addGroup("tck_dong", "東", "東", { color: "", image: "", })
-            game.addGroup("tck_jue", "觉", "觉", { color: "", image: "", })
-            game.addGroup("tck_luan_ru", "乱", "乱入", { color: "", image: "", })
-            game.addGroup("tck_guai_qi", "奇", "怪奇", { color: "", image: "", })
-            game.addGroup("tck_ming", "命", "命", { color: "", image: "", })
-            game.addGroup("tck_gui", "鬼", "鬼", { color: "", image: "", })
-            game.addGroup("tck_jo", "JO", "JO", { color: "", image: "", })
-            game.addGroup("tck_qiao", "乔", "乔", { color: "", image: "", })
-            game.addGroup("tck_chou", "臭", "臭", { color: "", image: "", })
-            game.addGroup("tck_jia_mian", "假", "假面骑士", { color: "", image: "", })
-            game.addGroup("tck_long", "龙", "龙", { color: "", image: "", })
+            groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))
             //添加武将和技能
             game.import('character', function () {
                 return {
@@ -241,6 +224,7 @@ export default function () {
                     skill: { ...skills.skill },
                 }
             })
+
             //添加卡牌
             game.import('card', function () {
                 return {
@@ -255,6 +239,7 @@ export default function () {
             if (!lib.config.cards.includes('TCK')) lib.config.cards.remove('TCK');
             lib.translate['TCK'] = 'TCK';
             if (!lib.config.TCK) game.saveConfig('cards', lib.config.cards.concat('TCK')), game.saveConfig('TCK', true);
+
             game.import('card', function () {
                 return {
                     name: "TCK_EX",
@@ -268,55 +253,11 @@ export default function () {
             if (!lib.config.cards.includes('TCK_EX')) lib.config.cards.remove('TCK_EX');
             lib.translate['TCK_EX'] = 'TCK_EX';
             if (!lib.config.TCK_EX) game.saveConfig('cards', lib.config.cards.concat('TCK_EX')), game.saveConfig('TCK_EX', true);
+
             //添加自定义属性
-            game.addNature('tck_light', '光', {
-                color: '#ffea00',          //牌名的颜色
-                linked: true,               //是否能被铁索连环传导
-                lineColor: ['255', '239', '64'], //指引线颜色
-                background: 'extension/TCK/imgs/cards/sha_tck_light.png', //设置卡图
-            })
-            game.addNature('tck_lxy_gou', '流星雨·狗', {
-                linked: true,               //是否能被铁索连环传导
-                background: 'extension/TCK/imgs/cards/sha_tck_lxy_gou.png', //设置卡图
-            })
-            //设置自定义属性的效果
-            lib.skill['_tck_light_effect'] = {
-                ruleSkill: true,
-                logTarget: 'player',
-                trigger: { source: 'damageBefore' },
-                filter(event, player) {
-                    return event.hasNature('tck_light');
-                },
-                async content(event, trigger, player) {
-                    let res = await player.judge(function (card) {
-                        if (card.color == "red") {
-                            return 1;
-                        } else {
-                            return -1;
-                        }
-                    }).forResult();
-                    if (res.color == "red") trigger.num++
-                }
-            }
-            lib.skill['_tck_lxy_gou_effect'] = {
-                ruleSkill: true,
-                logTarget: 'player',
-                forced: true,
-                trigger: { source: 'damageBefore' },
-                filter(event, player) {
-                    return event.hasNature('tck_lxy_gou') && !player.hasSkill('gzbuqu');
-                },
-                async content(event, trigger, player) {
-                    await player.addSkill("gzbuqu")
-                }
-            }
-            //配置自定义属性
-            lib.translate['_tck_light_effect'] = '光杀';
-            lib.translate['_tck_lxy_gou_effect'] = '流星雨·狗杀';
-            lib.translate['_tck_light_effect_info'] = '造成伤害可进行一次判定，若为红色，此伤害+1';
-            lib.translate['_tck_lxy_gou_effect_info'] = '此杀命中得不屈';
-            lib.translate['sha_nature_tck_light_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点光属性伤害。';
-            lib.translate['sha_nature_tck_lxy_gou_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点流星雨·狗属性伤害，此杀命中得不屈。';
+            natureConfig.natures.forEach(n => game.addNature(n.id, n.name, n.config))
+            natureConfig.skills()
+            natureConfig.translates()
         },
         // 扩展帮助
         help: {},
@@ -327,7 +268,7 @@ export default function () {
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.0",
+            version: "1.1",
         },
         files: {},
         connect: true
