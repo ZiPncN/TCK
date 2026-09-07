@@ -1,14 +1,6 @@
 import { lib, game, get, _status, ui } from "../../../noname.js";
 export const cards = {
   card: {
-    "tck_ji_bing_jian": {
-      fullskin: true,
-      // image: "ext:TCK/imgs/cards/tck_tou_xiang.png",
-      type: "equip",
-      subtype: "equip1",
-      distance: { attackFrom: -3 },
-      skills: ["tck_ji_bing_jian_skill_1", "tck_ji_bing_jian_skill_2"]
-    },
     "tck_tou_xiang": {
       type: "trick",   //锦囊牌
       enable: true,   //可以用
@@ -1063,7 +1055,7 @@ export const cards = {
       content() { },
     },
     "tck_land_r_xia_ye": {
-      // image: "ext:TCK/imgs/cards/tck_land_r_xia_ye.png",
+      image: "ext:TCK/imgs/cards/tck_land_r_xia_ye.png",
       fullskin: true,
       type: "land",   //场地牌
       enable: true,
@@ -1105,32 +1097,6 @@ export const cards = {
           trigger.player = player
         }
       }
-    },
-    "tck_ji_bing_jian_skill_1": {
-      equipSkill: true,
-      forced: true,
-      trigger: { player: "damageBegin" },
-      filter(event) {
-        return event.nature != 'fire' && event.nature != 'tck_light'
-      },
-      logTarget: "player",
-      async content(event, trigger, player) {
-        await trigger.cancel()
-      },
-    },
-    "tck_ji_bing_jian_skill_2": {
-      equipSkill: true,
-      trigger: { source: "damageBegin2" },
-      logTarget: "player",
-      async content(event, trigger, player) {
-        const target = trigger.player
-        const cardNum = await target.countCards("h") > 0
-        if (cardNum > 0) {
-          await player.discardPlayerCard("h", target, true)
-        } else {
-          trigger.num++
-        }
-      },
     },
     "tck_xiang_jiao_pi_skill": {
       forced: true,
@@ -1835,11 +1801,6 @@ export const cards = {
     "tck_land_r_xia_ye_info": "场地效果：默认现在时间为21点。在夜晚所有无属性伤害攻击前判定，若为1-4则命中攻击对象左手边的玩家，若为5-8则命中指定玩家，若为9-Q则命中攻击对象右手边玩家，若为K则命中自己。",
     "tck_land_r_xia_ye_tckland_skill": "夏夜",
     "tck_land_r_xia_ye_tckland_skill_info": "默认现在时间为21点。在夜晚所有无属性伤害攻击前判定，若为1-4则命中攻击对象左手边的玩家，若为5-8则命中指定玩家，若为9-Q则命中攻击对象右手边玩家，若为K则命中自己。",
-    "tck_ji_bing_jian": "极冰剑",
-    "tck_ji_bing_jian_info": "你只可被火或光属性造成伤害，造成伤害时额外丢弃对手一张手牌，若无法丢弃手牌则此伤害+1。",
-    "tck_ji_bing_jian_skill_1": "极冰剑",
-    "tck_ji_bing_jian_skill_2": "极冰剑",
-    "tck_ji_bing_jian_skill_2_info": "额外丢弃对手一张牌，若无法丢弃手牌则此伤害+1。",
     "tck_xiang_jiao_pi_skill": "香蕉皮",
     "tck_xiang_jiao_pi": "香蕉皮",
     "tck_xiang_jiao_pi_info": "抽中本牌者弃置本牌并失去1点体力。",

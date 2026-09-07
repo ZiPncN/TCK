@@ -3,6 +3,7 @@ import characters from "./js/character.js"
 import skills from "./js/skill.js"
 import cards from "./js/card.js"
 import ex_cards from "./js/card_ex.js"
+import r_cards from "./js/card_r.js"
 import groups from "./js/groups.js"
 import natureConfig from "./js/natures.js"
 export const type = "extension";
@@ -256,6 +257,20 @@ export default function () {
             if (!lib.config.cards.includes('TCK_EX')) lib.config.cards.remove('TCK_EX');
             lib.translate['TCK_EX'] = 'TCK_EX';
             if (!lib.config.TCK_EX) game.saveConfig('cards', lib.config.cards.concat('TCK_EX')), game.saveConfig('TCK_EX', true);
+
+            game.import('card', function () {
+                return {
+                    name: "TCK_R",
+                    connect: true,
+                    translate: { ...r_cards.translate },
+                    card: { ...r_cards.card },
+                    skill: { ...r_cards.skill },
+                }
+            })
+            lib.config.all.cards.push('TCK_R');
+            if (!lib.config.cards.includes('TCK_R')) lib.config.cards.remove('TCK_R');
+            lib.translate['TCK_R'] = 'TCK_R';
+            if (!lib.config.TCK_R) game.saveConfig('cards', lib.config.cards.concat('TCK_R')), game.saveConfig('TCK_R', true);
 
             //添加自定义属性
             natureConfig.natures.forEach(n => game.addNature(n.id, n.name, n.config))
