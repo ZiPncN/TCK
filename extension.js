@@ -222,6 +222,7 @@ export default function () {
                     character: { ...characters.character },
                     characterSort: characters.characterSort,
                     characterTitle: { ...characters.characterTitle },
+                    characterIntro: { ...characters.characterIntro },
                     translate: { ...characters.translate, ...skills.translate },
                     skill: { ...skills.skill },
                 }

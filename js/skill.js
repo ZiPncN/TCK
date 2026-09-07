@@ -417,9 +417,7 @@ export const skills = {
       async content(event, trigger, player) {
         let loseMaxHpNum = player.maxHp - 1
         await player.loseMaxHp(loseMaxHpNum)
-        let recordNum = 1 - player.hp
-        if (recordNum <= 0) recordNum = 1
-        await player.recover(recordNum)
+        await player.recoverTo(player.maxHp)
         player.storage.tck_gou_yan_can_chuan = true //标记已经用过了
       },
     },
@@ -449,8 +447,7 @@ export const skills = {
       async content(event, trigger, player) {
         let res = await player.chooseCard("h", true, 1, card => get.color(card) == "red").set('prompt', '请弃置一张红色手牌').forResult()
         await player.discard(res.cards)
-        let recoverNum = 1 - trigger.player.hp
-        await trigger.player.recover(recoverNum)
+        await trigger.player.recoverTo(1)
       },
 
     },
@@ -1229,8 +1226,7 @@ export const skills = {
       },
       async content(event, trigger, player) {
         player.maxHp = 4
-        let recoverNum = 4 - player.hp
-        await player.recover(recoverNum)
+        await player.recoverTo(player.maxHp)
         await player.changeSkills(["tck_bian_shen", "tck_qi_shi"], ["tck_xie_sheng", "tck_hui_meng", "tck_bian_shen"])
         player.storage.tck_bian_shen = true //标记已经用过了
       },
@@ -2936,9 +2932,8 @@ export const skills = {
       },
       async content(event, trigger, player) {
         await player.awakenSkill("tck_fu_li")
-        await player.recover(4 - player.hp)
-        let cardNum = await player.countCards("h")
-        await player.draw(4 - cardNum)
+        await player.recoverTo(4)
+        await player.drawTo(4)
         // 立即执行你的回合
         await player.addSkill("tck_dang_xian_disable")
         let evt = _status.event.getParent("phaseLoop", true)
@@ -2950,12 +2945,16 @@ export const skills = {
             evtx.untrigger(true)
             evtx = evtx.getParent()
           }
-          evtx.player = player.previous
+          evtx.player = player.getPrevious()
         }
         player.storage.tck_fu_li = true
       }
     },
-    "tck_zhan": {},
+
+    // TODO
+    "tck_zhan": {
+
+    },
     "tck_chu_zi": {
       mod: {
         cardname(card, player, name) {
@@ -2979,8 +2978,7 @@ export const skills = {
       async content(event, trigger, player) {
         await player.awakenSkill("tck_ban_ren_ban_ling")
         await player.removeSkill("tck_zhan")
-        let recoverNum = player.maxHp - player.hp
-        await player.recover(recoverNum)
+        await player.recoverTo(player.maxHp)
         player.storage.tck_ban_ren_ban_ling = true
       },
     },
@@ -3100,9 +3098,158 @@ export const skills = {
         await player.removeSkill("tck_r_zhong_du")
       }
     },
-
+    "tck_r_liang_shuang": {
+      group: ["tck_r_liang_shuang_hanbing", "tck_r_liang_shuang_levelUp"],
+      locked: true,
+      init(player, skill) {
+        player.addExtraEquip(skill, "hanbing", true, player => player.countCards("e") == 0 && lib.card.hanbing);
+      },
+      onremove(player, skill) {
+        player.removeExtraEquip(skill);
+      },
+      subSkill: {
+        "hanbing": {
+          equipSkill: true,
+          noHidden: true,
+          inherit: "hanbing_skill",
+          filter(event, player) {
+            if (!lib.skill.hanbing_skill.filter(event, player)) {
+              return false;
+            }
+            if (player.countCards("e") > 0) {
+              return false;
+            }
+            return true;
+          },
+        },
+        "levelUp": {
+          charlotte: true,
+          forced: true,
+          trigger: {
+            player: "useCard"
+          },
+          filter(event, player) {
+            return get.name(event.card) == 'hanbing' &&
+              (player.countCards("e", card => get.name(card) == 'hanbing') > 0 ||
+                (player.countCards("e") == 0 && player.extraEquip?.some(e => e[1] == 'hanbing')))
+          },
+          async content(event, trigger, player) {
+            const card = trigger.card
+            const cards = trigger.cards
+            // 将寒冰剑移出游戏
+            game.cardsGotoSpecial(cards)
+            // 将极冰剑加入游戏并使用
+            const jibing = await game.createCard2("tck_ji_bing_jian", card.suit, card.number)
+            game.log(player, "将", card, "进化为", jibing)
+            await player.$skill('寒冰剑！进化！')
+            await player.chooseUseTarget(jibing, true)
+            trigger.finish()
+          }
+        },
+      }
+    },
+    "tck_r_xia_ye": {
+      forced: true,
+      trigger: {
+        global: "gameStart"
+      },
+      async content(event, trigger, player) {
+        const card = game.createCard('tck_land_r_xia_ye')
+        await player.useCard(card)
+      }
+    },
+    "tck_r_wu_you": {
+      charlotte: true,
+      trigger: {
+        player: "phaseZhunbeiBefore",
+      },
+      async content(event, trigger, player) {
+        const targets = game.players.filter(p => p != player)
+        for (const target of targets) {
+          if (target.countCards("hej") == 0) {
+            await target.loseHp(1)
+            // 可供人无忧的安眠
+            await target.addSkill("tck_r_an_mian_force")
+            continue
+          }
+          await player.gainPlayerCard("hej", target, 1, true)
+          await player.chooseToGive(target, 1, `交给${get.translation(target)}1张牌`, "he", true)
+        }
+      },
+    },
+    "tck_r_an_mian": {
+      charlotte: true,
+      forced: true,
+      trigger: {
+        global: "roundStart"
+      },
+      filter(event, plaeyr) {
+        // 场地是否是夏夜
+        return _status.tckLand.some(land => land.name == "tck_land_r_xia_ye") || get.land("tck_land_r_xia_ye")
+      },
+      async content(event, trigger, player) {
+        const players = game.players
+        for (let p of players) {
+          let res
+          if (p.hasSkill("tck_r_an_mian_force")) {
+            res = { bool: true, confirm: "ok" }
+            await p.removeSkill("tck_r_an_mian_force")
+          } else {
+            res = await p.chooseBool("是否睡觉？").forResult()
+          }
+          if (res.bool && res.confirm == "ok") {
+            await p.draw(2)
+            // 获得效果
+            await p.addTempSkill("tck_r_an_mian_effect", { global: "roundStart" })
+          }
+        }
+      },
+      subSkill: {
+        "force": {
+          mark: true,
+          intro: {
+            content: "下次【安眠】时你将强制睡觉"
+          },
+          sub: true,
+          sourceSkill: "tck_r_an_mian",
+          content(event, trigger, player) {
+          }
+        },
+        "effect": {
+          forced: true,
+          charlotte: true,
+          mark: true,
+          intro: {
+            content: "你已睡着，此轮无法出牌"
+          },
+          trigger: {
+            player: ["phaseDiscardBefore"],
+          },
+          sub: true,
+          sourceSkill: "tck_r_an_mian",
+          async content(event, trigger, player) {
+            await trigger.cancel()
+          },
+          mod: {
+            cardEnabled2(card) {
+              if (get.position(card) == "h") {
+                return false;
+              }
+            },
+          },
+        }
+      }
+    },
   },
   translate: {
+    "tck_r_an_mian": "安眠",
+    "tck_r_an_mian_info": "若场地为夏夜时可以发动，所有玩家可以选择本轮是否睡觉，睡觉的玩家摸两张牌结束回合，不需要丢弃手牌，此轮也无法出牌。",
+    "tck_r_wu_you": "无忧",
+    "tck_r_wu_you_info": "<b>锁定技</b>，回合开始前，从每名玩家手牌，区域中摸1张牌，并从手牌中选择1张牌还给每名玩家。若没有牌的玩家扣1点体力，并且下轮强制安眠。",
+    "tck_r_liang_shuang": "凉爽",
+    "tck_r_liang_shuang_info": "<b>锁定技</b>，没有其他装备的情况下视为装备[寒冰剑]，该装备无法离开此角色。若装备第二把[寒冰剑]的情况下进化为[极冰剑]，攻击距离4，该装备可以被移动，拥有该装备的玩家只可被火或光属性造成伤害，造成伤害时额外丢弃对手一张手牌，若无法丢弃手牌则此伤害+1。",
+    "tck_r_xia_ye": "夏夜",
+    "tck_r_xia_ye_info": "<b>场地技</b>，默认现在时间为21点。在夜晚所有无属性伤害攻击前判定，若为1-4则命中攻击对象左手边的玩家，若为5-8则命中指定玩家，若为9-Q则命中攻击对象右手边玩家，若为K则命中自己。",
     "tck_zhan": "斩",
     "tck_zhan_info": "你的杀视为砍<br/>砍命中后让对手选择1项：<br/>①弃2张牌。<br/>②额外扣1滴血。",
     "tck_chu_zi": "厨子",

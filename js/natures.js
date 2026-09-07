@@ -215,7 +215,6 @@ const natureConfig = {
       //   'male': '../extension/TCK/audio/' + i + '_shan_male.mp3',//男声音 文件夹命名 例如   jy_taxue_shan_male.mp3
       //   'female': '../extension/TCK/audio/' + i + '_shan_female.mp3',
       // };
-      // lib.natureBg.set(i,"ext:金庸群侠传/image/equip/"+i+"_shan.png");
     };
     lib.card.shan.cardPrompt = function (card) {
       const cardNature = Array.isArray(card) ? card[3] : get.nature(card);

@@ -1,6 +1,14 @@
 import { lib, game, get, _status, ui } from "../../../noname.js";
 export const cards = {
   card: {
+    "tck_ji_bing_jian": {
+      fullskin: true,
+      // image: "ext:TCK/imgs/cards/tck_tou_xiang.png",
+      type: "equip",
+      subtype: "equip1",
+      distance: { attackFrom: -3 },
+      skills: ["tck_ji_bing_jian_skill_1", "tck_ji_bing_jian_skill_2"]
+    },
     "tck_tou_xiang": {
       type: "trick",   //锦囊牌
       enable: true,   //可以用
@@ -392,6 +400,7 @@ export const cards = {
       }
     },
     "tck_chun_ri_tian_lai_le": {
+      ruleSkill: true,
       image: "ext:TCK/imgs/cards/tck_chun_ri_tian_lai_le.png",
       fullskin: true,
       type: "land",   //场地牌
@@ -1053,9 +1062,76 @@ export const cards = {
       global: ["tck_xiang_jiao_pi_skill"],
       content() { },
     },
+    "tck_land_r_xia_ye": {
+      // image: "ext:TCK/imgs/cards/tck_land_r_xia_ye.png",
+      fullskin: true,
+      type: "land",   //场地牌
+      enable: true,
+      notarget: true, //无目标
+      async content(event, trigger, player) {
+        player.changeTckLand("tck_land_r_xia_ye")
+        game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_land_r_xia_ye_tckland_skill": {
+      ruleSkill: true,
+      trigger: {
+        source: "damageBefore",
+      },
+      forced: true,
+      filter(event, player) {
+        return !event.hasNature()
+      },
+      async content(event, trigger, player) {
+        const target = trigger.player
+        const res = await player.judge(card => {
+          if (get.number(card) >= 1 && get.number(card) <= 4) return 0
+          if (get.number(card) >= 5 && get.number(card) <= 8) return 1
+          if (get.number(card) >= 9 && get.number(card) <= 12) return 0
+          if (get.number(card) == 13) return -1
+        }).forResult()
+        const resNumber = get.number(res)
+        if (resNumber >= 1 && resNumber <= 4) {
+          trigger.player = target.getPrevious()
+        } else if (resNumber >= 5 && resNumber <= 8) {
+          const t = await player.chooseTarget(true).forResult()
+          trigger.player = t.targets[0]
+        } else if (resNumber >= 9 && resNumber <= 12) {
+          trigger.player = target.getNext()
+        } else if (resNumber === 13) {
+          trigger.player = player
+        }
+      }
+    },
+    "tck_ji_bing_jian_skill_1": {
+      equipSkill: true,
+      forced: true,
+      trigger: { player: "damageBegin" },
+      filter(event) {
+        return event.nature != 'fire' && event.nature != 'tck_light'
+      },
+      logTarget: "player",
+      async content(event, trigger, player) {
+        await trigger.cancel()
+      },
+    },
+    "tck_ji_bing_jian_skill_2": {
+      equipSkill: true,
+      trigger: { source: "damageBegin2" },
+      logTarget: "player",
+      async content(event, trigger, player) {
+        const target = trigger.player
+        const cardNum = await target.countCards("h") > 0
+        if (cardNum > 0) {
+          await player.discardPlayerCard("h", target, true)
+        } else {
+          trigger.num++
+        }
+      },
+    },
     "tck_xiang_jiao_pi_skill": {
       forced: true,
       cardSkill: true,
@@ -1090,6 +1166,7 @@ export const cards = {
       }
     },
     "tck_gong_dian_chang_tckland_skill": {
+      ruleSkill: true,
       forced: true,
       trigger: {
         player: "phaseZhunbeiBegin"
@@ -1122,6 +1199,7 @@ export const cards = {
       },
     },
     "tck_gou_tong_tckland_skill": {
+      ruleSkill: true,
       forced: true,
       trigger: {
         player: "phaseDrawBegin",
@@ -1141,6 +1219,7 @@ export const cards = {
       },
     },
     "tck_land_yi_ji_tckland_skill": {
+      ruleSkill: true,
       trigger: {
         player: "phaseZhunbeiBegin"
       },
@@ -1204,6 +1283,7 @@ export const cards = {
     },
     "tck_hai_di_tckland_skill": {},
     "tck_hai_di_tckland_skill_1": {
+      ruleSkill: true,
       trigger: {
         player: "damageBegin",
       },
@@ -1217,6 +1297,7 @@ export const cards = {
       }
     },
     "tck_hai_di_tckland_skill_2": {
+      ruleSkill: true,
       trigger: {
         player: "phaseJieshu"
       },
@@ -1306,6 +1387,7 @@ export const cards = {
       },
     },
     "tck_qi_xiao_tckland_skill": {
+      ruleSkill: true,
       init(player) {
         player.storage.tck_qi_xiao_tckland_skill = 0
       },
@@ -1388,6 +1470,7 @@ export const cards = {
       }
     },
     "tck_dong_xue_tckland_skill": {
+      ruleSkill: true,
       forced: true,
       trigger: {
         player: "useCard"
@@ -1401,6 +1484,7 @@ export const cards = {
       }
     },
     "tck_scp_087_tckland_skill": {
+      ruleSkill: true,
       forced: true,
       trigger: {
         player: "phaseZhunbeiBegin"
@@ -1426,6 +1510,7 @@ export const cards = {
       }
     },
     "tck_xue_zhan_dao_di_tckland_skill": {
+      ruleSkill: true,
       forced: true,
       //属性杀伤害+1
       trigger: {
@@ -1528,6 +1613,7 @@ export const cards = {
       }
     },
     "tck_chun_ri_tian_lai_le_tckland_skill": {
+      ruleSkill: true,
       trigger: {
         player: "phaseZhunbeiBegin"
       },
@@ -1540,6 +1626,7 @@ export const cards = {
       }
     },
     "tck_liu_xing_yu_de_gong_yuan_tckland_skill": {
+      ruleSkill: true,
       trigger: {
         player: "phaseZhunbeiBegin"
       },
@@ -1573,6 +1660,7 @@ export const cards = {
       }
     },
     "tck_yue_mian_tckland_skill": {
+      ruleSkill: true,
       trigger: {
         player: "phaseJieshu"
       },
@@ -1586,6 +1674,7 @@ export const cards = {
       }
     },
     "tck_scp_002_tckland_skill": {
+      ruleSkill: true,
       trigger: {
         player: "phaseZhunbeiBegin"
       },
@@ -1595,6 +1684,7 @@ export const cards = {
       }
     },
     "tck_sen_lin_tckland_skill": {
+      ruleSkill: true,
       forced: true,
       trigger: {
         player: "useCard"
@@ -1607,6 +1697,7 @@ export const cards = {
       },
     },
     "tck_da_ri_zhao_tckland_skill": {
+      ruleSkill: true,
       trigger: {
         player: "damageBegin",
       },
@@ -1740,6 +1831,15 @@ export const cards = {
     },
   },
   translate: {
+    "tck_land_r_xia_ye": "夏夜",
+    "tck_land_r_xia_ye_info": "场地效果：默认现在时间为21点。在夜晚所有无属性伤害攻击前判定，若为1-4则命中攻击对象左手边的玩家，若为5-8则命中指定玩家，若为9-Q则命中攻击对象右手边玩家，若为K则命中自己。",
+    "tck_land_r_xia_ye_tckland_skill": "夏夜",
+    "tck_land_r_xia_ye_tckland_skill_info": "默认现在时间为21点。在夜晚所有无属性伤害攻击前判定，若为1-4则命中攻击对象左手边的玩家，若为5-8则命中指定玩家，若为9-Q则命中攻击对象右手边玩家，若为K则命中自己。",
+    "tck_ji_bing_jian": "极冰剑",
+    "tck_ji_bing_jian_info": "你只可被火或光属性造成伤害，造成伤害时额外丢弃对手一张手牌，若无法丢弃手牌则此伤害+1。",
+    "tck_ji_bing_jian_skill_1": "极冰剑",
+    "tck_ji_bing_jian_skill_2": "极冰剑",
+    "tck_ji_bing_jian_skill_2_info": "额外丢弃对手一张牌，若无法丢弃手牌则此伤害+1。",
     "tck_xiang_jiao_pi_skill": "香蕉皮",
     "tck_xiang_jiao_pi": "香蕉皮",
     "tck_xiang_jiao_pi_info": "抽中本牌者弃置本牌并失去1点体力。",

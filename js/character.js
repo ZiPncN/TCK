@@ -458,9 +458,18 @@ export const characters = {
       skills: ["tck_r_fu_xin", "tck_r_hua_tian"],
       img: "extension/TCK/imgs/charactors/tck_r_momo.jpg",
     },
+    "tck_r_wzh": {
+      sex: "male",
+      group: "shu",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_r_liang_shuang", "tck_r_xia_ye", "tck_r_wu_you", "tck_r_an_mian"],
+      img: "extension/TCK/imgs/charactors/tck_r_wzh.jpg",
+    },
 
   },
   translate: {
+    "tck_r_wzh": "王子含",
     "tck_hunpoyaomeng": "魂魄妖梦",
     "tck_nanmen": "南门",
     "tck_dongfangzhangzhu": "东方仗助",
@@ -523,6 +532,7 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_r_wzh": "老黄牛肉面馆",
     "tck_hunpoyaomeng": "半人半灵的庭师",
     "tck_dongfangzhangzhu": "东方仗助",
     "tck_moduoluoyinqinai": "摸多了硬起来",
@@ -607,9 +617,12 @@ export const characters = {
       ],
 
       //重制版
-      "tck_r_pack": ["tck_r_zpn", "tck_r_momo",]
+      "tck_r_pack": ["tck_r_zpn", "tck_r_momo", "tck_r_wzh"]
 
     }
+  },
+  characterIntro: {
+    "tck_r_wzh": "死是凉爽的夏夜，可供人无忧的安眠",
   }
 }
 
