@@ -196,7 +196,7 @@ const natureConfig = {
     lib.tck_nature_shan = [
       'tck_duo_shan',
     ]
-    lib.cardPack.mode_derivation.addArray(lib.tck_nature_shan)
+    lib.cardPack.TCK.addArray(lib.tck_nature_shan)
 
     for (var i of lib.card.shan['tck_nature']) {
       lib.translate[i + "_shan"] = lib.translate[i];

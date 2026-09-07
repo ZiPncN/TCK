@@ -2956,13 +2956,25 @@ export const skills = {
 
     },
     "tck_chu_zi": {
-      mod: {
-        cardname(card, player, name) {
-          if (name != "taoyuan" && (lib.card[card.name].type == "delay" || lib.card[card.name].type == "trick")) {
-            return "taoyuan"
-          }
+      enable: "chooseToUse",
+      filterCard(card) {
+        return get.type(card) == "delay" || get.type(card) == "trick"
+      },
+      position: "h",
+      viewAs: { name: "taoyuan" },
+      viewAsFilter(player) {
+        if (!player.countCards("h", card => get.type(card) == "delay" || get.type(card) == "trick")) {
+          return false;
         }
-      }
+      },
+      prompt: "将一张锦囊牌当桃园结义使用",
+      // mod: {
+      //   cardname(card, player, name) {
+      //     if (name != "taoyuan" && (lib.card[card.name].type == "delay" || lib.card[card.name].type == "trick")) {
+      //       return "taoyuan"
+      //     }
+      //   }
+      // }
     },
     "tck_ban_ren_ban_ling": {
       mark: true,
@@ -3253,7 +3265,7 @@ export const skills = {
     "tck_zhan": "斩",
     "tck_zhan_info": "你的杀视为砍<br/>砍命中后让对手选择1项：<br/>①弃2张牌。<br/>②额外扣1滴血。",
     "tck_chu_zi": "厨子",
-    "tck_chu_zi_info": "你的锦都视为桃园结义。",
+    "tck_chu_zi_info": "你的锦都可视为桃园结义。",
     "tck_ban_ren_ban_ling": "半人半灵",
     "tck_ban_ren_ban_ling_info": "限定技，濒死使用失去【斩】，回复至满。",
     "tck_nan_men": "南门",
