@@ -127,7 +127,7 @@ export default function () {
                     }
                 });
                 return next;
-            };
+            }
             //检测当前地图
             get.land = function (name) {
                 if (name && typeof name === 'string') {
@@ -145,7 +145,7 @@ export default function () {
                     }
                 }
 
-            };
+            }
             //切换bgm
             game.switchTCKBgm = function (name, ext) {
                 if (_status.tckBgm && name == _status.tckBgm) return;
@@ -164,7 +164,7 @@ export default function () {
                 game.broadcast(function (name, ext) {
                     game.switchTCKBgm(name, ext);
                 }, name, ext);
-            };
+            }
             //不带弃牌堆的洗牌
             //cardArray ： 要一起洗进牌堆的牌（把牌放在数组尾部再洗牌）
             game.washCardNoWithDiscard = function (cardArray) {
@@ -209,6 +209,9 @@ export default function () {
             }
             if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_EX')) {
                 lib.card.list.addArray(ex_cards.list);
+            }
+            if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_R')) {
+                lib.card.list.addArray(r_cards.list);
             }
 
             natureConfig.resetLib()
@@ -273,7 +276,6 @@ export default function () {
             if (!lib.config.TCK_R) game.saveConfig('cards', lib.config.cards.concat('TCK_R')), game.saveConfig('TCK_R', true);
 
             //添加自定义属性
-            natureConfig.natures.forEach(n => game.addNature(n.id, n.name, n.config))
             natureConfig.skills()
             natureConfig.translates()
         },

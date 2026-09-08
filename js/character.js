@@ -460,7 +460,7 @@ export const characters = {
     },
     "tck_r_wzh": {
       sex: "male",
-      group: "shu",
+      group: "tck_niu",
       hp: 3,
       maxHp: 3,
       skills: ["tck_r_liang_shuang", "tck_r_xia_ye", "tck_r_wu_you", "tck_r_an_mian"],

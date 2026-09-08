@@ -2953,7 +2953,18 @@ export const skills = {
 
     // TODO
     "tck_zhan": {
-
+      mod: {
+        // cardname(card, player) {
+        //   if (lib.card[card.name].type == "basic") {
+        //     return "sha";
+        //   }
+        // },
+        cardnature(card, player) {
+          if (get.name(card) == "sha") {
+            return "tck_kan";
+          }
+        }
+      }
     },
     "tck_chu_zi": {
       enable: "chooseToUse",
@@ -2968,13 +2979,6 @@ export const skills = {
         }
       },
       prompt: "将一张锦囊牌当桃园结义使用",
-      // mod: {
-      //   cardname(card, player, name) {
-      //     if (name != "taoyuan" && (lib.card[card.name].type == "delay" || lib.card[card.name].type == "trick")) {
-      //       return "taoyuan"
-      //     }
-      //   }
-      // }
     },
     "tck_ban_ren_ban_ling": {
       mark: true,
@@ -3185,7 +3189,7 @@ export const skills = {
             continue
           }
           await player.gainPlayerCard("hej", target, 1, true)
-          await player.chooseToGive(target, 1, `交给${get.translation(target)}1张牌`, "he", true)
+          await player.chooseToGive(target, 1, `交还给${get.translation(target)}1张手牌`, "h", true)
         }
       },
     },

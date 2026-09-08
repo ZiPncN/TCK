@@ -1065,6 +1065,9 @@ export const cards = {
         game.cardsGotoSpecial(event.card.cards, "toTckLand")
       }
     },
+
+    // 附加牌（不在常驻牌堆里的牌）
+
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {

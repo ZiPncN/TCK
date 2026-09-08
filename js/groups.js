@@ -20,6 +20,7 @@ const groups = [
   { id: "tck_jia_mian", short: "假", name: "假面骑士", config: { color: "", image: "", } },
   { id: "tck_long", short: "龙", name: "龙", config: { color: "", image: "", } },
   { id: "tck_tian", short: "天", name: "天", config: { color: "", image: "", } },
+  { id: "tck_niu", short: "牛", name: "牛", config: { color: "", image: "", } },
 ]
 
 export default groups
