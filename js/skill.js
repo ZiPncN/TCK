@@ -2950,8 +2950,6 @@ export const skills = {
         player.storage.tck_fu_li = true
       }
     },
-
-    // TODO
     "tck_zhan": {
       mod: {
         // cardname(card, player) {

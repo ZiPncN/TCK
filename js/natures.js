@@ -91,13 +91,36 @@ const natureConfig = {
         return event.hasNature('tck_kan')
       },
       async content(event, trigger, player) {
-        console.log(event, trigger)
+        const target = trigger.player
+        let options = [
+          ["extraDamage", `额外扣1滴血`],
+        ]
+        if (target.countCards("h") >= 2) {
+          options.unshift(["discard2", `弃置两张牌`])
+        }
+        let result = await target
+          .chooseButton([
+            '砍',
+            '请选择一项',
+            [options, "textbutton"]
+          ], true)
+          .forResult();
+        if (result.bool) {
+          switch (result.links[0]) {
+            case 'discard2':
+              await target.chooseToDiscard(2, true, "he")
+              break
+            case 'extraDamage':
+              trigger.num++
+              break
+          }
+        }
       }
     }
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------
-    lib.skill['tck_duo'] = {
+    lib.skill['_tck_duo'] = {
       ruleSkill: true,
       logTarget: 'player',
       forced: true,
@@ -113,7 +136,7 @@ const natureConfig = {
     // ----------------------- 闪属性 end -------------------------- 
 
     // ---------------------- 酒属性 begin -------------------------
-    lib.skill['tck_test'] = {
+    lib.skill['_tck_test'] = {
       // log: false,
       // filterCard: function (card) {
       //   return get.suit(card) == 'club';
@@ -128,21 +151,21 @@ const natureConfig = {
   // 配置自定义属性
   translates: function () {
     // ---------------------- 杀属性 begin -------------------------
-    lib.translate['_TCK_lightsha'] = '光杀'
     lib.translate['_tck_light_effect'] = '光属性伤害'
     lib.translate['_tck_light_effect_info'] = '造成伤害可进行一次判定，若为红色，此伤害+1'
     lib.translate['sha_nature_tck_light_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点光属性伤害。'
-    lib.translate['tck_lightsha'] = lib.translate['sha_nature_tck_light_info']
-    lib.translate['_TCK_lxy_gousha'] = '流星雨·狗杀'
+    lib.translate['tck_light_sha'] = '光杀'
+    lib.translate['tck_light_sha2'] = '光杀'
     lib.translate['_tck_lxy_gou_effect'] = '流星雨·狗'
     lib.translate['_tck_lxy_gou_effect_info'] = '此杀命中得不屈'
     lib.translate['sha_nature_tck_lxy_gou_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点流星雨·狗属性伤害，此杀命中得不屈。'
-    lib.translate['tck_lxy_gousha'] = lib.translate['sha_nature_tck_lxy_gou_info']
-    lib.translate['_TCK_kansha'] = '砍'
+    lib.translate['tck_lxy_gou_sha'] = '流星雨·狗杀'
+    lib.translate['tck_lxy_gou_sha2'] = '流星雨·狗杀'
     lib.translate['_tck_kan_effect'] = '砍'
     lib.translate['_tck_kan_effect_info'] = '砍命中后让对手选择1项：<br/>①弃2张牌。<br/>②额外扣1滴血。';
     lib.translate['sha_nature_tck_kan_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点伤害，砍命中后让对手选择1项：①弃2张牌。②额外扣1滴血。';
-    lib.translate['tck_kansha'] = lib.translate['sha_nature_tck_kan_info']
+    lib.translate['tck_kan_sha'] = '砍'
+    lib.translate['tck_kan_sha2'] = '砍'
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------
@@ -157,14 +180,20 @@ const natureConfig = {
   },
   // 重设属性，参考金庸群侠传扩展的代码
   resetLib: function () {
-    lib.tck_get_translation = get.translation;
+    lib.tck_get_translation = get.translation
     get.translation = function (str, arg) {
       if (str && typeof str == 'object' && str.name) {
         if (arg == 'viewAs' && str.viewAs) {
           return lib.tck_get_translation.apply(this, arguments);
         }
-        else if ((str.name == 'shan' || str.name == 'jiu') && str.nature) {
-          if (str.name == 'jiu' && lib.card.jiu.tck_nature.includes(str.nature)) {
+        else if ((str.name == 'sha' || str.name == 'shan' || str.name == 'jiu') && str.nature) {
+          if (str.name == 'sha' && simShaNatures.includes(str.nature)) {
+            str.name = str.nature + '_sha2';
+            var result = lib.tck_get_translation.apply(this, arguments);
+            str.name = 'sha';
+            return result;
+          }
+          else if (str.name == 'jiu' && lib.card.jiu.tck_nature.includes(str.nature)) {
             str.name = str.nature + '_jiu2';
             var result = lib.tck_get_translation.apply(this, arguments);
             str.name = 'jiu';
@@ -176,7 +205,7 @@ const natureConfig = {
             str.name = 'shan';
             return result;
           }
-          else if (lib.tck_nature_jiu.includes(str.name) || lib.tck_nature_shan.includes(str.name)) {
+          else if (simShaNatures.includes(str.name) || lib.tck_nature_jiu.includes(str.name) || lib.tck_nature_shan.includes(str.name)) {
             var oldname = str.name;
             str.name = str.name + '2';
             var result = lib.tck_get_translation.apply(this, arguments);
@@ -211,121 +240,10 @@ const natureConfig = {
         return lib.tck_get_damageEffect.apply(this, arguments)
       }
     }
-
-    // 加属性杀
-    let addNatureSha = function (nature, translation, config) {
-      game.addNature(nature, translation, config);//本体添加属性杀的方法+
-      lib.arenaReady.push(function () {
-        lib.card[nature + 'damage'] = {
-          ai: {
-            result: {
-              target: -1.5
-            },
-            tag: {
-              damage: 1,
-              natureDamage: 1,
-            },
-          },
-        }
-        lib.card[nature + 'damage']['ai']['tag'][nature + 'Damage'] = 1;
-        lib.translate[nature] = translation;
-        if (!lib.cardPack.mode_derivation) {
-          lib.cardPack.mode_derivation = [];
-        };
-        lib.cardPack.mode_derivation.add(nature + 'sha');
-        lib.translate[nature + 'sha'] = translation + '杀';
-        //lib.translate[nature+'sha']=lib.translate['sha_info'];
-        lib.card[nature + 'sha'] = {
-          type: 'basic',
-          naturex: nature,
-          image: "ext:TCK/imgs/cards/" + nature + "_sha.png",
-          // derivation: 'diy_card_tck_card_config',
-          derivationpack: 'TCK',
-          fullskin: true,
-          //cardimage:'sha',
-        }
-      })
+    if (!lib.cardPack.TCK) {
+      lib.cardPack.TCK = []
     }
-    this.shaNatures.filter(i => addNatureSha(...i))
-    this.shaNatures.forEach(i => {
-      lib.card.sha['ai']['tag'][`${i[0]}Damage`] = function (card, naturex) {
-        if (game.hasNature(card, i[0])) return 1;
-      }
-    })
-    if (!lib.element.card.inits) lib.element.card.inits = [];
-    lib.tck_card_init = lib.element.card.init
-
-    lib.element.card.init = function (card) {
-      if (Array.isArray(card)) {
-        if (card[2] == 'sha' && (simShaNatures.includes(card[3]))) {
-          if (!!card[3]) {
-            card[2] = `${card[3]}sha`
-          }
-          var cardx = lib.tck_card_init.call(this, card)
-          card[2] = 'sha'
-          cardx.nature = card[3]
-          cardx.name = 'sha'
-          cardx.classList.add(card[3])
-          cardx.node.image.classList.add(card[3])
-          return cardx
-        }
-        if (card[2] == 'shan' && card[3] && lib.card.shan.tck_nature.includes(card[3])) {
-          card[2] = card[3] + '_shan'
-          var cardx = lib.tck_card_init.call(this, card)
-          card[2] = 'shan'
-          cardx.name = 'shan'
-          cardx.nature = card[3]
-          cardx.classList.add(card[3])
-          cardx.node.image.classList.add(card[3])
-          return cardx
-        }
-        // else if (card[2] == 'jiu' && card[3] && lib.card.jiu.tck_nature.includes(card[3])) {
-        //   card[2] = card[3] + '_jiu'
-        //   var cardx = lib.tck_card_init.call(this, card)
-        //   card[2] = 'jiu'
-        //   cardx.name = 'jiu'
-        //   cardx.nature = card[3]
-        //   cardx.classList.add(card[3])
-        //   cardx.node.image.classList.add(card[3])
-        //   return cardx
-        // }
-        else if (lib.tck_nature_jiu.includes(card[2]) || lib.tck_nature_shan.includes(card[2])) {
-          var nature = lib.card[card[2]].naturex
-          card[3] = nature
-          var cardx = lib.tck_card_init.call(this, card)
-          cardx.nature = card[3]
-          cardx.classList.add(card[3])
-          cardx.node.image.classList.add(card[3])
-          return cardx
-        }
-        else if (simShaNatures.includes(card[2].slice(0, -3))) {
-          if (!!card[2]) {
-            card[3] = card[2].slice(0, -3)
-          } else {
-          }
-          var cardx = lib.tck_card_init.call(this, card)
-          cardx.nature = card[3]
-          cardx.classList.add(card[3])
-          cardx.node.image.classList.add(card[3])
-          return cardx
-        }
-      }
-      var cardx = lib.tck_card_init.call(this, card)
-      return cardx
-    }
-
-    var cardinit = function (card) {
-      if (!card.node.addMark) {
-        card.node.addMark = ui.create.div('.addMark', card);
-      };
-      if (!card.node.addMark.innerHTML) {
-        card.node.addMark.innerHTML = "";
-      };
-      if (!card.addMark) {
-        card.addMark = {};
-      };
-    }
-    lib.element.card.inits.push(cardinit);
+    if (!lib.element.card.inits) lib.element.card.inits = []
     lib.element.card.setMark = function (skill, player) {
       var card = this;
       if (!card.addMark[skill]) card.addMark[skill] = [];
@@ -371,9 +289,57 @@ const natureConfig = {
       };
       return true;
     }
-    if (!lib.cardPack.TCK) {
-      lib.cardPack.TCK = []
+    var cardinit = function (card) {
+      if (!card.node.addMark) {
+        card.node.addMark = ui.create.div('.addMark', card);
+      };
+      if (!card.node.addMark.innerHTML) {
+        card.node.addMark.innerHTML = "";
+      };
+      if (!card.addMark) {
+        card.addMark = {};
+      };
     }
+    lib.element.card.inits.push(cardinit)
+
+
+    // ---------------------- 杀属性 begin -------------------------
+    let addNatureSha = function (nature, translation, config) {
+      game.addNature(nature, translation, config);//本体添加属性杀的方法+
+      lib.card[nature + 'damage'] = {
+        ai: {
+          result: {
+            target: -1.5
+          },
+          tag: {
+            damage: 1,
+            natureDamage: 1,
+          },
+        },
+      }
+      lib.card[nature + 'damage']['ai']['tag'][nature + 'Damage'] = 1
+      lib.translate[nature] = translation
+      lib.cardPack.TCK.add(nature + '_sha')
+
+      // lib.translate[nature + '_sha'] = translation + '杀'
+      lib.card[nature + '_sha'] = {
+        type: 'basic',
+        naturex: nature,
+        image: "ext:TCK/imgs/cards/" + nature + "_sha.png",
+        // derivation: 'diy_card_tck_card_config',
+        derivationpack: 'TCK',
+        fullskin: true,
+        //cardimage:'sha',
+      }
+    }
+    this.shaNatures.filter(i => addNatureSha(...i))
+    this.shaNatures.forEach(i => {
+      lib.card.sha['ai']['tag'][`${i[0]}Damage`] = function (card, naturex) {
+        if (game.hasNature(card, i[0])) return 1;
+      }
+    })
+    // ----------------------- 杀属性 end --------------------------  
+
     // ---------------------- 闪属性 begin -------------------------
     lib.card.shan['tck_nature'] = ['tck_duo']
     lib.tck_nature_shan = ['tck_duo_shan']
@@ -439,6 +405,68 @@ const natureConfig = {
     lib.cardPack.TCK.addArray(lib.tck_nature_jiu)
     // ----------------------- 酒属性 end --------------------------
 
+
+
+
+    lib.tck_card_init = lib.element.card.init
+    lib.element.card.init = function (card) {
+      if (Array.isArray(card)) {
+        if (card[2] == 'sha' && (simShaNatures.includes(card[3]))) {
+          if (!!card[3]) {
+            card[2] = `${card[3]}_sha`
+          }
+          var cardx = lib.tck_card_init.call(this, card)
+          card[2] = 'sha'
+          cardx.name = 'sha'
+          cardx.nature = card[3]
+          cardx.classList.add(card[3])
+          cardx.node.image.classList.add(card[3])
+          return cardx
+        }
+        if (card[2] == 'shan' && card[3] && lib.card.shan.tck_nature.includes(card[3])) {
+          card[2] = card[3] + '_shan'
+          var cardx = lib.tck_card_init.call(this, card)
+          card[2] = 'shan'
+          cardx.name = 'shan'
+          cardx.nature = card[3]
+          cardx.classList.add(card[3])
+          cardx.node.image.classList.add(card[3])
+          return cardx
+        }
+        // else if (card[2] == 'jiu' && card[3] && lib.card.jiu.tck_nature.includes(card[3])) {
+        //   card[2] = card[3] + '_jiu'
+        //   var cardx = lib.tck_card_init.call(this, card)
+        //   card[2] = 'jiu'
+        //   cardx.name = 'jiu'
+        //   cardx.nature = card[3]
+        //   cardx.classList.add(card[3])
+        //   cardx.node.image.classList.add(card[3])
+        //   return cardx
+        // }
+        else if (lib.tck_nature_jiu.includes(card[2]) || lib.tck_nature_shan.includes(card[2])) {
+          var nature = lib.card[card[2]].naturex
+          card[3] = nature
+          var cardx = lib.tck_card_init.call(this, card)
+          cardx.nature = card[3]
+          cardx.classList.add(card[3])
+          cardx.node.image.classList.add(card[3])
+          return cardx
+        }
+        else if (simShaNatures.includes(card[2].slice(0, -3))) {
+          if (!!card[2]) {
+            card[3] = card[2].slice(0, -3)
+          } else {
+          }
+          var cardx = lib.tck_card_init.call(this, card)
+          cardx.nature = card[3]
+          cardx.classList.add(card[3])
+          cardx.node.image.classList.add(card[3])
+          return cardx
+        }
+      }
+      var cardx = lib.tck_card_init.call(this, card)
+      return cardx
+    }
 
 
 
