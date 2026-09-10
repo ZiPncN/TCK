@@ -466,9 +466,18 @@ export const characters = {
       skills: ["tck_r_liang_shuang", "tck_r_xia_ye", "tck_r_wu_you", "tck_r_an_mian"],
       img: "extension/TCK/imgs/charactors/tck_r_wzh.jpg",
     },
+    "tck_r_wzh_fhz_yc": {
+      sex: "male",
+      group: "tck_wu",
+      hp: 4,
+      maxHp: 4,
+      skills: [""],
+      img: "extension/TCK/imgs/charactors/tck_r_wzh_fhz_yc.jpg",
+    },
 
   },
   translate: {
+    "tck_r_wzh_fhz_yc": "王子含 傅还政 隐藏角色",
     "tck_r_wzh": "王子含",
     "tck_hunpoyaomeng": "魂魄妖梦",
     "tck_nanmen": "南门",
@@ -532,6 +541,7 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_r_wzh_fhz_yc": "婺城双杰",
     "tck_r_wzh": "老黄牛肉面馆",
     "tck_hunpoyaomeng": "半人半灵的庭师",
     "tck_dongfangzhangzhu": "东方仗助",
@@ -617,7 +627,9 @@ export const characters = {
       ],
 
       //重制版
-      "tck_r_pack": ["tck_r_zpn", "tck_r_momo", "tck_r_wzh"]
+      "tck_r_pack": ["tck_r_zpn", "tck_r_momo", "tck_r_wzh",
+        "tck_r_wzh_fhz_yc",
+      ]
 
     }
   },
