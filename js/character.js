@@ -468,10 +468,10 @@ export const characters = {
     },
     "tck_r_wzh_fhz_yc": {
       sex: "male",
-      group: "tck_wu",
+      group: "tck_group_wu",
       hp: 4,
       maxHp: 4,
-      skills: [""],
+      skills: ["tck_r_niu_lai", "tck_r_lin_mo", "tck_r_yin_cang", "tck_r_feng_kuang"],
       img: "extension/TCK/imgs/charactors/tck_r_wzh_fhz_yc.jpg",
     },
 

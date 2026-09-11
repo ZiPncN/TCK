@@ -1,6 +1,22 @@
 import { lib, game, get, _status, ui } from "../../../noname.js";
 export const cards = {
   card: {
+    "tck_land_r_feng_kuang_xing_qi_si": {
+      image: "ext:TCK/imgs/cards/tck_land_r_feng_kuang_xing_qi_si.png",
+      fullskin: true,
+      type: "land",   //场地牌
+      enable: true,
+      notarget: true, //无目标
+      async content(event, trigger, player) {
+        player.changeTckLand("tck_land_r_feng_kuang_xing_qi_si")
+        game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
+    "tck_card_ao_zhan": {
+      type: "basic",
+      fullskin: true,
+      image: "ext:TCK/imgs/cards/tck_card_ao_zhan.png",
+    },
     "tck_tou_xiang": {
       type: "trick",   //锦囊牌
       enable: true,   //可以用
@@ -577,10 +593,10 @@ export const cards = {
         game.cardsGotoSpecial(event.card.cards, "toTckLand")
       }
     },
-    "tck_wu": {
+    "tck_card_wu": {
       type: "basic",
       fullskin: true,
-      image: "ext:TCK/imgs/cards/tck_wu.png",
+      image: "ext:TCK/imgs/cards/tck_card_wu.png",
       enable: false,   //可以用
     },
     "tck_she_jin_qiu_yuan": {
@@ -610,7 +626,7 @@ export const cards = {
         return target == player
       },
       async content(event, trigger, player) {
-        let cards = event.target.getCards("h", card => get.name(card) == "tck_wu")
+        let cards = event.target.getCards("h", card => get.name(card) == "tck_card_wu")
         if (cards.length) {
           await event.target.discard(cards)
           await event.target.draw(4)
@@ -1065,12 +1081,185 @@ export const cards = {
         game.cardsGotoSpecial(event.card.cards, "toTckLand")
       }
     },
-
-    // 附加牌（不在常驻牌堆里的牌）
-
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_land_r_feng_kuang_xing_qi_si_tckland_skill": {
+      ruleSkill: true,
+      enable: "phaseUse",
+      filter(event, player) {
+        return player.countCards("h") > 0
+      },
+      async content(event, trigger, player) {
+        let res
+        if (!!player.storage.tck_r_niu_lai) {
+          // 让“妈妈”是否弃牌
+          res = await player.storage.tck_r_niu_lai.chooseToDiscard(`是否弃置一张手牌，为${get.translation(player)}买单`, "h", 1).forResult()
+        }
+        if (!res.bool) {
+          res = await player.chooseToDiscard("h", 1).forResult()
+        }
+        if (!res.bool) {
+          return
+        }
+        const suit = get.suit(res.cards[0])
+        if (suit == 'heart') {          // ♥
+          if (!player.hasSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart')) {
+            await player.addTempSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart', { player: "phaseJieshuAfter" })
+          }
+          await player.addMark('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart', 1)
+        } else if (suit == 'spade') {   // ♠
+          await player.chat('好吃！')
+        } else if (suit == 'club') {    // ♣
+          if (!player.hasSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_club')) {
+            await player.addTempSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_club', { player: "phaseJieshuAfter" })
+          }
+        } else if (suit == 'diamond') { // ♦
+          // 强制从牌堆顶摸一张牌，不能直接用draw()
+          const cards = await get.cards(1)
+          await player.gain(cards)
+        }
+      },
+      subSkill: {
+        "heart": {
+          mark: true,
+          intro: {
+            name: "香辣鸡腿堡",
+            content: "出杀伤害+#",
+          },
+          sub: true,
+          sourceSkill: "tck_land_r_feng_kuang_xing_qi_si_tckland_skill",
+          ruleSkill: true,
+          onremove(player, skill) {
+            player.clearMark(skill, false)  // 失去本技能直接清空标记
+          },
+          forced: true,
+          trigger: {
+            source: "damageBegin"
+          },
+          filter(event, player) {
+            return event.card?.name == "sha" && player.hasMark('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart')
+          },
+          async content(event, trigger, player) {
+            trigger.num += player.countMark('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart')
+          }
+        },
+        "club": {
+          mark: true,
+          intro: {
+            name: "老北京鸡肉卷",
+            content: "出杀要两张闪",
+          },
+          sub: true,
+          sourceSkill: "tck_land_r_feng_kuang_xing_qi_si_tckland_skill",
+          ruleSkill: true,
+          trigger: { player: "useCardToPlayered" },
+          forced: true,
+          filter(event, player) {
+            return event.card.name == "sha" && !event.getParent().directHit.includes(event.target);
+          },
+          logTarget: "target",
+          async content(event, trigger, player) {
+            const id = trigger.target.playerid;
+            const map = trigger.getParent().customArgs;
+            if (!map[id]) {
+              map[id] = {};
+            }
+            if (typeof map[id].shanRequired == "number") {
+              map[id].shanRequired++;
+            } else {
+              map[id].shanRequired = 2;
+            }
+          },
+        }
+      }
+    },
+    "tck_card_ao_zhan_skill": {
+      cardSkill: true,
+      enable: ["chooseToUse", "chooseToResponse"],
+      filter(event, player) {
+        let cards = player.getCards("hs")
+        for (let i of cards) {
+          let name = get.name(i, player)
+          if (name == "tck_card_ao_zhan") {
+            if (
+              event.filterCard(
+                {
+                  name: "sha",
+                  isCard: true,
+                  cards: [i],
+                }, player, event
+              ) ||
+              event.filterCard(
+                {
+                  name: "shan",
+                  isCard: true,
+                  cards: [i],
+                }, player, event
+              )
+            ) {
+              return true
+            }
+          }
+        }
+        return false
+      },
+      chooseButton: {
+        dialog(event, player) {
+          let list = []
+          if (player.countCards("hs", "tck_card_ao_zhan")) {
+            list.push(["基本", "", "sha"])
+            list.push(["基本", "", "shan"])
+          }
+          return ui.create.dialog("鏖战", [list, "vcard"], "hidden")
+        },
+        filter(button, player) {
+          let name = button.link[2]
+          let rawname = "tck_card_ao_zhan"
+          let cards = player.getCards("hs")
+          let evt = _status.event.getParent()
+          for (var i of cards) {
+            if (
+              get.name(i, player) == rawname &&
+              evt.filterCard(
+                {
+                  name: name,
+                  isCard: true,
+                  cards: [i],
+                }, player, evt
+              )
+            ) {
+              return true
+            }
+          }
+          return false
+        },
+        check(button) {
+          return _status.event.player.getUseValue({ name: button.link[2], isCard: true })
+        },
+        backup(links) {
+          let name = links[0][2]
+          let rawname = "tck_card_ao_zhan"
+          return {
+            popname: true,
+            viewAs: { name: name, isCard: true },
+            filterCard: { name: rawname },
+            ai1: () => 1
+          }
+        },
+        prompt(links) {
+          let name = links[0][2]
+          let rawname = "tck_card_ao_zhan"
+          return "将一张" + get.translation(rawname) + "当做" + get.translation(name) + "使用或打出"
+        },
+      },
+      ai: {
+        order: 10,
+        result: {
+          player: 1,
+        },
+      },
+    },
     "tck_land_r_xia_ye_tckland_skill": {
       ruleSkill: true,
       trigger: {
@@ -1800,6 +1989,14 @@ export const cards = {
     },
   },
   translate: {
+    "tck_land_r_feng_kuang_xing_qi_si": "疯狂星期四",
+    "tck_land_r_feng_kuang_xing_qi_si_info": "场地效果：默认今天是星期四，玩家可以丢弃各色手牌来获得，♥香辣鸡腿堡，出杀伤害+1；♦吮指原味鸡，牌堆顶摸一张牌；♣老北京鸡肉卷，出杀要两张闪；♠奥尔良鸡腿堡，好吃。",
+    "tck_land_r_feng_kuang_xing_qi_si_tckland_skill": "疯狂星期四",
+    "tck_land_r_feng_kuang_xing_qi_si_tckland_skill_info": "默认今天是星期四，玩家可以丢弃各色手牌来获得，♥香辣鸡腿堡，出杀伤害+1；♦吮指原味鸡，牌堆顶摸一张牌；♣老北京鸡肉卷，出杀要两张闪；♠奥尔良鸡腿堡，好吃。",
+    "tck_card_ao_zhan": "鏖战",
+    "tck_card_ao_zhan_info": "可将此牌当普通杀或普通闪使用。",
+    "tck_card_ao_zhan_skill": "鏖战",
+    "tck_card_ao_zhan_skill_info": "将一张鏖战当普通杀或普通闪使用。",
     "tck_land_r_xia_ye": "夏夜",
     "tck_land_r_xia_ye_info": "场地效果：默认现在时间为21点。在夜晚所有无属性伤害攻击前判定，若为1-4则命中攻击对象左手边的玩家，若为5-8则命中指定玩家，若为9-Q则命中攻击对象右手边玩家，若为K则命中自己。",
     "tck_land_r_xia_ye_tckland_skill": "夏夜",
@@ -1873,8 +2070,8 @@ export const cards = {
     "tck_wu_zhong_sheng_you_ex_info": "摸2张牌，若你手中有“无”，则你弃置之改为摸4张牌。",
     "tck_she_jin_qiu_yuan": "舍近求远",
     "tck_she_jin_qiu_yuan_info": "你可弃自己1张牌，然后获得一个人一张牌。",
-    "tck_wu": "无",
-    "tck_wu_info": "就是来卡你手的。",
+    "tck_card_wu": "无",
+    "tck_card_wu_info": "就是来卡你手的。",
     "tck_qi_xiao": "汽校",
     "tck_qi_xiao_info": "场地效果：<br/>装武器扣10分（危险）<br/>出杀扣5分（打架）<br/>出桃扣3分（外卖）<br/>喝酒扣10分（DDDD）<br/>扣满40分退学（濒死）",
     "tck_qi_xiao_tckland_skill": "汽校",
@@ -2000,6 +2197,9 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['diamond', 11, 'tck_card_ao_zhan'],
+    ['heart', 1, 'tck_card_ao_zhan'],
+    ['spade', 13, 'tck_card_ao_zhan'],
     ['club', 6, 'shan', 'tck_duo'],
     ['club', 6, 'shan', 'tck_duo'],
     ['diamond', 2, 'shan', 'tck_duo'],
@@ -2044,8 +2244,8 @@ export const cards = {
     ['spade', 8, 'tck_po_fu_chen_zhou'],
     ['heart', 13, 'tck_wu_zhong_sheng_you_ex'],
     ['spade', 11, 'tck_she_jin_qiu_yuan'],
-    ['club', 7, 'tck_wu'],
-    ['spade', 11, 'tck_wu'],
+    ['club', 7, 'tck_card_wu'],
+    ['spade', 11, 'tck_card_wu'],
     ['spade', 5, 'tck_qi_xiao'],
     ['spade', 8, 'tck_mang_zhong_chu_cuo'],
     ['spade', 4, 'tck_shou_zha_hu_huan'],

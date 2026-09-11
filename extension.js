@@ -215,6 +215,9 @@ export default function () {
             }
 
             natureConfig.resetLib()
+
+            // 添加全局技能
+            game.addGlobalSkill("tck_card_ao_zhan_skill")
         },
         precontent: () => {
             groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))

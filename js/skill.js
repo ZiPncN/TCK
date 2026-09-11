@@ -3254,8 +3254,169 @@ export const skills = {
         }
       }
     },
+    "tck_r_niu_lai": {
+      trigger: {
+        global: "phaseBefore",
+        player: "enterGame"
+      },
+      locked: true,
+      filter(event, player) {
+        return game.hasPlayer(current => current != player &&
+          player.differentSexFrom(current)) && (event.name != "phase" || game.phaseNumber == 0);
+      },
+      async cost(event, trigger, player) {
+        event.result = await player
+          .chooseTarget("请选择【牛来】的目标", lib.translate.tck_r_niu_lai_info, true, function (card, player, target) {
+            return target != player &&
+              (!player.storage.tck_r_niu_lai || !player.storage.tck_r_niu_lai != target) &&
+              player.differentSexFrom(target)
+          })
+          .set("ai", function (target) {
+            let att = get.attitude(_status.event.player, target);
+            if (att > 0) {
+              return att + 1;
+            }
+            if (att == 0) {
+              return Math.random();
+            }
+            return att;
+          })
+          .set("animate", false)
+          .forResult();
+      },
+      // logLine: false,
+      async content(event, trigger, player) {
+        let [target] = event.targets
+        player.storage.tck_r_niu_lai = target
+        const func = async (player, target) => {
+          target.storage.tck_r_niu_lai_mark ??= []
+          target.storage.tck_r_niu_lai_mark.add(player)
+          target.storage.tck_r_niu_lai_mark.sortBySeat()
+          target.markSkill("tck_r_niu_lai_mark", null, null, true)
+          await target.addSkill("tck_r_niu_lai_nuqi")
+          target.storage.tck_r_niu_lai_nuqi.son = player
+          player.storage.tck_r_niu_lai = target
+        }
+        if (event.isMine()) {
+          func(player, target)
+        } else if (player.isOnline2()) {
+          player.send(func, player, target);
+        }
+      },
+      group: ["tck_r_niu_lai_effect1", "tck_r_niu_lai_effect2"],
+      subSkill: {
+        "mark": {
+          sub: true,
+          sourceSkill: "tck_r_niu_lai",
+          mark: true,
+          marktext: "妈",
+          intro: {
+            name: "“妈妈”",
+            content: "$每受到一点伤害，你怒气值+1",
+          },
+        },
+        "nuqi": {
+          init(player) {
+            player.storage.tck_r_niu_lai_nuqi = {
+              son: undefined,
+              num: 0
+            }
+          },
+          sub: true,
+          sourceSkill: "tck_r_niu_lai",
+          mark: true,
+          marktext: "怒气",
+          intro: {
+            name: "怒气",
+            content(storage) {
+              return "当前有" + storage.num + "点怒气值"
+            },
+          },
+          trigger: {
+            source: "damageBegin"
+          },
+          filter(event, player) {
+            return player.storage.tck_r_niu_lai_nuqi.num > 0
+          },
+          async content(event, trigger, player) {
+            trigger.num += player.storage.tck_r_niu_lai_nuqi.num
+            player.storage.tck_r_niu_lai_nuqi.num = 0
+          }
+        },
+        "effect1": {
+          sub: true,
+          sourceSkill: "tck_r_niu_lai",
+          forced: true,
+          trigger: {
+            player: "damageEnd"
+          },
+          filter(event, player) {
+            return !!player.storage.tck_r_niu_lai && player.storage.tck_r_niu_lai.isAlive()
+          },
+          async content(event, trigger, player) {
+            player.storage.tck_r_niu_lai.storage.tck_r_niu_lai_nuqi.num += trigger.num
+          }
+        },
+        "effect2": {
+          sub: true,
+          sourceSkill: "tck_r_niu_lai",
+          mod: {
+            targetEnabled(card, player, target) {
+              if (game.hasPlayer(p => p == target.storage.tck_r_niu_lai) &&
+                game.hasPlayer(p => p != target && p != target.storage.tck_r_niu_lai) &&
+                !(player == target || player == target.storage.tck_r_niu_lai)) {
+                return false
+              }
+
+            },
+          },
+        }
+      }
+    },
+    "tck_r_lin_mo": {
+      enable: "phaseUse",
+      round: 1,
+      filter(event, player) {
+        return game.hasPlayer(p => p == player.storage.tck_r_niu_lai)
+      },
+      async content(event, trigger, player) {
+        const mama = player.storage.tck_r_niu_lai
+        let res = await player.chooseControl(mama.getOriginalSkills().filter(skill => skill != player.storage.tck_r_lin_mo))
+          .set('prompt', '请选择一个技能学会')
+          .forResult()
+        await player.addTempSkill(res.control, { global: "roundEnd" })
+        player.storage.tck_r_lin_mo = res.control
+      }
+    },
+    "tck_r_yin_cang": {
+      trigger: {
+        player: ["phaseDiscardBefore"],
+      },
+      forced: true,
+      content() {
+        trigger.cancel()
+      },
+    },
+    "tck_r_feng_kuang": {
+      forced: true,
+      trigger: {
+        global: "gameStart"
+      },
+      async content(event, trigger, player) {
+        const card = game.createCard('tck_land_r_feng_kuang_xing_qi_si')
+        await player.useCard(card)
+      }
+    },
   },
   translate: {
+    "tck_r_niu_lai": "牛来",
+    "tck_r_niu_lai_info": "游戏开始时，选择一名异性角色为[妈妈]，若场上存在其他角色，除你和[妈妈]外的单体角色技能或牌无法指定[婺城雙傑]为目标。[妈妈]每受到一点伤害，怒气值+1，下一次伤害增加怒气值数量的值（可叠加）。",
+    "tck_r_lin_mo": "临摹",
+    "tck_r_lin_mo_info": "每轮限一次，学会[妈妈]的任意一个技能持续到本轮结束，不能连续临摹同一个技能。",
+    "tck_r_yin_cang": "隐藏",
+    "tck_r_yin_cang_info": "天意的大手发力了，该角色没有弃牌阶段，喜欢吃奥尔良鸡腿堡，或许配合场地会发挥奇效。",
+    "tck_r_feng_kuang": "疯狂",
+    "tck_r_feng_kuang_info": "场地魔法疯狂星期四，默认今天是星期四，玩家可以丢弃各色手牌来获得，♥香辣鸡腿堡，出杀伤害+1；♦吮指原味鸡，牌堆顶摸一张牌；♣老北京鸡肉卷，出杀要两张闪；♠奥尔良鸡腿堡，好吃。拥有[妈妈]标记的玩家可以帮[婺城双杰]代购，且妈妈怒气值+1。",
     "tck_r_an_mian": "安眠",
     "tck_r_an_mian_info": "若场地为夏夜时可以发动，所有玩家可以选择本轮是否睡觉，睡觉的玩家摸两张牌结束回合，不需要丢弃手牌，此轮也无法出牌。",
     "tck_r_wu_you": "无忧",

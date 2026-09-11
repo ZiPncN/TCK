@@ -115,6 +115,7 @@ const natureConfig = {
               break
           }
         }
+        trigger.nature = undefined
       }
     }
     // ----------------------- 杀属性 end --------------------------
@@ -125,7 +126,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       popup: false,
-      trigger: { player: 'useCard' },
+      trigger: { player: ['useCard', 'respond'] },
       filter(event, player) {
         return get.nature(event.card) == 'tck_duo';
       },

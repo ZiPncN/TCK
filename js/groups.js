@@ -21,7 +21,7 @@ const groups = [
   { id: "tck_long", short: "龙", name: "龙", config: { color: "", image: "", } },
   { id: "tck_tian", short: "天", name: "天", config: { color: "", image: "", } },
   { id: "tck_niu", short: "牛", name: "牛", config: { color: "", image: "", } },
-  { id: "tck_wu", short: "婺", name: "婺", config: { color: "", image: "", } },
+  { id: "tck_group_wu", short: "婺", name: "婺", config: { color: "", image: "", } },
 ]
 
 export default groups
