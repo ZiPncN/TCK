@@ -1,5 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js"
-const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan']
+const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan', 'tck_zhan']
 const natureConfig = {
   shaNatures: [
     // 光杀
@@ -28,7 +28,6 @@ const natureConfig = {
         color: [255, 239, 64],//使用属性杀指定目标的指示线卡牌字体颜色
       },
     ],
-
     // 流星雨狗杀
     [
       'tck_lxy_gou',//添加的属性id
@@ -38,16 +37,24 @@ const natureConfig = {
         background: "extension/TCK/imgs/cards/tck_lxy_gou_sha.png",//这张属性杀的图片
       }
     ],
-
     // 砍
     [
       'tck_kan',//添加的属性id
       '砍',//添加的属性翻译
       {
         linked: false,//是否触发铁索
-        background: "extension/TCK/imgs/cards/sha_tck_kan.png",//这张属性杀的图片
+        background: "extension/TCK/imgs/cards/tck_kan_sha.png",//这张属性杀的图片
       }
-    ]
+    ],
+    // 斩
+    [
+      'tck_zhan',//添加的属性id
+      '斩',//添加的属性翻译
+      {
+        linked: false,//是否触发铁索
+        background: "extension/TCK/imgs/cards/sha_tck_zhan.png",//这张属性杀的图片
+      }
+    ],
   ],
   // 设置自定义属性的效果
   skills: function () {
@@ -118,6 +125,25 @@ const natureConfig = {
         trigger.nature = undefined
       }
     }
+    lib.skill['_tck_zhan_effect'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      trigger: { source: 'damageBegin' },
+      filter(event, player) {
+        return event.hasNature('tck_zhan')
+      },
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.suit(card) == 'heart') return 1
+          return -1
+        }).forResult()
+        if (get.suit(res) == 'heart') {
+          trigger.num = 0
+          await player.loseMaxHp(1)
+        }
+        trigger.nature = undefined
+      }
+    }
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------
@@ -156,17 +182,26 @@ const natureConfig = {
     lib.translate['_tck_light_effect_info'] = '造成伤害可进行一次判定，若为红色，此伤害+1'
     lib.translate['sha_nature_tck_light_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点光属性伤害。'
     lib.translate['tck_light_sha'] = '光杀'
+    lib.translate['tck_light_sha_info'] = lib.translate['sha_nature_tck_light_info']
     lib.translate['tck_light_sha2'] = '光杀'
     lib.translate['_tck_lxy_gou_effect'] = '流星雨·狗'
     lib.translate['_tck_lxy_gou_effect_info'] = '此杀命中得不屈'
     lib.translate['sha_nature_tck_lxy_gou_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点流星雨·狗属性伤害，此杀命中得不屈。'
     lib.translate['tck_lxy_gou_sha'] = '流星雨·狗杀'
+    lib.translate['tck_lxy_gou_sha_info'] = lib.translate['sha_nature_tck_lxy_gou_info']
     lib.translate['tck_lxy_gou_sha2'] = '流星雨·狗杀'
     lib.translate['_tck_kan_effect'] = '砍'
     lib.translate['_tck_kan_effect_info'] = '砍命中后让对手选择1项：<br/>①弃2张牌。<br/>②额外扣1滴血。';
     lib.translate['sha_nature_tck_kan_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点伤害，砍命中后让对手选择1项：①弃2张牌。②额外扣1滴血。';
     lib.translate['tck_kan_sha'] = '砍'
+    lib.translate['tck_kan_sha_info'] = lib.translate['sha_nature_tck_kan_info']
     lib.translate['tck_kan_sha2'] = '砍'
+    lib.translate['_tck_zhan_effect'] = '斩'
+    lib.translate['_tck_zhan_effect_info'] = '同杀，命中后可选，判定，若为♥，则改为减1点体力上限。';
+    lib.translate['sha_nature_tck_zhan_info'] = '出牌阶段，对你攻击范围内的一名角色使用。同杀，命中后可选，判定，若为♥，则改为减1点体力上限。';
+    lib.translate['tck_zhan_sha'] = '斩'
+    lib.translate['tck_zhan_sha_info'] = lib.translate['sha_nature_tck_zhan_info']
+    lib.translate['tck_zhan_sha2'] = '斩'
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------

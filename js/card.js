@@ -1091,10 +1091,12 @@ export const cards = {
         return player.countCards("h") > 0
       },
       async content(event, trigger, player) {
-        let res
+        let res = { bool: false }
         if (!!player.storage.tck_r_niu_lai) {
           // 让“妈妈”是否弃牌
-          res = await player.storage.tck_r_niu_lai.chooseToDiscard(`是否弃置一张手牌，为${get.translation(player)}买单`, "h", 1).forResult()
+          const mama = player.storage.tck_r_niu_lai
+          res = await mama.chooseToDiscard(`是否弃置一张手牌，为${get.translation(player)}买单`, "h", 1).forResult()
+          mama.storage.tck_r_niu_lai_nuqi.num++
         }
         if (!res.bool) {
           res = await player.chooseToDiscard("h", 1).forResult()
@@ -1109,7 +1111,9 @@ export const cards = {
           }
           await player.addMark('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart', 1)
         } else if (suit == 'spade') {   // ♠
+          await game.delay(1)
           await player.chat('好吃！')
+          await game.delay(2)
         } else if (suit == 'club') {    // ♣
           if (!player.hasSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_club')) {
             await player.addTempSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_club', { player: "phaseJieshuAfter" })
@@ -2197,6 +2201,8 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['diamond', 3, 'sha', 'tck_zhan'],
+    ['diamond', 10, 'sha', 'tck_zhan'],
     ['diamond', 11, 'tck_card_ao_zhan'],
     ['heart', 1, 'tck_card_ao_zhan'],
     ['spade', 13, 'tck_card_ao_zhan'],
@@ -2398,6 +2404,8 @@ export const cards = {
     ['heart', 8, 'sha'],
     ['heart', 10, 'sha'],
     ['heart', 11, 'sha'],
+    ['club', 3, 'sha', 'stab'],
+    ['spade', 3, 'sha', 'stab'],
     ['diamond', 6, 'sha', 'fire'],
     ['diamond', 7, 'sha', 'fire'],
     ['heart', 6, 'sha', 'fire'],
