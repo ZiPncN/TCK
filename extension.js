@@ -1,9 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 import characters from "./js/character.js"
 import skills from "./js/skill.js"
-import cards from "./js/card.js"
-import ex_cards from "./js/card_ex.js"
-import r_cards from "./js/card_r.js"
+import cards from "./js/card/card.js"
+import ex_cards from "./js/card/card_ex.js"
+import r_cards from "./js/card/card_r.js"
+import lxy_cards from "./js/card/card_lxy.js"
 import groups from "./js/groups.js"
 import natureConfig from "./js/natures.js"
 export const type = "extension";
@@ -213,12 +214,15 @@ export default function () {
             if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_R')) {
                 lib.card.list.addArray(r_cards.list);
             }
+            if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_LXY')) {
+                lib.card.list.addArray(lxy_cards.list);
+            }
+
 
             natureConfig.resetLib()
 
             // 添加全局技能
             game.addGlobalSkill("tck_card_ao_zhan_skill")
-            game.addGlobalSkill("tck_card_she_skill")
         },
         precontent: () => {
             groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))
@@ -236,7 +240,7 @@ export default function () {
                 }
             })
 
-            //添加卡牌
+            //--------------------- 添加卡牌 begin ---------------------
             game.import('card', function () {
                 return {
                     name: "TCK",
@@ -278,6 +282,21 @@ export default function () {
             if (!lib.config.cards.includes('TCK_R')) lib.config.cards.remove('TCK_R');
             lib.translate['TCK_R'] = 'TCK_R';
             if (!lib.config.TCK_R) game.saveConfig('cards', lib.config.cards.concat('TCK_R')), game.saveConfig('TCK_R', true);
+
+            game.import('card', function () {
+                return {
+                    name: "TCK_LXY",
+                    connect: true,
+                    translate: { ...lxy_cards.translate },
+                    card: { ...lxy_cards.card },
+                    skill: { ...lxy_cards.skill },
+                }
+            })
+            lib.config.all.cards.push('TCK_LXY');
+            if (!lib.config.cards.includes('TCK_LXY')) lib.config.cards.remove('TCK_LXY');
+            lib.translate['TCK_LXY'] = 'TCK_LXY';
+            if (!lib.config.TCK_LXY) game.saveConfig('cards', lib.config.cards.concat('TCK_LXY')), game.saveConfig('TCK_LXY', true);
+            //---------------------- 添加卡牌 end ----------------------
 
             //添加自定义属性
             natureConfig.skills()

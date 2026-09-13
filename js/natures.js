@@ -201,6 +201,18 @@ const natureConfig = {
         trigger.nature = 'thunder'
       }
     }
+    lib.skill['_tck_she_effect'] = {
+      ruleSkill: true,
+      mod: {
+        targetInRange(card, player, target, now) {
+          if (get.name(card) == 'sha' &&
+            !!get.nature(card) &&
+            get.nature(card).includes("tck_she")) {
+            return true
+          }
+        }
+      },
+    }
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------
@@ -247,6 +259,33 @@ const natureConfig = {
         await player.damage(1, 'thunder', 'nosource')
       }
     }
+    lib.skill['_tck_bi'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      popup: false,
+      trigger: { player: ['useCardEnd', 'respondEnd'] },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_bi' && !player.hasSkill('tck_bi_effect')
+      },
+      async content(event, trigger, player) {
+        await player.addTempSkill('tck_bi_effect', { global: "roundEnd" })
+      }
+    }
+    lib.skill['tck_bi_effect'] = {
+      mark: true,
+      marktext: '避',
+      intro: {
+        name: '避',
+        content: '本轮与其他人距离+1'
+      },
+      cardSkill: true,
+      mod: {
+        globalTo(from, to, distance) {
+          return distance + 1;
+        },
+      },
+    }
     // ----------------------- 闪属性 end -------------------------- 
 
     // ---------------------- 酒属性 begin -------------------------
@@ -257,10 +296,43 @@ const natureConfig = {
       popup: false,
       trigger: { player: 'useCardEnd' },
       filter(event, player) {
-        return get.nature(event.card) == 'tck_tian_xian';
+        return get.nature(event.card) == 'tck_tian_xian' && !player.isDying()
       },
       async content(event, trigger, player) {
         await player.recover(1)
+      }
+    }
+    lib.skill['_tck_lie'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      popup: false,
+      trigger: { player: 'useCardEnd' },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_lie' && !player.hasSkill('tck_lie_effect') && !player.isDying()
+      },
+      async content(event, trigger, player) {
+        player.storage.jiu += 1
+        await player.addTempSkill('tck_lie_effect', { player: "phaseJieshuAfter" })
+      }
+    }
+    lib.skill['tck_lie_effect'] = {
+      forced: true,
+      logTarget: 'player',
+      trigger: { player: 'useCard' },
+      filter(event, player) {
+        return get.name(event.card) == 'sha'
+      },
+      async content(event, trigger, player) {
+        let res = await player.judge(card => {
+          if (get.color(card) == 'black') return -1
+          return 1
+        }).forResult()
+        if (get.color(res) == 'black') {
+          const target = trigger.stocktargets[0]
+          trigger.excluded.push(target)
+        }
+        await player.removeSkill('tck_lie_effect')
       }
     }
     // ----------------------- 酒属性 end -------------------------- 
@@ -319,11 +391,16 @@ const natureConfig = {
     lib.translate['tck_shan_sha_shan_info'] = '可以抵御一张杀后视为对伤害来源使用一张杀。'
     lib.translate['tck_shan_dian'] = '闪电'
     lib.translate['tck_shan_dian_shan_info'] = '同闪，结算后受到一点雷电伤害。'
+    lib.translate['tck_bi'] = '避'
+    lib.translate['tck_bi_shan_info'] = '同闪，结算后你本轮与其他人距离+1。'
     // ----------------------- 闪属性 end --------------------------  
 
     // ---------------------- 酒属性 begin -------------------------
     lib.translate['tck_tian_xian'] = '天仙酒'
     lib.translate['tck_tian_xian_jiu_info'] = '同酒，使用后回复一点体力。'
+    lib.translate['tck_lie'] = '烈酒'
+    lib.translate['tck_lie_effect'] = '烈酒'
+    lib.translate['tck_lie_jiu_info'] = '同酒<br/>下一张杀伤害+2，<br/>下一张杀使用时判定，若为黑色，该杀失效。<br/>（效果持续至回合结束）'
     // ----------------------- 酒属性 end --------------------------
   },
   // 重设属性，参考金庸群侠传扩展的代码
@@ -390,6 +467,9 @@ const natureConfig = {
     }
     if (!lib.cardPack.TCK) {
       lib.cardPack.TCK = []
+    }
+    if (!lib.cardPack.TCK_LXY) {
+      lib.cardPack.TCK_LXY = []
     }
     if (!lib.element.card.inits) lib.element.card.inits = []
     lib.element.card.setMark = function (skill, player) {
@@ -467,8 +547,11 @@ const natureConfig = {
       }
       lib.card[nature + 'damage']['ai']['tag'][nature + 'Damage'] = 1
       lib.translate[nature] = translation
-      lib.cardPack.TCK.add(nature + '_sha')
-
+      if (nature.startsWith('tck_lxy')) {
+        lib.cardPack.TCK_LXY.add(nature + '_sha')
+      } else {
+        lib.cardPack.TCK.add(nature + '_sha')
+      }
       // lib.translate[nature + '_sha'] = translation + '杀'
       lib.card[nature + '_sha'] = {
         type: 'basic',
@@ -489,8 +572,8 @@ const natureConfig = {
     // ----------------------- 杀属性 end --------------------------  
 
     // ---------------------- 闪属性 begin -------------------------
-    lib.card.shan['tck_nature'] = ['tck_duo', 'tck_shan_sha', 'tck_shan_dian']
-    lib.tck_nature_shan = ['tck_duo_shan', 'tck_shan_sha_shan', 'tck_shan_dian_shan']
+    lib.card.shan['tck_nature'] = ['tck_duo', 'tck_shan_sha', 'tck_shan_dian', 'tck_bi']
+    lib.tck_nature_shan = ['tck_duo_shan', 'tck_shan_sha_shan', 'tck_shan_dian_shan', 'tck_bi_shan']
     // 闪
     for (var i of lib.card.shan['tck_nature']) {
       lib.translate[i + "_shan"] = lib.translate[i];
@@ -521,8 +604,8 @@ const natureConfig = {
     // ----------------------- 闪属性 end --------------------------  
 
     // ---------------------- 酒属性 begin -------------------------
-    lib.card.jiu['tck_nature'] = ['tck_tian_xian']
-    lib.tck_nature_jiu = ['tck_tian_xian_jiu']
+    lib.card.jiu['tck_nature'] = ['tck_tian_xian', 'tck_lie']
+    lib.tck_nature_jiu = ['tck_tian_xian_jiu', 'tck_lie_jiu']
     // 酒
     for (var i of lib.card.jiu['tck_nature']) {
       lib.translate[i + "_jiu"] = lib.translate[i];

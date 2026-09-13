@@ -1,4 +1,4 @@
-import { lib, game, get, _status, ui } from "../../../noname.js";
+import { lib, game, get, _status, ui } from "../../../../noname.js";
 export const r_cards = {
   card: {
     "tck_ji_bing_jian": {

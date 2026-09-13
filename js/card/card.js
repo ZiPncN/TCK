@@ -1,4 +1,4 @@
-import { lib, game, get, _status, ui } from "../../../noname.js";
+import { lib, game, get, _status, ui } from "../../../../noname.js";
 export const cards = {
   card: {
     "tck_land_r_feng_kuang_xing_qi_si": {
@@ -373,38 +373,6 @@ export const cards = {
         if (!cards.some(card => get.name(card) == "shan")) {
           await event.target.draw(3)
         }
-      }
-    },
-    "tck_liu_xing_cha_hua": {
-      image: "ext:TCK/imgs/cards/tck_liu_xing_cha_hua.png",
-      fullskin: true,
-      type: "trick",   //锦囊牌
-      enable: true,   //可以用
-      selectTarget: -1,
-      toSelf: true,    //是否自己使用
-      //只能对自己用
-      filterTarget(card, player, target) {
-        return target == player
-      },
-      async content(event, trigger, player) {
-        await event.target.recover(1)
-        await event.target.gainMaxHp(1)
-        let res = await event.target.judge((card) => {
-          if (card.color == "red") return 1
-          return -1
-        }).forResult()
-        if (res.color == 'red') await event.target.recover(1)
-      }
-    },
-    "tck_liu_xing_yu_de_gong_yuan": {
-      image: "ext:TCK/imgs/cards/tck_liu_xing_yu_de_gong_yuan.png",
-      fullskin: true,
-      type: "land",   //场地牌
-      enable: true,
-      notarget: true, //无目标
-      async content(event, trigger, player) {
-        player.changeTckLand("tck_liu_xing_yu_de_gong_yuan")
-        game.cardsGotoSpecial(event.card.cards, "toTckLand")
       }
     },
     "tck_chun_ri_tian_lai_le": {
@@ -1088,9 +1056,96 @@ export const cards = {
       subtype: "equip2",           // 防具
       skills: ["tck_card_jue_zhi_tong_skill"],  // 装备技能
     },
+    "tck_land_hong_ping_guo": {
+      image: "ext:TCK/imgs/cards/tck_land_hong_ping_guo.png",
+      fullskin: true,
+      type: "land",   //场地牌
+      enable: true,
+      notarget: true, //无目标
+      async content(event, trigger, player) {
+        player.changeTckLand("tck_land_hong_ping_guo")
+        game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
+    "tck_card_suo_lian_jia": {
+      image: "ext:TCK/imgs/cards/tck_card_suo_lian_jia.png",
+      fullskin: true,
+      type: "equip",               // 装备牌
+      subtype: "equip2",           // 防具
+      skills: ["tck_card_suo_lian_jia_skill1", "tck_card_suo_lian_jia_skill2"],  // 装备技能
+      onEquip() {
+        if (player.isLinked() === false) {
+          player.link()
+        }
+      },
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_card_suo_lian_jia_skill1": {
+      equipSkill: true,
+      trigger: {
+        player: "linkBefore",
+      },
+      forced: true,
+      filter(event, player) {
+        if (event.name == "link") {
+          return player.isLinked();
+        }
+        return !player.isLinked();
+      },
+      async content(event, trigger, player) {
+        if (trigger.name != "link") {
+          await player.link(true)
+        } else {
+          trigger.cancel()
+        }
+      },
+      ai: {
+        noLink: true,
+      },
+    },
+    "tck_card_suo_lian_jia_skill2": {
+      equipSkill: true,
+      trigger: {
+        player: "damageBegin",
+      },
+      forced: true,
+      filter(event, player) {
+        return event.hasNature()
+      },
+      async content(event, trigger, player) {
+        await trigger.cancel()
+      },
+    },
+    "tck_land_hong_ping_guo_tckland_skill": {
+      ruleSkill: true,
+      forced: true,
+      trigger: {
+        player: "phaseZhunbeiBegin"
+      },
+      async content(event, trigger, player) {
+        let res = await player.judge(
+          card => {
+            if (get.color(card) == "red") return -1
+            return 1
+          }
+        ).forResult();
+        if (get.color(res) == "red") {
+          await player.addMark('tck_land_hong_ping_guo', 1)
+        }
+        // 3个苹果直接濒死并且清空苹果
+        if (player.countMark('tck_land_hong_ping_guo') >= 3) {
+          await player.loseHp(player.hp)
+          await player.clearMark('tck_land_hong_ping_guo')
+        }
+      }
+    },
+    "tck_land_hong_ping_guo": {
+      intro: {
+        content: "当前有#个苹果"
+      }
+    },
     "tck_card_jue_zhi_tong_skill": {
       equipSkill: true,
       locked: true,
@@ -1110,18 +1165,6 @@ export const cards = {
           }
         },
       },
-    },
-    "tck_card_she_skill": {
-      cardSkill: true,
-      mod: {
-        targetInRange(card, player, target, now) {
-          if (get.name(card) == 'sha' &&
-            !!get.nature(card) &&
-            get.nature(card).includes("tck_she")) {
-            return true
-          }
-        },
-      }
     },
     "tck_land_r_feng_kuang_xing_qi_si_tckland_skill": {
       ruleSkill: true,
@@ -1834,40 +1877,6 @@ export const cards = {
         await player.recover(1)
       }
     },
-    "tck_liu_xing_yu_de_gong_yuan_tckland_skill": {
-      ruleSkill: true,
-      trigger: {
-        player: "phaseZhunbeiBegin"
-      },
-      forced: true,
-      async content(event, trigger, player) {
-        let res = await player.judge((card) => {
-          if (2 <= get.number(card) && get.number(card) <= 9) {
-            if (get.suit(card) == 'diamond') return -1
-            if (get.suit(card) == 'heart') return -2
-            if (get.suit(card) == 'spade' || get.suit(card) == 'club') return 1
-          }
-          return 0
-        }).forResult()
-        if (2 <= get.number(res) && get.number(res) <= 9) {
-          switch (get.suit(res)) {
-            case 'diamond':
-              let card = await player.chooseCard("he", true, 2).set('prompt', '请弃置2张牌').forResult()
-              await player.discard(card.cards)
-              break;
-            case 'heart':
-              await player.turnOver()
-              break;
-            case 'spade':
-              await player.draw(2)
-              break;
-            case 'club':
-              await player.recover(1)
-              break;
-          }
-        }
-      }
-    },
     "tck_yue_mian_tckland_skill": {
       ruleSkill: true,
       trigger: {
@@ -2040,6 +2049,14 @@ export const cards = {
     },
   },
   translate: {
+    "tck_card_suo_lian_jia": "锁链甲",
+    "tck_card_suo_lian_jia_info": "·你永远为横置状态。<br/>·你无视属性伤害。",
+    "tck_card_suo_lian_jia_skill1": "锁链甲",
+    "tck_card_suo_lian_jia_skill2": "锁链甲",
+    "tck_land_hong_ping_guo": "红苹果",
+    "tck_land_hong_ping_guo_info": "场地效果：判红色得苹果，获得3个苹果得感冒直接濒死。",
+    "tck_land_hong_ping_guo_tckland_skill": "红苹果",
+    "tck_land_hong_ping_guo_tckland_skill_info": "判红色得苹果，获得3个苹果得感冒直接濒死。",
     "tck_card_jue_zhi_tong": "觉之瞳",
     "tck_card_jue_zhi_tong_info": "对手全程明牌，对手无懈可击无效。",
     "tck_card_jue_zhi_tong_skill": "觉之瞳",
@@ -2172,12 +2189,6 @@ export const cards = {
     "tck_chun_ri_tian_lai_le_info": "场地效果：回合开始体力血量+1。",
     "tck_chun_ri_tian_lai_le_tckland_skill": "春日天来了",
     "tck_chun_ri_tian_lai_le_tckland_skill_info": "回合开始体力血量+1。",
-    "tck_liu_xing_yu_de_gong_yuan": "流星雨的公园",
-    "tck_liu_xing_yu_de_gong_yuan_info": "场地效果：黑桃2~9摸2张，红桃2~9翻面，方块2~9弃2张，梅花2~9回复一点体力。",
-    "tck_liu_xing_yu_de_gong_yuan_tckland_skill": "流星雨的公园",
-    "tck_liu_xing_yu_de_gong_yuan_tckland_skill_info": "黑桃2~9摸2张，红桃2~9翻面，方块2~9弃2张，梅花2~9回复一点体力。",
-    "tck_liu_xing_cha_hua": "流星茶花",
-    "tck_liu_xing_cha_hua_info": "回复1点体力，回复1点体力上限，判红色再回1点体力。",
     "tck_huang_tian_dang_li": "黄天当立",
     "tck_huang_tian_dang_li_info": "你展示手牌，若没闪，则摸3张牌。",
     "tck_plus_four_hp": "\t",
@@ -2252,6 +2263,16 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['heart', 6, 'tck_card_suo_lian_jia'],
+    ['club', 9, 'jiu', 'tck_lie'],
+    ['spade', 9, 'jiu', 'tck_lie'],
+    ['spade', 8, 'jiu', 'tck_lie'],
+    ['heart', 5, 'tck_land_hong_ping_guo'],
+    ['heart', 11, 'shan', 'tck_bi'],
+    ['club', 6, 'shan', 'tck_bi'],
+    ['diamond', 11, 'shan', 'tck_bi'],
+    ['diamond', 7, 'shan', 'tck_bi'],
+    ['diamond', 6, 'shan', 'tck_bi'],
     ['heart', 6, 'tck_card_jue_zhi_tong'],
     ['heart', 9, 'jiu', 'tck_tian_xian'],
     ['spade', 10, 'shan', 'tck_shan_dian'],
@@ -2336,7 +2357,6 @@ export const cards = {
     ['club', 1, 'tck_pi'],
     ['spade', 13, 'tck_shi'],
     ['heart', 5, 'tck_chun_ri_tian_lai_le'],
-    ['diamond', 4, 'sha', 'tck_lxy_gou'],
     ['spade', 13, 'tck_tou_xiang'],
     ['spade', 5, 'tck_chang_qu_zhi_ru'],
     ['diamond', 7, 'tck_tian_jiang_de_bao_zha'],
@@ -2365,8 +2385,6 @@ export const cards = {
     ['heart', 12, "tck_bu_tian_shi"],
     ['heart', 9, "tck_plus_four_hp"],
     ['spade', 6, "tck_huang_tian_dang_li"],
-    ['heart', 4, "tck_liu_xing_cha_hua"],
-    ['diamond', 7, "tck_liu_xing_yu_de_gong_yuan"],
     ['diamond', 4, "tck_yu_hang_fu"],
     ['spade', 7, "tck_yu_hang_fu"],
     ['spade', 7, "tck_dong_xue"],

@@ -1,4 +1,4 @@
-import { lib, game, get, _status, ui } from "../../../noname.js";
+import { lib, game, get, _status, ui } from "../../../../noname.js";
 export const ex_cards = {
   card: {
     "tck_tou_zi": {
@@ -30,7 +30,7 @@ export const ex_cards = {
       }, */
       /*  onLose() {          // 失去装备时
        },
-       onGain() {          // 获得装备时
+       onEquip() {          // 获得装备时
        }, */
     },
     "tck_bian_ya_qi_wq": {
