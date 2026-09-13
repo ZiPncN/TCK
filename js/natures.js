@@ -309,7 +309,7 @@ const natureConfig = {
       popup: false,
       trigger: { player: 'useCardEnd' },
       filter(event, player) {
-        return get.nature(event.card) == 'tck_lie' && !player.hasSkill('tck_lie_effect') && !player.isDying()
+        return get.nature(event.card) == 'tck_lie' && !player.isDying()
       },
       async content(event, trigger, player) {
         player.storage.jiu += 1
@@ -704,7 +704,7 @@ const natureConfig = {
 
 
     // TODO 牌结算后的逻辑，暂时不用
-    lib.skill['_tck_nature_use'] = {
+    /* lib.skill['_tck_nature_use'] = {
       ai: {
         // skillTagFilter: function (player, tag, target) {
         //   const count = player.countCards('hs', function (card) {
@@ -858,7 +858,7 @@ const natureConfig = {
         const info = lib.skill['_tck_nature_use'][cardName];
         if (info && info[cardNature]) info[cardNature](evt, player, evt.card, evt.targets, triggerName);
       },
-    }
+    } */
 
   }
 }
