@@ -1,5 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js"
-const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan', 'tck_zhan']
+const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan', 'tck_zhan', 'tck_she', 'tck_she_fire', 'tck_she_thunder']
 const natureConfig = {
   shaNatures: [
     // 光杀
@@ -52,9 +52,36 @@ const natureConfig = {
       '斩',//添加的属性翻译
       {
         linked: false,//是否触发铁索
-        background: "extension/TCK/imgs/cards/sha_tck_zhan.png",//这张属性杀的图片
+        background: "extension/TCK/imgs/cards/tck_zhan_sha.png",//这张属性杀的图片
       }
     ],
+    // 射
+    [
+      'tck_she',//添加的属性id
+      '射',//添加的属性翻译
+      {
+        linked: false,//是否触发铁索
+        background: "extension/TCK/imgs/cards/tck_she_sha.png",//这张属性杀的图片
+      }
+    ],
+    // 火射
+    [
+      'tck_she_fire',//添加的属性id
+      '火射',//添加的属性翻译
+      {
+        linked: false,//是否触发铁索
+        background: "extension/TCK/imgs/cards/tck_she_fire_sha.png",//这张属性杀的图片
+      }
+    ],
+    // 雷射
+    [
+      'tck_she_thunder',//添加的属性id
+      '雷射',//添加的属性翻译
+      {
+        linked: false,//是否触发铁索
+        background: "extension/TCK/imgs/cards/tck_she_thunder_sha.png",//这张属性杀的图片
+      }
+    ]
   ],
   // 设置自定义属性的效果
   skills: function () {
@@ -144,6 +171,36 @@ const natureConfig = {
         trigger.nature = undefined
       }
     }
+    lib.skill['_tck_she_fire_effect'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      direct: true,
+      popup: false,
+      firstDo: true,
+      trigger: { source: 'damageBegin' },
+      filter(event, player) {
+        return event.hasNature('tck_she_fire')
+      },
+      async content(event, trigger, player) {
+        trigger.nature = 'fire'
+      }
+    }
+    lib.skill['_tck_she_thunder_effect'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      direct: true,
+      popup: false,
+      firstDo: true,
+      trigger: { source: 'damageBegin' },
+      filter(event, player) {
+        return event.hasNature('tck_she_thunder')
+      },
+      async content(event, trigger, player) {
+        trigger.nature = 'thunder'
+      }
+    }
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------
@@ -152,7 +209,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       popup: false,
-      trigger: { player: ['useCard', 'respond'] },
+      trigger: { player: ['useCardEnd', 'respondEnd'] },
       filter(event, player) {
         return get.nature(event.card) == 'tck_duo';
       },
@@ -160,18 +217,51 @@ const natureConfig = {
         await player.draw(1)
       }
     }
+    lib.skill['_tck_shan_sha'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      popup: false,
+      trigger: { player: ['useCardEnd', 'respondEnd'] },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_shan_sha';
+      },
+      async content(event, trigger, player) {
+        const source = trigger.respondTo[0]
+        if (source) {
+          const sha = await game.createCard({ name: 'sha' })
+          await player.useCard(source, sha)
+        }
+      }
+    }
+    lib.skill['_tck_shan_dian'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      popup: false,
+      trigger: { player: ['useCardEnd', 'respondEnd'] },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_shan_dian';
+      },
+      async content(event, trigger, player) {
+        await player.damage(1, 'thunder', 'nosource')
+      }
+    }
     // ----------------------- 闪属性 end -------------------------- 
 
     // ---------------------- 酒属性 begin -------------------------
-    lib.skill['_tck_test'] = {
-      // log: false,
-      // filterCard: function (card) {
-      //   return get.suit(card) == 'club';
-      // },
-      // position: "hs",
-      // viewAs: { name: "wuzhong" },
-      // prompt: "将一张梅花手牌当无中生有使用",
-      // check: function (card) { return 7 - get.value(card) },
+    lib.skill['_tck_tian_xian'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      popup: false,
+      trigger: { player: 'useCardEnd' },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_tian_xian';
+      },
+      async content(event, trigger, player) {
+        await player.recover(1)
+      }
     }
     // ----------------------- 酒属性 end -------------------------- 
   },
@@ -187,9 +277,9 @@ const natureConfig = {
     lib.translate['_tck_lxy_gou_effect'] = '流星雨·狗'
     lib.translate['_tck_lxy_gou_effect_info'] = '此杀命中得不屈'
     lib.translate['sha_nature_tck_lxy_gou_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点流星雨·狗属性伤害，此杀命中得不屈。'
-    lib.translate['tck_lxy_gou_sha'] = '流星雨·狗杀'
+    lib.translate['tck_lxy_gou_sha'] = '流星雨杀·狗'
     lib.translate['tck_lxy_gou_sha_info'] = lib.translate['sha_nature_tck_lxy_gou_info']
-    lib.translate['tck_lxy_gou_sha2'] = '流星雨·狗杀'
+    lib.translate['tck_lxy_gou_sha2'] = '流星雨杀·狗'
     lib.translate['_tck_kan_effect'] = '砍'
     lib.translate['_tck_kan_effect_info'] = '砍命中后让对手选择1项：<br/>①弃2张牌。<br/>②额外扣1滴血。';
     lib.translate['sha_nature_tck_kan_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点伤害，砍命中后让对手选择1项：①弃2张牌。②额外扣1滴血。';
@@ -202,16 +292,38 @@ const natureConfig = {
     lib.translate['tck_zhan_sha'] = '斩'
     lib.translate['tck_zhan_sha_info'] = lib.translate['sha_nature_tck_zhan_info']
     lib.translate['tck_zhan_sha2'] = '斩'
+    lib.translate['_tck_she_effect'] = '射'
+    lib.translate['_tck_she_effect_info'] = '同杀，无距离限制。';
+    lib.translate['sha_nature_tck_she_info'] = '出牌阶段，对你攻击范围内的一名角色使用。同杀，无距离限制。';
+    lib.translate['tck_she_sha'] = '射'
+    lib.translate['tck_she_sha_info'] = lib.translate['sha_nature_tck_she_info']
+    lib.translate['tck_she_sha2'] = '射'
+    lib.translate['_tck_she_fire_effect'] = '火射'
+    lib.translate['_tck_she_fire_effect_info'] = '同火杀，无距离限制。';
+    lib.translate['sha_nature_tck_she_fire_info'] = '出牌阶段，对你攻击范围内的一名角色使用。同火杀，无距离限制。';
+    lib.translate['tck_she_fire_sha'] = '火射'
+    lib.translate['tck_she_fire_sha_info'] = lib.translate['sha_nature_tck_she_fire_info']
+    lib.translate['tck_she_fire_sha2'] = '火射'
+    lib.translate['_tck_she_thunder_effect'] = '雷射'
+    lib.translate['_tck_she_thunder_effect_info'] = '同雷杀，无距离限制。';
+    lib.translate['sha_nature_tck_she_thunder_info'] = '出牌阶段，对你攻击范围内的一名角色使用。同雷杀，无距离限制。';
+    lib.translate['tck_she_thunder_sha'] = '雷射'
+    lib.translate['tck_she_thunder_sha_info'] = lib.translate['sha_nature_tck_she_thunder_info']
+    lib.translate['tck_she_thunder_sha2'] = '雷射'
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------
     lib.translate['tck_duo'] = '躲'
     lib.translate['tck_duo_shan_info'] = '同闪，结算后摸一张牌。'
+    lib.translate['tck_shan_sha'] = '闪杀'
+    lib.translate['tck_shan_sha_shan_info'] = '可以抵御一张杀后视为对伤害来源使用一张杀。'
+    lib.translate['tck_shan_dian'] = '闪电'
+    lib.translate['tck_shan_dian_shan_info'] = '同闪，结算后受到一点雷电伤害。'
     // ----------------------- 闪属性 end --------------------------  
 
     // ---------------------- 酒属性 begin -------------------------
-    lib.translate['tck_test'] = '测试酒名称';
-    lib.translate['tck_test_jiu_info'] = '测试酒描述';
+    lib.translate['tck_tian_xian'] = '天仙酒'
+    lib.translate['tck_tian_xian_jiu_info'] = '同酒，使用后回复一点体力。'
     // ----------------------- 酒属性 end --------------------------
   },
   // 重设属性，参考金庸群侠传扩展的代码
@@ -225,7 +337,7 @@ const natureConfig = {
         else if ((str.name == 'sha' || str.name == 'shan' || str.name == 'jiu') && str.nature) {
           if (str.name == 'sha' && simShaNatures.includes(str.nature)) {
             str.name = str.nature + '_sha2';
-            var result = lib.tck_get_translation.apply(this, arguments);
+            let result = lib.tck_get_translation.apply(this, arguments);
             str.name = 'sha';
             return result;
           }
@@ -377,8 +489,8 @@ const natureConfig = {
     // ----------------------- 杀属性 end --------------------------  
 
     // ---------------------- 闪属性 begin -------------------------
-    lib.card.shan['tck_nature'] = ['tck_duo']
-    lib.tck_nature_shan = ['tck_duo_shan']
+    lib.card.shan['tck_nature'] = ['tck_duo', 'tck_shan_sha', 'tck_shan_dian']
+    lib.tck_nature_shan = ['tck_duo_shan', 'tck_shan_sha_shan', 'tck_shan_dian_shan']
     // 闪
     for (var i of lib.card.shan['tck_nature']) {
       lib.translate[i + "_shan"] = lib.translate[i];
@@ -392,7 +504,7 @@ const natureConfig = {
         fullskin: true,
         //cardimage:'sha',
       };
-      if (!lib.natureAudio['shan']) lib.natureAudio['shan'] = {};
+      // if (!lib.natureAudio['shan']) lib.natureAudio['shan'] = {};
       // lib.natureAudio['shan'][i] = {
       //   'male': '../extension/TCK/audio/' + i + '_shan_male.mp3',//男声音 文件夹命名 例如   tck_taxue_shan_male.mp3
       //   'female': '../extension/TCK/audio/' + i + '_shan_female.mp3',
@@ -409,12 +521,12 @@ const natureConfig = {
     // ----------------------- 闪属性 end --------------------------  
 
     // ---------------------- 酒属性 begin -------------------------
-    lib.card.jiu['tck_nature'] = []
-    lib.tck_nature_jiu = []
+    lib.card.jiu['tck_nature'] = ['tck_tian_xian']
+    lib.tck_nature_jiu = ['tck_tian_xian_jiu']
     // 酒
     for (var i of lib.card.jiu['tck_nature']) {
-      lib.translate[i + "_jiu"] = '酒';
-      lib.translate[i + "_jiu2"] = '酒•' + lib.translate[i];
+      lib.translate[i + "_jiu"] = lib.translate[i];
+      lib.translate[i + "_jiu2"] = lib.translate[i];
       lib.card[i + "_jiu"] = {
         naturex: i,
         type: 'basic',
@@ -424,11 +536,11 @@ const natureConfig = {
         fullskin: true,
         //cardimage:'sha',
       };
-      if (!lib.natureAudio['jiu']) lib.natureAudio['jiu'] = {};
-      lib.natureAudio['jiu'][i] = {
-        'male': '../extension/TCK/peiyin/' + i + '_jiu_male.mp3',//男声音 文件夹命名 例如   tck_wubao_jiu_male.mp3
-        'female': '../extension/TCK/peiyin/' + i + '_jiu_female.mp3',
-      };
+      // if (!lib.natureAudio['jiu']) lib.natureAudio['jiu'] = {};
+      // lib.natureAudio['jiu'][i] = {
+      //   'male': '../extension/TCK/peiyin/' + i + '_jiu_male.mp3',//男声音 文件夹命名 例如   tck_wubao_jiu_male.mp3
+      //   'female': '../extension/TCK/peiyin/' + i + '_jiu_female.mp3',
+      // };
       //lib.natureBg.set(i,"ext:TCK/image/equip/"+i+"_jiu.png");
     }
     lib.card.jiu.cardPrompt = function (card) {
@@ -469,16 +581,16 @@ const natureConfig = {
           cardx.node.image.classList.add(card[3])
           return cardx
         }
-        // else if (card[2] == 'jiu' && card[3] && lib.card.jiu.tck_nature.includes(card[3])) {
-        //   card[2] = card[3] + '_jiu'
-        //   var cardx = lib.tck_card_init.call(this, card)
-        //   card[2] = 'jiu'
-        //   cardx.name = 'jiu'
-        //   cardx.nature = card[3]
-        //   cardx.classList.add(card[3])
-        //   cardx.node.image.classList.add(card[3])
-        //   return cardx
-        // }
+        else if (card[2] == 'jiu' && card[3] && lib.card.jiu.tck_nature.includes(card[3])) {
+          card[2] = card[3] + '_jiu'
+          var cardx = lib.tck_card_init.call(this, card)
+          card[2] = 'jiu'
+          cardx.name = 'jiu'
+          cardx.nature = card[3]
+          cardx.classList.add(card[3])
+          cardx.node.image.classList.add(card[3])
+          return cardx
+        }
         else if (lib.tck_nature_jiu.includes(card[2]) || lib.tck_nature_shan.includes(card[2])) {
           var nature = lib.card[card[2]].naturex
           card[3] = nature

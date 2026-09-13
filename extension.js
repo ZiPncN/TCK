@@ -218,6 +218,7 @@ export default function () {
 
             // 添加全局技能
             game.addGlobalSkill("tck_card_ao_zhan_skill")
+            game.addGlobalSkill("tck_card_she_skill")
         },
         precontent: () => {
             groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))

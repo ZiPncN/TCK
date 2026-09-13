@@ -1084,6 +1084,18 @@ export const cards = {
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_card_she_skill": {
+      cardSkill: true,
+      mod: {
+        targetInRange(card, player, target, now) {
+          if (get.name(card) == 'sha' &&
+            !!get.nature(card) &&
+            get.nature(card).includes("tck_she")) {
+            return true
+          }
+        },
+      }
+    },
     "tck_land_r_feng_kuang_xing_qi_si_tckland_skill": {
       ruleSkill: true,
       enable: "phaseUse",
@@ -1487,6 +1499,14 @@ export const cards = {
       async content(event, trigger, player) {
         let res = await player.chooseToUse(card => get.name(card) == "tck_fan_hui").set('prompt', '是否使用【反悔】？').forResult();
         if (res.bool) {
+          if (trigger.addCount !== false) {
+            trigger.addCount = false;
+            const stat = player.getStat().card,
+              name = trigger.card.name;
+            if (typeof stat[name] === "number") {
+              stat[name]--;
+            }
+          }
           await trigger.cancel()
           await player.gain(trigger.cards, "gain2")
         }
@@ -2201,6 +2221,25 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['heart', 9, 'jiu', 'tck_tian_xian'],
+    ['spade', 10, 'shan', 'tck_shan_dian'],
+    ['club', 9, 'shan', 'tck_shan_dian'],
+    ['spade', 9, 'shan', 'tck_shan_dian'],
+    ['diamond', 9, 'shan', 'tck_shan_sha'],
+    ['heart', 10, 'shan', 'tck_shan_sha'],
+    ['diamond', 6, 'shan', 'tck_shan_sha'],
+    ['diamond', 7, 'shan', 'tck_shan_sha'],
+    ['spade', 5, 'sha', 'tck_she_thunder'],
+    ['club', 6, 'sha', 'tck_she_thunder'],
+    ['spade', 7, 'sha', 'tck_she_thunder'],
+    ['diamond', 6, 'sha', 'tck_she_fire'],
+    ['diamond', 5, 'sha', 'tck_she_fire'],
+    ['diamond', 6, 'sha', 'tck_she_fire'],
+    ['diamond', 1, 'sha', 'tck_she'],
+    ['diamond', 6, 'sha', 'tck_she'],
+    ['diamond', 7, 'sha', 'tck_she'],
+    ['club', 7, 'sha', 'tck_she'],
+    ['club', 13, 'sha', 'tck_she'],
     ['diamond', 3, 'sha', 'tck_zhan'],
     ['diamond', 10, 'sha', 'tck_zhan'],
     ['diamond', 11, 'tck_card_ao_zhan'],
