@@ -1081,9 +1081,36 @@ export const cards = {
         game.cardsGotoSpecial(event.card.cards, "toTckLand")
       }
     },
+    "tck_card_jue_zhi_tong": {
+      image: "ext:TCK/imgs/cards/tck_card_jue_zhi_tong.png",
+      fullskin: true,
+      type: "equip",               // 装备牌
+      subtype: "equip2",           // 防具
+      skills: ["tck_card_jue_zhi_tong_skill"],  // 装备技能
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_card_jue_zhi_tong_skill": {
+      equipSkill: true,
+      locked: true,
+      forced: true,
+      trigger: { global: "useCard" },
+      filter(event, player) {
+        return get.name(event.card) == 'wuxie' && event.player != player
+      },
+      async content(event, trigger, player) {
+        await trigger.cancel()
+      },
+      ai: {
+        viewHandcard: true,
+        skillTagFilter(player, tag, arg) {
+          if (player == arg) {
+            return false;
+          }
+        },
+      },
+    },
     "tck_card_she_skill": {
       cardSkill: true,
       mod: {
@@ -2013,6 +2040,10 @@ export const cards = {
     },
   },
   translate: {
+    "tck_card_jue_zhi_tong": "觉之瞳",
+    "tck_card_jue_zhi_tong_info": "对手全程明牌，对手无懈可击无效。",
+    "tck_card_jue_zhi_tong_skill": "觉之瞳",
+    "tck_card_jue_zhi_tong_skill_info": "对手全程明牌，对手无懈可击无效。",
     "tck_land_r_feng_kuang_xing_qi_si": "疯狂星期四",
     "tck_land_r_feng_kuang_xing_qi_si_info": "场地效果：默认今天是星期四，玩家可以丢弃各色手牌来获得，♥香辣鸡腿堡，出杀伤害+1；♦吮指原味鸡，牌堆顶摸一张牌；♣老北京鸡肉卷，出杀要两张闪；♠奥尔良鸡腿堡，好吃。",
     "tck_land_r_feng_kuang_xing_qi_si_tckland_skill": "疯狂星期四",
@@ -2221,6 +2252,7 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['heart', 6, 'tck_card_jue_zhi_tong'],
     ['heart', 9, 'jiu', 'tck_tian_xian'],
     ['spade', 10, 'shan', 'tck_shan_dian'],
     ['club', 9, 'shan', 'tck_shan_dian'],
