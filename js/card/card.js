@@ -1090,7 +1090,7 @@ export const cards = {
       forced: true,
       filter(event, player) {
         if (event.name == "link") {
-          return player.isLinked();
+          return player.isLinked()
         }
         return !player.isLinked();
       },
@@ -1112,7 +1112,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        return event.hasNature()
+        return event.hasNature() && ['tck_kan', 'tck_zhan', 'tck_she'].includes(event.nature)
       },
       async content(event, trigger, player) {
         await trigger.cancel()

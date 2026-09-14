@@ -430,7 +430,7 @@ export const skills = {
         return event.player != player
       },
       async content(event, trigger, player) {
-        let res = await trigger.player.chooseToGive(player, 1, "he").forResult()
+        let res = await trigger.player.chooseToGive(`请交给${get.translation(player)}一张牌，否则流失1点体力`, player, 1, "he", false).forResult()
         if (!res.bool) {
           await trigger.player.loseHp(1)
         }
@@ -2534,7 +2534,7 @@ export const skills = {
           //需（强制使用）
           forced: true,
           trigger: {
-            global: "useCardBegin"
+            global: ["useCardBegin", "respondBegin"]
           },
           filter(event, player) {
             return get.suit(event.card) == player.storage.tck_xia_du

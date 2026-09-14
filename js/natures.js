@@ -71,6 +71,9 @@ const natureConfig = {
       {
         linked: false,//是否触发铁索
         background: "extension/TCK/imgs/cards/tck_she_fire_sha.png",//这张属性杀的图片
+        lineColor: '#631515',//使用属性杀指定目标的指示线颜色
+        color: '#631515',//使用属性杀指定目标的指示线卡牌字体颜色
+
       }
     ],
     // 雷射
@@ -80,6 +83,8 @@ const natureConfig = {
       {
         linked: false,//是否触发铁索
         background: "extension/TCK/imgs/cards/tck_she_thunder_sha.png",//这张属性杀的图片
+        lineColor: '#152E63',//使用属性杀指定目标的指示线颜色
+        color: '#152E63',//使用属性杀指定目标的指示线卡牌字体颜色
       }
     ]
   ],
@@ -166,7 +171,7 @@ const natureConfig = {
         }).forResult()
         if (get.suit(res) == 'heart') {
           trigger.num = 0
-          await player.loseMaxHp(1)
+          await trigger.player.loseMaxHp(1)
         }
         trigger.nature = undefined
       }
