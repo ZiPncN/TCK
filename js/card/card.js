@@ -12,6 +12,11 @@ export const cards = {
         game.cardsGotoSpecial(event.card.cards, "toTckLand")
       }
     },
+    "tck_gong_shou_jian_bei": {
+      type: "trick",
+      fullskin: true,
+      image: "ext:TCK/imgs/cards/tck_gong_shou_jian_bei.png",
+    },
     "tck_card_ao_zhan": {
       type: "basic",
       fullskin: true,
@@ -1079,9 +1084,151 @@ export const cards = {
         }
       },
     },
+    "tck_xiao_tian_quan": {
+      image: "ext:TCK/imgs/cards/tck_xiao_tian_quan.png",
+      fullskin: true,
+      type: "equip",               // 装备牌
+      subtype: "equip5",           // 宝物
+      skills: ["tck_xiao_tian_quan_skill"],  // 装备技能
+    },
+    "tck_card_mu_tie_ji": {
+      image: "ext:TCK/imgs/cards/tck_card_mu_tie_ji.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: -1,
+      toSelf: true,
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      async content(event, trigger, player) {
+        await player.addTempSkill('tck_card_mu_tie_ji_effect', { global: 'roundStart' })
+      }
+    },
+    "tck_card_zhi_equip": {
+      image: "ext:TCK/imgs/cards/tck_card_zhi_equip.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip3",
+      distance: {
+        globalTo: 1,
+      }
+    },
+    "tck_card_jie_equip": {
+      image: "ext:TCK/imgs/cards/tck_card_jie_equip.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip4",
+      distance: {
+        globalFrom: -1,
+      }
+    },
+    "tck_card_sheng_equip": {
+      image: "ext:TCK/imgs/cards/tck_card_sheng_equip.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      skills: ["tck_card_sheng_equip_skill"],
+      distance: {
+        attackFrom: -2,
+      }
+    },
+    "tck_card_li_equip": {
+      image: "ext:TCK/imgs/cards/tck_card_li_equip.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip2",
+      skills: ["tck_card_li_equip_skill"],
+      distance: {
+        attackFrom: -2,
+      }
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_zhi_jie_sheng_li_effect": {
+      cardSkill: true,
+      forced: true,
+      charlotte: true,
+      trigger: {
+        player: ["gainAfter"],
+      },
+      filter(event, player) {
+        return player.countCards("hes", card => get.name(card) == 'tck_card_zhi_equip') > 0 &&
+          player.countCards("hes", card => get.name(card) == 'tck_card_jie_equip') > 0 &&
+          player.countCards("hes", card => get.name(card) == 'tck_card_sheng_equip') > 0 &&
+          player.countCards("hes", card => get.name(card) == 'tck_card_li_equip') > 0
+      },
+      async content(event, trigger, player) {
+        await game.delay(1)
+        await player.chat('直')
+        await game.delay(1)
+        await player.chat('接')
+        await game.delay(1)
+        await player.chat('胜')
+        await game.delay(1)
+        await player.chat('利')
+        await game.delay(3)
+        await player.$skill('直接胜利')
+        await game.delay(3)
+        game.over(`${get.translation(player)}战斗胜利`)
+      },
+    },
+    "tck_card_li_equip_skill": {
+      equipSkill: true,
+      trigger: { player: "phaseDrawBegin2" },
+      forced: true,
+      async content(event, trigger, player) {
+        trigger.num += 2
+      }
+    },
+    "tck_card_sheng_equip_skill": {
+      equipSkill: true,
+      trigger: { player: "shaMiss" },
+      logTarget: "target",
+      async content(event, trigger, player) {
+        await trigger.target.addMark('tck_card_sheng_equip_mark', 1)
+        if (trigger.target.countMark('tck_card_sheng_equip_mark') >= 3) {
+          await trigger.target.loseHp(1)
+          await trigger.target.removeMark('tck_card_sheng_equip_mark', 3)
+        }
+      },
+    },
+    "tck_card_sheng_equip_mark": {
+      equipSkill: true,
+      marktext: 'X',
+      intro: {
+        name: 'X',
+        content: '当前有#个“X”标记'
+      }
+    },
+    "tck_card_mu_tie_ji_effect": {
+      cardSkill: true,
+      mark: true,
+      marktext: "母",
+      intro: {
+        name: "母铁鸡",
+        content: "当前处于无敌状态"
+      },
+      //锁定技
+      charlotte: true,
+      //需（强制使用）
+      forced: true,
+      trigger: {
+        player: ["damageBegin", "loseHpBegin"]
+      },
+      async content(event, trigger, player) {
+        await trigger.cancel()
+      }
+    },
+    "tck_xiao_tian_quan_skill": {
+      equipSkill: true,
+      enable: "phaseUse",
+      usable: 1,
+      async content(event, trigger, player) {
+        await player.draw(1)
+      }
+    },
     "tck_card_suo_lian_jia_skill1": {
       equipSkill: true,
       trigger: {
@@ -1173,42 +1320,46 @@ export const cards = {
         return player.countCards("h") > 0
       },
       async content(event, trigger, player) {
-        let res = { bool: false }
+        let res1, res2
+        let dscdCard = []
         if (!!player.storage.tck_r_niu_lai) {
           // 让“妈妈”是否弃牌
           const mama = player.storage.tck_r_niu_lai
-          res = await mama.chooseToDiscard(`是否弃置一张手牌，为${get.translation(player)}买单`, "h", 1).forResult()
-          mama.storage.tck_r_niu_lai_nuqi.num++
+          res1 = await mama.chooseToDiscard(`是否弃置一张手牌，为${get.translation(player)}买单`, "h", [1, Infinity]).forResult()
+          if (res1.bool) {
+            dscdCard = dscdCard.concat(res1.cards)
+            mama.storage.tck_r_niu_lai_nuqi.num++
+          }
         }
-        if (!res.bool) {
-          res = await player.chooseToDiscard("h", 1).forResult()
-        }
-        if (!res.bool) {
+        res2 = await player.chooseToDiscard("h", [1, Infinity]).forResult()
+        if (!res2.bool) {
           return
         }
-        const suit = get.suit(res.cards[0])
-        if (suit == 'heart') {          // ♥
-          if (!player.hasSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart')) {
-            await player.addTempSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart', { player: "phaseJieshuAfter" })
+        dscdCard = dscdCard.concat(res2.cards)
+        for (let card of dscdCard) {
+          const suit = get.suit(card)
+          if (suit == 'heart') {          // ♥
+            if (!player.hasSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart')) {
+              await player.addTempSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart', { player: "phaseJieshuAfter" })
+            }
+            await player.addMark('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart', 1)
+          } else if (suit == 'spade') {   // ♠
+            await game.delay(1)
+            await player.chat('好吃！')
+            await game.delay(2)
+          } else if (suit == 'club') {    // ♣
+            if (!player.hasSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_club')) {
+              await player.addTempSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_club', { player: "phaseJieshuAfter" })
+            }
+          } else if (suit == 'diamond') { // ♦
+            // 强制从牌堆顶摸一张牌，不能直接用draw()
+            const cards = await get.cards(1)
+            await player.gain(cards, 'draw')
           }
-          await player.addMark('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_heart', 1)
-        } else if (suit == 'spade') {   // ♠
-          await game.delay(1)
-          await player.chat('好吃！')
-          await game.delay(2)
-        } else if (suit == 'club') {    // ♣
-          if (!player.hasSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_club')) {
-            await player.addTempSkill('tck_land_r_feng_kuang_xing_qi_si_tckland_skill_club', { player: "phaseJieshuAfter" })
-          }
-        } else if (suit == 'diamond') { // ♦
-          // 强制从牌堆顶摸一张牌，不能直接用draw()
-          const cards = await get.cards(1)
-          await player.gain(cards)
         }
       },
       subSkill: {
         "heart": {
-          mark: true,
           intro: {
             name: "香辣鸡腿堡",
             content: "出杀伤害+#",
@@ -1259,6 +1410,92 @@ export const cards = {
           },
         }
       }
+    },
+    "tck_gong_shou_jian_bei_skill": {
+      cardSkill: true,
+      enable: ["chooseToUse", "chooseToResponse"],
+      filter(event, player) {
+        let cards = player.getCards("hs")
+        for (let i of cards) {
+          let name = get.name(i, player)
+          if (name == "tck_gong_shou_jian_bei") {
+            if (
+              event.filterCard(
+                {
+                  name: "wanjian",
+                  isCard: true,
+                  cards: [i],
+                }, player, event
+              ) ||
+              event.filterCard(
+                {
+                  name: "taoyuan",
+                  isCard: true,
+                  cards: [i],
+                }, player, event
+              )
+            ) {
+              return true
+            }
+          }
+        }
+        return false
+      },
+      chooseButton: {
+        dialog(event, player) {
+          let list = []
+          if (player.countCards("hs", "tck_gong_shou_jian_bei")) {
+            list.push(["锦囊", "", "wanjian"])
+            list.push(["锦囊", "", "taoyuan"])
+          }
+          return ui.create.dialog("鏖战", [list, "vcard"], "hidden")
+        },
+        filter(button, player) {
+          let name = button.link[2]
+          let rawname = "tck_gong_shou_jian_bei"
+          let cards = player.getCards("hs")
+          let evt = _status.event.getParent()
+          for (var i of cards) {
+            if (
+              get.name(i, player) == rawname &&
+              evt.filterCard(
+                {
+                  name: name,
+                  isCard: true,
+                  cards: [i],
+                }, player, evt
+              )
+            ) {
+              return true
+            }
+          }
+          return false
+        },
+        check(button) {
+          return _status.event.player.getUseValue({ name: button.link[2], isCard: true })
+        },
+        backup(links) {
+          let name = links[0][2]
+          let rawname = "tck_gong_shou_jian_bei"
+          return {
+            popname: true,
+            viewAs: { name: name, isCard: true },
+            filterCard: { name: rawname },
+            ai1: () => 1
+          }
+        },
+        prompt(links) {
+          let name = links[0][2]
+          let rawname = "tck_gong_shou_jian_bei"
+          return "将一张" + get.translation(rawname) + "当做" + get.translation(name) + "使用"
+        },
+      },
+      ai: {
+        order: 10,
+        result: {
+          player: 1,
+        },
+      },
     },
     "tck_card_ao_zhan_skill": {
       cardSkill: true,
@@ -1656,14 +1893,19 @@ export const cards = {
         let card = event.card;
         return get.name(card) == "sha" ||
           get.subtype(card) == "equip1" ||
-          get.name(card) == "tao" ||
+          get.name(card) == "tao" || get.name(card) == "tck_li" || get.name(card) == "tck_ju" || get.name(card) == "tck_xiang_jiao" ||
           get.name(card) == "jiu"
       },
       async content(event, trigger, player) {
         let card = trigger.card
         if (get.name(card) == "sha") await player.addMark("tck_qi_xiao_tckland_skill", 5)
         else if (get.subtype(card) == "equip1") await player.addMark("tck_qi_xiao_tckland_skill", 10)
-        else if (get.name(card) == "tao") await player.addMark("tck_qi_xiao_tckland_skill", 3)
+        else if (
+          get.name(card) == "tao" ||
+          get.name(card) == "tck_li" ||
+          get.name(card) == "tck_ju" ||
+          get.name(card) == "tck_xiang_jiao"
+        ) await player.addMark("tck_qi_xiao_tckland_skill", 3)
         else if (get.name(card) == "jiu") await player.addMark("tck_qi_xiao_tckland_skill", 10)
         if (player.countMark("tck_qi_xiao_tckland_skill") >= 40) {
           await player.loseHp(player.hp)
@@ -2049,6 +2291,26 @@ export const cards = {
     },
   },
   translate: {
+    "tck_zhi_jie_sheng_li_effect": "直接胜利",
+    "tck_card_zhi_equip": "直",
+    "tck_card_zhi_equip_info": "收集“直”“接”“胜”“利”即可立即获胜，不可被无懈。",
+    "tck_card_jie_equip": "接",
+    "tck_card_jie_equip_info": "收集“直”“接”“胜”“利”即可立即获胜，不可被无懈。",
+    "tck_card_sheng_equip": "胜",
+    "tck_card_sheng_equip_info": "收集“直”“接”“胜”“利”即可立即获胜，不可被无懈。<br/>被闪给对手一个X标记，3个扣1点体力。",
+    "tck_card_sheng_equip_skill": "胜",
+    "tck_card_sheng_equip_skill_info": "被闪给对手一个X标记，3个扣1点体力。",
+    "tck_card_li_equip": "利",
+    "tck_card_li_equip_info": "收集“直”“接”“胜”“利”即可立即获胜，不可被无懈。<br/>每回合多摸2张牌。",
+    "tck_card_li_equip_skill": "利",
+    "tck_card_li_equip_skill_info": "每回合多摸2张牌。",
+    "tck_card_mu_tie_ji": "母铁鸡",
+    "tck_card_mu_tie_ji_info": "故名思义，无敌一回合。",
+    "tck_card_mu_tie_ji_effect": "母铁鸡",
+    "tck_xiao_tian_quan": "哮天犬",
+    "tck_xiao_tian_quan_info": "每回合得一张牌。",
+    "tck_xiao_tian_quan_skill": "哮天犬",
+    "tck_xiao_tian_quan_skill_info": "每回合得一张牌。",
     "tck_card_suo_lian_jia": "锁链甲",
     "tck_card_suo_lian_jia_info": "·你永远为横置状态。<br/>·你无视属性伤害。",
     "tck_card_suo_lian_jia_skill1": "锁链甲",
@@ -2069,6 +2331,10 @@ export const cards = {
     "tck_card_ao_zhan_info": "可将此牌当普通杀或普通闪使用。",
     "tck_card_ao_zhan_skill": "鏖战",
     "tck_card_ao_zhan_skill_info": "将一张鏖战当普通杀或普通闪使用。",
+    "tck_gong_shou_jian_bei": "攻守兼备",
+    "tck_gong_shou_jian_bei_info": "你可将此牌当万箭齐发或桃园结义使用。",
+    "tck_gong_shou_jian_bei_skill": "攻守兼备",
+    "tck_gong_shou_jian_bei_skill_info": "将一张攻守兼备当万箭齐发或桃园结义使用。",
     "tck_land_r_xia_ye": "夏夜",
     "tck_land_r_xia_ye_info": "场地效果：默认现在时间为21点。在夜晚所有无属性伤害攻击前判定，若为1-4则命中攻击对象左手边的玩家，若为5-8则命中指定玩家，若为9-Q则命中攻击对象右手边玩家，若为K则命中自己。",
     "tck_land_r_xia_ye_tckland_skill": "夏夜",
@@ -2263,6 +2529,13 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['spade', 11, 'tck_gong_shou_jian_bei'],
+    ['heart', 3, 'tck_card_zhi_equip'],
+    ['spade', 3, 'tck_card_jie_equip'],
+    ['club', 3, 'tck_card_sheng_equip'],
+    ['diamond', 3, 'tck_card_li_equip'],
+    ['heart', 3, 'tck_card_mu_tie_ji'],
+    ['club', 12, 'tck_xiao_tian_quan'],
     ['heart', 6, 'tck_card_suo_lian_jia'],
     ['club', 9, 'jiu', 'tck_lie'],
     ['spade', 9, 'jiu', 'tck_lie'],

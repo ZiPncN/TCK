@@ -94,6 +94,7 @@ const natureConfig = {
     lib.skill['_tck_light_effect'] = {
       ruleSkill: true,
       logTarget: 'player',
+      lastDo: true,
       trigger: { source: 'damageBefore' },
       filter(event, player) {
         return event.hasNature('tck_light');
@@ -113,6 +114,7 @@ const natureConfig = {
       ruleSkill: true,
       logTarget: 'player',
       forced: true,
+      lastDo: true,
       trigger: { source: 'damageBefore' },
       filter(event, player) {
         return event.hasNature('tck_lxy_gou') && !player.hasSkill('gzbuqu');
@@ -125,6 +127,7 @@ const natureConfig = {
       ruleSkill: true,
       logTarget: 'player',
       forced: true,
+      lastDo: true,
       trigger: { source: 'damageBegin' },
       filter(event, player) {
         return event.hasNature('tck_kan')
@@ -160,6 +163,7 @@ const natureConfig = {
     lib.skill['_tck_zhan_effect'] = {
       ruleSkill: true,
       logTarget: 'player',
+      lastDo: true,
       trigger: { source: 'damageBegin' },
       filter(event, player) {
         return event.hasNature('tck_zhan')
@@ -226,6 +230,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       popup: false,
+      lastDo: true,
       trigger: { player: ['useCardEnd', 'respondEnd'] },
       filter(event, player) {
         return get.nature(event.card) == 'tck_duo';
@@ -239,6 +244,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       popup: false,
+      lastDo: true,
       trigger: { player: ['useCardEnd', 'respondEnd'] },
       filter(event, player) {
         return get.nature(event.card) == 'tck_shan_sha';
@@ -256,6 +262,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       popup: false,
+      lastDo: true,
       trigger: { player: ['useCardEnd', 'respondEnd'] },
       filter(event, player) {
         return get.nature(event.card) == 'tck_shan_dian';
@@ -269,6 +276,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       popup: false,
+      lastDo: true,
       trigger: { player: ['useCardEnd', 'respondEnd'] },
       filter(event, player) {
         return get.nature(event.card) == 'tck_bi' && !player.hasSkill('tck_bi_effect')
@@ -299,6 +307,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       popup: false,
+      lastDo: true,
       trigger: { player: 'useCardEnd' },
       filter(event, player) {
         return get.nature(event.card) == 'tck_tian_xian' && !player.isDying()
@@ -312,6 +321,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       popup: false,
+      lastDo: true,
       trigger: { player: 'useCardEnd' },
       filter(event, player) {
         return get.nature(event.card) == 'tck_lie' && !player.isDying()

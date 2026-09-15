@@ -218,11 +218,12 @@ export default function () {
                 lib.card.list.addArray(lxy_cards.list);
             }
 
-
             natureConfig.resetLib()
 
             // 添加全局技能
             game.addGlobalSkill("tck_card_ao_zhan_skill")
+            game.addGlobalSkill("tck_gong_shou_jian_bei_skill")
+            game.addGlobalSkill("tck_zhi_jie_sheng_li_effect")
         },
         precontent: () => {
             groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))
@@ -311,7 +312,7 @@ export default function () {
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.1",
+            version: "1.2",
         },
         files: {},
         connect: true

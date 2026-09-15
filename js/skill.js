@@ -2187,7 +2187,7 @@ export const skills = {
           } return -1
         }).forResult()
         if (get.suit(res) == "heart" && get.number(res) == 9) {
-          await game.over(`${get.translation(player)}战斗胜利`)
+          game.over(`${get.translation(player)}战斗胜利`)
         }
       },
     },
