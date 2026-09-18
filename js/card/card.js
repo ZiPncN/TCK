@@ -1,4 +1,5 @@
 import { lib, game, get, _status, ui } from "../../../../noname.js";
+import { noNatures } from '../natures.js'
 export const cards = {
   card: {
     "tck_land_r_feng_kuang_xing_qi_si": {
@@ -1102,7 +1103,7 @@ export const cards = {
         return target == player
       },
       async content(event, trigger, player) {
-        await player.addTempSkill('tck_card_mu_tie_ji_effect', { global: 'roundStart' })
+        await player.addTempSkill('tck_card_mu_tie_ji_effect', { player: 'phaseZhunbeiBefore' })
       }
     },
     "tck_card_zhi_equip": {
@@ -1143,9 +1144,129 @@ export const cards = {
         attackFrom: -2,
       }
     },
+    "tck_suan_wu_yi_ce": {
+      image: "ext:TCK/imgs/cards/tck_suan_wu_yi_ce.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: -1,
+      toSelf: true,
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      async content(event, trigger, player) {
+        await player.addTempSkill('tck_suan_wu_yi_ce_effect', { player: "phaseJieshuAfter" })
+      },
+    },
+    "tck_land_hai": {
+      image: "ext:TCK/imgs/cards/tck_land_hai.png",
+      fullskin: true,
+      type: "land",
+      enable: true,
+      notarget: true,
+      async content(event, trigger, player) {
+        await player.changeTckLand("tck_land_hai")
+        for (let p of game.players) {
+          await p.addSkill("tck_land_hai_tckland_effect")
+          await p.disableSkill('tck_land_hai_tckland_effect', lib.skill.tck_land_hai_tckland_effect.getSkills(player))
+        }
+        game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_land_hai_tckland_effect": {
+      ruleSkill: true,
+      direct: true,
+      forced: true,
+      charlotte: true,
+      trigger: {
+        player: ["phaseBegin", "useCardAfter"],
+      },
+      async content(event, trigger, player) {
+        player.disableSkill(event.name, lib.skill.tck_land_hai_tckland_effect.getSkills(player));
+      },
+      onremove(player, skill) {
+        player.enableSkill(skill);
+      },
+      mark: true,
+      marktext: "※",
+      intro: {
+        content: "不能用装备技能",
+      },
+      mod: {
+        attackRangeBase(player, num) {
+          if (player != _status.currentPhase) {
+            return;
+          }
+          return 1;
+        },
+        globalFrom(from, to, distance) {
+          if (from != _status.currentPhase) {
+            return;
+          }
+          let num = 0;
+          for (let i of from.getVCards("e")) {
+            const info = get.info(i).distance;
+            if (!info) {
+              continue;
+            }
+            if (info.globalFrom) {
+              num += info.globalFrom;
+            }
+          }
+          return distance - num;
+        },
+        globalTo(from, to, distance) {
+          if (to != _status.currentPhase) {
+            return;
+          }
+          let num = 0;
+          for (let i of to.getVCards("e")) {
+            const info = get.info(i).distance;
+            if (!info) {
+              continue;
+            }
+            if (info.globalTo) {
+              num += info.globalTo;
+            }
+            if (info.attackTo) {
+              num += info.attackTo;
+            }
+          }
+          return distance - num;
+        },
+      },
+      getSkills(player) {
+        return player.getCards("e").reduce((list, card) => {
+          const info = get.info(card);
+          if (info && info.skills) {
+            return list.addArray(info.skills);
+          }
+          return list;
+        }, []);
+      },
+    },
+    "tck_suan_wu_yi_ce_effect": {
+      mark: true,
+      marktext: '算',
+      intro: {
+        name: '算无遗策',
+        content: '本回合的锦囊不可被无懈'
+      },
+      cardSkill: true,
+      forced: true,
+      trigger: {
+        player: "useCard",
+      },
+      filter(event, player) {
+        return get.type(event.card) == "trick" || get.type(event.card) == "delay"
+      },
+      async content(event, trigger, player) {
+        trigger.directHit.addArray(game.players);
+      },
+    },
     "tck_zhi_jie_sheng_li_effect": {
       cardSkill: true,
       forced: true,
@@ -1160,7 +1281,9 @@ export const cards = {
           player.countCards("hes", card => get.name(card) == 'tck_card_li_equip') > 0
       },
       async content(event, trigger, player) {
-        await game.delay(1)
+        const songNo = Math.floor(Math.random() * 3) + 1
+        game.switchTCKBgm(`tck_guanyu_song${songNo}:mp3`, "TCK");
+        await game.delay(3)
         await player.chat('直')
         await game.delay(1)
         await player.chat('接')
@@ -1177,6 +1300,9 @@ export const cards = {
     "tck_card_li_equip_skill": {
       equipSkill: true,
       trigger: { player: "phaseDrawBegin2" },
+      filter(event, player) {
+        return !event.numFixed;
+      },
       forced: true,
       async content(event, trigger, player) {
         trigger.num += 2
@@ -1259,7 +1385,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        return event.hasNature() && ['tck_kan', 'tck_zhan', 'tck_she'].includes(event.nature)
+        return event.hasNature() && !noNatures.includes(event.nature)
       },
       async content(event, trigger, player) {
         await trigger.cancel()
@@ -1299,10 +1425,11 @@ export const cards = {
       forced: true,
       trigger: { global: "useCard" },
       filter(event, player) {
-        return get.name(event.card) == 'wuxie' && event.player != player
+        return get.name(event.card) == 'wuxie' && event.player.isEnemyOf(player)
       },
       async content(event, trigger, player) {
-        await trigger.cancel()
+        trigger.targets.length = 0;
+        trigger.all_excluded = true;
       },
       ai: {
         viewHandcard: true,
@@ -1448,7 +1575,7 @@ export const cards = {
             list.push(["锦囊", "", "wanjian"])
             list.push(["锦囊", "", "taoyuan"])
           }
-          return ui.create.dialog("鏖战", [list, "vcard"], "hidden")
+          return ui.create.dialog("攻守兼备", [list, "vcard"], "hidden")
         },
         filter(button, player) {
           let name = button.link[2]
@@ -1683,10 +1810,10 @@ export const cards = {
       ruleSkill: true,
       forced: true,
       trigger: {
-        player: "phaseDrawBegin",
+        player: "phaseDrawBegin1",
       },
       async content(event, trigger, player) {
-        trigger.num = 0;
+        trigger.changeToZero()
         while (true) {
           let res = await player.judge((card) => {
             if (get.type(card) == "trick" || get.type(card) == "delay") return -1
@@ -1756,7 +1883,10 @@ export const cards = {
       cardSkill: true,
       forced: true,
       trigger: {
-        player: "phaseDrawBegin",
+        player: "phaseDrawBegin2",
+      },
+      filter(event, player) {
+        return !event.numFixed;
       },
       async content(event, trigger, player) {
         trigger.num++;
@@ -1824,7 +1954,10 @@ export const cards = {
       cardSkill: true,
       forced: true,
       trigger: {
-        player: "phaseDrawBegin",
+        player: "phaseDrawBegin2",
+      },
+      filter(event, player) {
+        return !event.numFixed;
       },
       async content(event, trigger, player) {
         trigger.num--;
@@ -2011,7 +2144,7 @@ export const cards = {
         source: "damageBegin"
       },
       filter(event, player) {
-        return get.name(event.card) == "sha" && game.hasNature(event.card)
+        return get.name(event.card) == "sha" && game.hasNature(event.card) && !noNatures.includes(get.nature(event.card))
       },
       async content(event, trigger, player) {
         trigger.num += 1
@@ -2291,6 +2424,14 @@ export const cards = {
     },
   },
   translate: {
+    "tck_land_hai": "海",
+    "tck_land_hai_info": "场地效果：双方不能用装备技能。",
+    "tck_land_hai_tckland_effect": "海",
+    "tck_land_hai_tckland_skill": "海",
+    "tck_land_hai_tckland_skill_info": "双方不能用装备技能。",
+    "tck_suan_wu_yi_ce": "算无遗策",
+    "tck_suan_wu_yi_ce_info": "令你本回合的锦囊不可被无懈。",
+    "tck_suan_wu_yi_ce_effect": "算无遗策",
     "tck_zhi_jie_sheng_li_effect": "直接胜利",
     "tck_card_zhi_equip": "直",
     "tck_card_zhi_equip_info": "收集“直”“接”“胜”“利”即可立即获胜，不可被无懈。",
@@ -2482,7 +2623,7 @@ export const cards = {
     "tck_shang_tang": "上膛",
     "tck_shang_tang_info": "双方把所有手牌丢弃，再从牌堆抽原数量的卡。",
     "tck_chang_di_po_huai": "场地破坏",
-    "tck_chang_di_po_huai_info": "将场上场地破坏",
+    "tck_chang_di_po_huai_info": "将场上场地破坏。",
     "tck_da_ri_zhao": "大日照",
     "tck_da_ri_zhao_info": "场地效果：火杀伤害翻倍，雷杀无效。",
     "tck_da_ri_zhao_tckland_skill": "大日照",
@@ -2529,6 +2670,11 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['diamond', 1, 'sha', 'tck_fei_dao'],
+    ['diamond', 2, 'sha', 'tck_fei_dao'],
+    ['diamond', 3, 'sha', 'tck_fei_dao'],
+    ['spade', 6, 'tck_land_hai'],
+    ['heart', 8, 'tck_suan_wu_yi_ce'],
     ['spade', 11, 'tck_gong_shou_jian_bei'],
     ['heart', 3, 'tck_card_zhi_equip'],
     ['spade', 3, 'tck_card_jie_equip'],

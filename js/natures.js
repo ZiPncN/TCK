@@ -1,5 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js"
-const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan', 'tck_zhan', 'tck_she', 'tck_she_fire', 'tck_she_thunder']
+export const noNatures = ['tck_kan', 'tck_zhan', 'tck_she', 'tck_fei_dao']
+const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan', 'tck_zhan', 'tck_she', 'tck_she_fire', 'tck_she_thunder', 'tck_fei_dao']
 const natureConfig = {
   shaNatures: [
     // 光杀
@@ -86,7 +87,16 @@ const natureConfig = {
         lineColor: '#152E63',//使用属性杀指定目标的指示线颜色
         color: '#152E63',//使用属性杀指定目标的指示线卡牌字体颜色
       }
-    ]
+    ],
+    // 飞刀
+    [
+      'tck_fei_dao',//添加的属性id
+      '飞刀',//添加的属性翻译
+      {
+        linked: false,//是否触发铁索
+        background: "extension/TCK/imgs/cards/tck_fei_dao.png",//这张属性杀的图片
+      }
+    ],
   ],
   // 设置自定义属性的效果
   skills: function () {
@@ -128,7 +138,7 @@ const natureConfig = {
       logTarget: 'player',
       forced: true,
       lastDo: true,
-      trigger: { source: 'damageBegin' },
+      trigger: { source: 'damageBefore' },
       filter(event, player) {
         return event.hasNature('tck_kan')
       },
@@ -164,7 +174,7 @@ const natureConfig = {
       ruleSkill: true,
       logTarget: 'player',
       lastDo: true,
-      trigger: { source: 'damageBegin' },
+      trigger: { source: 'damageBefore' },
       filter(event, player) {
         return event.hasNature('tck_zhan')
       },
@@ -187,7 +197,7 @@ const natureConfig = {
       direct: true,
       popup: false,
       firstDo: true,
-      trigger: { source: 'damageBegin' },
+      trigger: { source: 'damageBefore' },
       filter(event, player) {
         return event.hasNature('tck_she_fire')
       },
@@ -202,7 +212,7 @@ const natureConfig = {
       direct: true,
       popup: false,
       firstDo: true,
-      trigger: { source: 'damageBegin' },
+      trigger: { source: 'damageBefore' },
       filter(event, player) {
         return event.hasNature('tck_she_thunder')
       },
@@ -212,6 +222,20 @@ const natureConfig = {
     }
     lib.skill['_tck_she_effect'] = {
       ruleSkill: true,
+      forced: true,
+      direct: true,
+      popup: false,
+      firstDo: true,
+      trigger: { source: 'damageBefore' },
+      filter(event, player) {
+        return event.hasNature('tck_she')
+      },
+      async content(event, trigger, player) {
+        trigger.nature = undefined
+      },
+    }
+    lib.skill['tck_she_skill'] = {
+      ruleSkill: true,
       mod: {
         targetInRange(card, player, target, now) {
           if (get.name(card) == 'sha' &&
@@ -220,6 +244,61 @@ const natureConfig = {
             return true
           }
         }
+      },
+    }
+    lib.skill['_tck_fei_dao_effect'] = {
+      ruleSkill: true,
+      forced: true,
+      direct: true,
+      popup: false,
+      firstDo: true,
+      trigger: { source: 'damageBefore' },
+      filter(event, player) {
+        return event.hasNature('tck_fei_dao')
+      },
+      async content(event, trigger, player) {
+        trigger.nature = undefined
+      }
+    }
+    lib.skill['tck_fei_dao_skill'] = {
+      ruleSkill: true,
+      forced: true,
+      popup: false,
+      firstDo: true,
+      trigger: {
+        player: 'useCard'
+      },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_fei_dao'
+      },
+      async content(event, trigger, player) {
+        if (trigger.addCount !== false) {
+          trigger.addCount = false;
+          const stat = player.getStat().card,
+            name = trigger.card.name;
+          if (typeof stat[name] === "number") {
+            stat[name]--;
+          }
+        }
+      },
+      mod: {
+        targetInRange(card, player, target, bool) {
+          if (get.name(card) == 'sha' &&
+            !!get.nature(card) &&
+            get.nature(card).includes("tck_fei_dao")
+          ) {
+            if (get.distance(player, target) <= 1) {
+              return true
+            } return false
+          }
+        },
+        // cardUsable(card, player, num) {
+        //   if (card.name == "sha" &&
+        //     !!get.nature(card) &&
+        //     get.nature(card).includes("tck_fei_dao")) {
+        //     return Infinity;
+        //   }
+        // },
       },
     }
     // ----------------------- 杀属性 end --------------------------
@@ -397,6 +476,12 @@ const natureConfig = {
     lib.translate['tck_she_thunder_sha'] = '雷射'
     lib.translate['tck_she_thunder_sha_info'] = lib.translate['sha_nature_tck_she_thunder_info']
     lib.translate['tck_she_thunder_sha2'] = '雷射'
+    lib.translate['_tck_fei_dao_effect'] = '飞刀'
+    lib.translate['_tck_fei_dao_effect_info'] = '同杀，不受武器范围的影响，只能指定攻击范围为1的角色，不计入使用杀的次数。';
+    lib.translate['sha_nature_tck_fei_dao_info'] = '出牌阶段，对你攻击范围内的一名角色使用。同杀，不受武器范围的影响，只能指定攻击范围为1的角色，不计入使用杀的次数。';
+    lib.translate['tck_fei_dao_sha'] = '飞刀'
+    lib.translate['tck_fei_dao_sha_info'] = lib.translate['sha_nature_tck_fei_dao_info']
+    lib.translate['tck_fei_dao_sha2'] = '飞刀'
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------

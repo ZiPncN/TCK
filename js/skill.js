@@ -1998,8 +1998,15 @@ export const skills = {
       prompt: "将手上的一张基本牌当南蛮入侵使用"
     },
     "tck_e_mo": {
+      init(player) {
+        player.storage.tck_e_mo = true
+      },
       trigger: {
-        global: "roundStart"
+        global: "phaseBefore",
+        player: "enterGame",
+      },
+      filter(event, player) {
+        return player.storage.tck_e_mo
       },
       async content(event, trigger, player) {
         let res = await player.chooseTarget("请选择一名目标，令其进入地狱", 1, true).forResult()
@@ -2007,6 +2014,8 @@ export const skills = {
           let target = res.targets[0]
           await target.loseHp(target.hp)
         }
+        player.storage.tck_e_mo = false
+        player.awakenSkill("tck_e_mo")
       }
     },
     "tck_yi_ji": {
@@ -2192,7 +2201,10 @@ export const skills = {
       },
     },
     "tck_hj_ying_zi": {
-      trigger: { player: "phaseDrawBegin" },
+      trigger: { player: "phaseDrawBegin2" },
+      filter(event, player) {
+        return !event.numFixed;
+      },
       async content(event, trigger, player) {
         trigger.num = 3
         await game.delay(1)
@@ -2278,7 +2290,10 @@ export const skills = {
     "tck_du_jin": {
       forced: true,
       trigger: {
-        player: "phaseDrawBegin"
+        player: "phaseDrawBegin2"
+      },
+      filter(event, player) {
+        return !event.numFixed;
       },
       async content(event, trigger, player) {
         let equipNum = await player.countCards("e")
@@ -3153,7 +3168,7 @@ export const skills = {
             // 将寒冰剑移出游戏
             game.cardsGotoSpecial(cards)
             // 将极冰剑加入游戏并使用
-            const jibing = await game.createCard2("tck_ji_bing_jian", card.suit, card.number)
+            const jibing = await game.createCard2("tck_r_ji_bing_jian", card.suit, card.number)
             game.log(player, "将", card, "进化为", jibing)
             await player.$skill('寒冰剑！进化！')
             await player.chooseUseTarget(jibing, true)
@@ -3407,8 +3422,54 @@ export const skills = {
         await player.useCard(card)
       }
     },
+    "tck_r_meng_mian": {
+      mark: true,
+      intro: {
+        content(storage, player) {
+          if (storage) {
+            return `当前的变身为${get.translation(storage)}`
+          } return `当前没有变身`
+        }
+      },
+      trigger: {
+        player: "damageBegin"
+      },
+      async content(event, trigger, player) {
+        let list
+        if (_status.characterlist) {
+          list = []
+          for (let i = 0; i < _status.characterlist.length; i++) {
+            let name = _status.characterlist[i]
+            if (get.translation(name).includes('含')) {
+              list.push(name)
+            }
+          }
+        } else if (_status.connectMode) {
+          list = get.charactersOL(function (i) {
+            return !get.translation(name).includes('含')
+          })
+        } else {
+          list = get.gainableCharacters(function (info) {
+            return get.translation(info).includes('含')
+          })
+        }
+        const result = await player
+          .chooseButton(true)
+          .set("createDialog", ["请选择其中一个角色变身", [list, "character"]])
+          .forResult()
+        if (result?.links?.length) {
+          await player.reinitCharacter(player.name, result.links[0])
+          await player.addSkill('tck_r_meng_mian')
+          const card = await game.createCard2('tck_r_mian_zhao', TCKUtil.getRandomSuit(), TCKUtil.getRandomNumber(), undefined)
+          await player.gain(card, 'gain2')
+          player.storage.tck_r_meng_mian = get.translation(result.links[0])
+        }
+      }
+    },
   },
   translate: {
+    "tck_r_meng_mian": "蒙面",
+    "tck_r_meng_mian_info": "受到伤害时，可以将自己变身成任意一个名字中带有“含”字的角色，随后获得宝物面罩。面罩无作用，可现实生活中佩戴。",
     "tck_r_niu_lai": "牛来",
     "tck_r_niu_lai_info": "游戏开始时，选择一名异性角色为[妈妈]，若场上存在其他角色，除你和[妈妈]外的单体角色技能或牌无法指定[婺城雙傑]为目标。[妈妈]每受到一点伤害，怒气值+1，下一次伤害增加怒气值数量的值（可叠加）。",
     "tck_r_lin_mo": "临摹",

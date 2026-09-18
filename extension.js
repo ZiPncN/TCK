@@ -52,7 +52,7 @@ export default function () {
          */
         content: (config, pack) => {
             //独立地图牌前提代码
-            lib.element.player.changeTckLand = function (url) {
+            lib.element.player.changeTckLand = async function (url) {
                 var next = game.createEvent('changeTckLand');
                 next.player = this;
                 next.land = url;
@@ -66,11 +66,17 @@ export default function () {
                     skills.push(name + '_tckland_skill_2');
                     var skill = skills[0]
                     var node = ui.create.div('.background.upper.land');
-                    node.destroy = function () {
+                    node.destroy = async function () {
                         //清空汽校的分值
                         let players = game.players
                         if (players) {
                             players.forEach(player => player.clearMark("tck_qi_xiao_tckland_skill"))
+                        }
+                        const landName = this.skill.split("_").slice(0, 3).join("_")
+                        if (landName == 'tck_land_hai') {
+                            for (let player of players) {
+                                await player.removeSkill("tck_land_hai_tckland_effect")
+                            }
                         }
                         if (this.skill) {
                             //移除技能逻辑，下面的ui.skill只是作为展示
@@ -166,6 +172,27 @@ export default function () {
                     game.switchTCKBgm(name, ext);
                 }, name, ext);
             }
+            // 弹出动画（未测试）
+            game.setTCKGif = (src, time, bgm, link) => {
+                if (bgm) game.switchTCKBgm(bgm);
+                _status.tempBackground = "extension:TCK/gifs/" + src + ".gif";
+                game.updateBackground();
+                ui.arena.hide();
+                game.pause();
+                if (_status.tckTimeout) clearTimeout(_status.tckTimeout);
+                if (!link) {
+                    _status.tckTimeout = setTimeout(() => {
+                        delete _status.tempBackground;
+                        delete _status.tckTimeout;
+                        game.updateBackground();
+                        ui.arena.show();
+                        game.resume();
+                    }, time * 970);
+                }
+                game.broadcast((src, time, bgm, link) => {
+                    game.setTCKGif(src, time, bgm, link);
+                }, src, time, bgm, link);
+            }
             //不带弃牌堆的洗牌
             //cardArray ： 要一起洗进牌堆的牌（把牌放在数组尾部再洗牌）
             game.washCardNoWithDiscard = function (cardArray) {
@@ -224,6 +251,8 @@ export default function () {
             game.addGlobalSkill("tck_card_ao_zhan_skill")
             game.addGlobalSkill("tck_gong_shou_jian_bei_skill")
             game.addGlobalSkill("tck_zhi_jie_sheng_li_effect")
+            game.addGlobalSkill("tck_she_skill")
+            game.addGlobalSkill("tck_fei_dao_skill")
         },
         precontent: () => {
             groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))

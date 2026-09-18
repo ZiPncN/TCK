@@ -63,7 +63,19 @@ const TCKUtil = {
     if (!Array.isArray(arr) || arr.length <= 1) return true;
     const first = arr[0];
     return arr.every(item => TCKUtil.isDeepEqual(item, first));
-  }
+  },
+
+  //封装随机花色和点数的函数
+  getRandomSuit() {
+    return suits[Math.floor(Math.random() * suits.length)]
+  },
+  getRandomNumber() {
+    return numbers[Math.floor(Math.random() * numbers.length)]
+  },
 };
+
+// 定义常量
+const suits = ["diamond", "spade", "heart", "club"]
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
 export default TCKUtil;
