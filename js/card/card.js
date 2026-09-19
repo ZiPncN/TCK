@@ -342,23 +342,6 @@ export const cards = {
         await event.target.draw(7)
       }
     },
-    "tck_plus_four_hp": {
-      image: "ext:TCK/imgs/cards/tck_plus_four_hp.png",
-      fullskin: true,
-      type: "trick",   //锦囊牌
-      enable: true,   //可以用
-      selectTarget: -1,
-      toSelf: true,    //是否自己使用
-      //只能对自己用
-      filterTarget(card, player, target) {
-        return target == player
-      },
-      async content(event, trigger, player) {
-        await event.target.gainMaxHp(4)
-        await event.target.recover(4)
-        await game.cardsGotoSpecial(event.cards);
-      }
-    },
     "tck_huang_tian_dang_li": {
       image: "ext:TCK/imgs/cards/tck_huang_tian_dang_li.png",
       fullskin: true,
@@ -2789,8 +2772,6 @@ export const cards = {
     "tck_chun_ri_tian_lai_le_tckland_skill_info": "回合开始体力血量+1。",
     "tck_huang_tian_dang_li": "黄天当立",
     "tck_huang_tian_dang_li_info": "你展示手牌，若没闪，则摸3张牌。",
-    "tck_plus_four_hp": "\t",
-    "tck_plus_four_hp_info": "+4上限，+4体力。",
     "tck_bu_tian_shi": "补天石",
     "tck_bu_tian_shi_info": "弃置所有手牌、装备，从牌堆中摸7张。",
     "tck_meng_hua": "梦话",
@@ -2998,7 +2979,6 @@ export const cards = {
     ['spade', 12, "tck_yue_mian"],
     ['spade', 9, "tck_meng_hua"],
     ['heart', 12, "tck_bu_tian_shi"],
-    ['heart', 9, "tck_plus_four_hp"],
     ['spade', 6, "tck_huang_tian_dang_li"],
     ['diamond', 4, "tck_yu_hang_fu"],
     ['spade', 7, "tck_yu_hang_fu"],

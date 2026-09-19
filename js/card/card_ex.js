@@ -91,6 +91,23 @@ export const ex_cards = {
         await game.cardsGotoSpecial(event.cards);
       },
     },
+    "tck_plus_four_hp": {
+      image: "ext:TCK/imgs/cards/tck_plus_four_hp.png",
+      fullskin: true,
+      type: "trick",   //锦囊牌
+      enable: true,   //可以用
+      selectTarget: -1,
+      toSelf: true,    //是否自己使用
+      //只能对自己用
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      async content(event, trigger, player) {
+        await event.target.gainMaxHp(4)
+        await event.target.recover(4)
+        await game.cardsGotoSpecial(event.cards);
+      }
+    },
   },
   skill: {
     "tck_bian_ya_qi_bw_skill": {
@@ -121,6 +138,8 @@ export const ex_cards = {
     },
   },
   translate: {
+    "tck_plus_four_hp": "\t",
+    "tck_plus_four_hp_info": "+4上限，+4体力。",
     "tck_chong_sheng_zhi_lu": "重生之路",
     "tck_chong_sheng_zhi_lu_info": "你判定，你每判定一张，你就+1体力，若满血，改为+1体力上限或摸1张牌，判定直至出现相同花色为止，然后本局本牌移出游戏。",
     "tck_bian_ya_qi_wq": "变压器",
@@ -137,6 +156,7 @@ export const ex_cards = {
   },
   list: [
     //diy牌堆
+    ['heart', 9, "tck_plus_four_hp"],
     ['club', 8, 'tck_tou_zi'],
     ['spade', 9, 'tck_bian_ya_qi_bw'],
     ['club', 13, 'tck_bian_ya_qi_wq'],
