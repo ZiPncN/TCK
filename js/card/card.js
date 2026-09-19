@@ -967,6 +967,12 @@ export const cards = {
       async content(event, trigger, player) {
         await event.target.recover()
         await event.target.draw(1)
+      },
+      ai: {
+        tag: {
+          recover: 1,
+          save: 1,
+        },
       }
     },
     "tck_ju": {
@@ -974,6 +980,7 @@ export const cards = {
       fullskin: true,
       type: "basic",
       toself: true,
+      cardnature: "fire",
       enable(card, player) {
         return player.isDamaged();
       },
@@ -1001,7 +1008,10 @@ export const cards = {
           damage: 1,
           natureDamage: 1,
           fireDamage: 1,
+          recover: 1,
+          save: 1
         }
+
       }
     },
     "tck_xiang_jiao": {
@@ -1035,6 +1045,10 @@ export const cards = {
             const randomIndex = Math.floor(Math.random() * (len + 1))
             return pile.childNodes[randomIndex]
           }, "insert")
+      },
+      ai: {
+        recover: 1,
+        save: 1,
       }
     },
     "tck_xiang_jiao_pi": {
@@ -1172,6 +1186,176 @@ export const cards = {
         }
         game.cardsGotoSpecial(event.card.cards, "toTckLand")
       }
+    },
+    "tck_shui_yan_qi_jun": {
+      image: "ext:TCK/imgs/cards/tck_shui_yan_qi_jun.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: 1,
+      cardnature: "tck_water",
+      filterTarget(card, player, target) {
+        return player != target
+      },
+      async content(event, trigger, player) {
+        let options = [["②", `受到一点水属性伤害`]]
+        const target = event.target
+        if (target.countCards("e") > 0) {
+          options.unshift(["①", `弃所有装备`])
+        }
+        const res = await target
+          .chooseButton([
+            '请选择一项',
+            [options, "textbutton"]
+          ], true)
+          .forResult();
+        if (res.bool) {
+          switch (res.links[0]) {
+            case '①':
+              await target.discard(target.getCards("e"))
+              break;
+            case '②':
+              await target.damage('tck_water', 1, player)
+              break;
+          }
+        }
+      },
+      ai: {
+        tag: {
+          damage: 1,
+          tck_waterDamage: 1,
+          natureDamage: 1
+        }
+      }
+    },
+    "tck_ni_shui_xing_zhou": {
+      image: "ext:TCK/imgs/cards/tck_ni_shui_xing_zhou.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: 1,
+      filterTarget(card, player, target) {
+        return target.hasSkill('tck_water_debuff')
+      },
+      async content(event, trigger, player) {
+        const target = event.target
+        await target.removeSkill('tck_water_debuff')
+      }
+    },
+    "tck_shui_gong": {
+      image: "ext:TCK/imgs/cards/tck_shui_gong.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: 1,
+      cardnature: "tck_water",
+      filterTarget(card, player, target) {
+        return target != player
+      },
+      async content(event, trigger, player) {
+        let cards = get.cards(1, true)
+        await event.target.showCards(cards)
+        const suit = get.suit(cards[0])
+        const res = await player.chooseToDiscard(`是否弃置一张${get.translation(suit)}花色的手牌，对${get.translation(event.target)}造成一点水属性伤害`, card => get.suit(card) == suit).forResult()
+        if (res.bool) {
+          await event.target.damage(player, 1, 'tck_water')
+        }
+      },
+      ai: {
+        tag: {
+          damage: 1,
+          tck_waterDamage: 1,
+          natureDamage: 1
+        }
+      }
+    },
+    "tck_bing_tian_xue_di": {
+      image: "ext:TCK/imgs/cards/tck_bing_tian_xue_di.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: -1,
+      filterTarget(card, player, target) {
+        return target !== player
+      },
+      reverseOrder: true,
+      async content(event, trigger, player) {
+        const target = event.target;
+        if (typeof event.shashanRequired !== "number" || !event.shashanRequired || event.shashanRequired < 0) {
+          event.shashanRequired = 1;
+        }
+        if (typeof event.baseDamage !== "number") {
+          event.baseDamage = 1;
+        }
+        while (event.shashanRequired > 0) {
+          let result = { bool: false };
+          if (!event.directHit) {
+            const next = target.chooseToRespond();
+            next.set("filterCard", function (card, player) {
+              if (get.name(card) !== "sha" && get.name(card) != "shan") {
+                return false;
+              }
+              return lib.filter.cardRespondable(card, player);
+            });
+            if (event.shashanRequired > 1) {
+              next.set("prompt2", "共需打出" + event.shashanRequired + "张【杀】或【闪】");
+            }
+            next.set("ai", function (card) {
+              if (get.event().toRespond) {
+                return get.order(card);
+              }
+              return -1;
+            });
+            next.set(
+              "toRespond",
+              (() => {
+                if (target.hasSkillTag("noSha", null, "respond") && target.hasSkillTag("noShan", null, "respond")) {
+                  return false;
+                }
+                if (target.hasSkillTag("useSha", null, "respond") && target.hasSkillTag("useShan", null, "respond")) {
+                  return true;
+                }
+                if (event.baseDamage <= 0 || player.hasSkillTag("notricksource", null, event) || target.hasSkillTag("notrick", null, event)) {
+                  return false;
+                }
+                if (event.baseDamage >= target.hp + (player.hasSkillTag("jueqing", false, target) || target.hasSkill("gangzhi") ? 0 : target.hujia)) {
+                  return true;
+                }
+                const damage = get.damageEffect(target, player, target);
+                if (damage >= 0) {
+                  return false;
+                }
+                if (
+                  event.shashanRequired > 1 &&
+                  !target.hasSkillTag("freeSha", null, {
+                    player: player,
+                    card: event.card,
+                    type: "respond",
+                  }) &&
+                  !target.hasSkillTag("freeShan", null, {
+                    player: player,
+                    card: event.card,
+                    type: "respond",
+                  }) &&
+                  event.shashanRequired > target.mayHaveSha(target, "respond", null, "count") + target.mayHaveShan(target, "respond", null, "count")
+                ) {
+                  return false;
+                }
+                return true;
+              })()
+            );
+            next.set("respondTo", [player, event.card]);
+            next.autochoose = lib.filter.autoRespondSha;
+            result = await next.forResult();
+          }
+          if (!result?.bool) {
+            await target.damage('tck_water');
+            break;
+          } else {
+            event.shashanRequired--;
+          }
+        }
+      },
     },
   },
   //装备技能&场地技能&卡牌附加技能
@@ -2060,8 +2244,7 @@ export const cards = {
         let cards = player.getCards("h").filter(card => get.name(card) == "tck_mang_zhong_chu_cuo")
         await player.discard(cards)
         let discardNum = Math.floor(await player.countCards("h") / 2)
-        let res = await player.chooseCard("h", true, discardNum).set('prompt', '请弃置一半的手牌').forResult()
-        await player.discard(res.cards)
+        await player.chooseToDiscard("h", true, discardNum).set('prompt', '请弃置一半的手牌')
       }
     },
     "tck_gu_zhu_yi_zhi_skill": {
@@ -2424,6 +2607,14 @@ export const cards = {
     },
   },
   translate: {
+    "tck_bing_tian_xue_di": "冰天雪地",
+    "tck_bing_tian_xue_di_info": "其他所有人需使用一张杀或闪，否则受到一点水属性伤害。",
+    "tck_shui_gong": "水攻",
+    "tck_shui_gong_info": "选择一角色展示牌顶1张牌，然后你可弃1张同花色对其造成1点水属性伤害。",
+    "tck_ni_shui_xing_zhou": "逆水行舟",
+    "tck_ni_shui_xing_zhou_info": "解除一名角色的水负面效果。",
+    "tck_shui_yan_qi_jun": "水淹七军",
+    "tck_shui_yan_qi_jun_info": "指定一人选择一项：<br/>①弃所有装备（至少一张）<br/>②受到一点水属性伤害。",
     "tck_land_hai": "海",
     "tck_land_hai_info": "场地效果：双方不能用装备技能。",
     "tck_land_hai_tckland_effect": "海",
@@ -2670,6 +2861,11 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['club', 13, 'tck_bing_tian_xue_di'],
+    ['spade', 11, 'tck_shui_gong'],
+    ['club', 3, 'tck_ni_shui_xing_zhou'],
+    ['spade', 2, 'tck_ni_shui_xing_zhou'],
+    ['spade', 9, 'tck_shui_yan_qi_jun'],
     ['diamond', 1, 'sha', 'tck_fei_dao'],
     ['diamond', 2, 'sha', 'tck_fei_dao'],
     ['diamond', 3, 'sha', 'tck_fei_dao'],

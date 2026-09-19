@@ -3436,22 +3436,12 @@ export const skills = {
       },
       async content(event, trigger, player) {
         let list
-        if (_status.characterlist) {
-          list = []
-          for (let i = 0; i < _status.characterlist.length; i++) {
-            let name = _status.characterlist[i]
-            if (get.translation(name).includes('含')) {
-              list.push(name)
-            }
-          }
-        } else if (_status.connectMode) {
-          list = get.charactersOL(function (i) {
-            return !get.translation(name).includes('含')
-          })
-        } else {
-          list = get.gainableCharacters(function (info) {
-            return get.translation(info).includes('含')
-          })
+        const charList = Object.keys(lib.character)
+        if (charList) {
+          list = charList.filter(char => get.translation(char).includes('含') && char != player.name)
+        }
+        if (!list || list.length == 0) {
+          return
         }
         const result = await player
           .chooseButton(true)

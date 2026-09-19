@@ -6,3 +6,5 @@ skill:      tck_skill
 势力:       tck_group
 属性:       tck_nature
 全局:       tck_global
+
+负面效果：   _debuff

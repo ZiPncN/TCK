@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js"
 export const noNatures = ['tck_kan', 'tck_zhan', 'tck_she', 'tck_fei_dao']
-const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan', 'tck_zhan', 'tck_she', 'tck_she_fire', 'tck_she_thunder', 'tck_fei_dao']
+const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan', 'tck_zhan', 'tck_she', 'tck_she_fire', 'tck_she_thunder', 'tck_fei_dao', 'tck_water']
 const natureConfig = {
   shaNatures: [
     // 光杀
@@ -95,6 +95,16 @@ const natureConfig = {
       {
         linked: false,//是否触发铁索
         background: "extension/TCK/imgs/cards/tck_fei_dao.png",//这张属性杀的图片
+      }
+    ],
+    // 水属性
+    [
+      'tck_water',//添加的属性id
+      '水',//添加的属性翻译
+      {
+        linked: true,//是否触发铁索
+        lineColor: [135, 211, 248],//使用属性杀指定目标的指示线颜色
+        color: [135, 211, 248],//使用属性杀指定目标的指示线卡牌字体颜色
       }
     ],
   ],
@@ -430,6 +440,43 @@ const natureConfig = {
       }
     }
     // ----------------------- 酒属性 end -------------------------- 
+
+    // --------------------- 其他属性 begin ------------------------
+    lib.skill['_tck_water_effect'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      lastDo: true,
+      forced: true,
+      popup: false,
+      trigger: { source: 'damageBefore' },
+      filter(event, player) {
+        return event.hasNature('tck_water');
+      },
+      async content(event, trigger, player) {
+        const target = trigger.player
+        if (!target.hasSkill('tck_water_debuff')) {
+          await target.addSkill('tck_water_debuff')
+        }
+      }
+    }
+    lib.skill['tck_water_debuff'] = {
+      ruleSkill: true,
+      mark: true,
+      marktext: '水',
+      intro: {
+        name: '水负面效果',
+        content: '不能用锦囊牌'
+      },
+      mod: {
+        cardEnabled2(card, player) {
+          if (get.name(card) != 'tck_ni_shui_xing_zhou' &&
+            (get.type(card) == 'trick' || get.type(card) == 'delay')) {
+            return false;
+          }
+        },
+      },
+    }
+    // ---------------------- 其他属性 end -------d------------------
   },
   // 配置自定义属性
   translates: function () {
@@ -482,6 +529,10 @@ const natureConfig = {
     lib.translate['tck_fei_dao_sha'] = '飞刀'
     lib.translate['tck_fei_dao_sha_info'] = lib.translate['sha_nature_tck_fei_dao_info']
     lib.translate['tck_fei_dao_sha2'] = '飞刀'
+    lib.translate['sha_nature_tck_water_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点水属性伤害。'
+    lib.translate['tck_water_sha'] = '水杀'
+    lib.translate['tck_water_sha_info'] = lib.translate['sha_nature_tck_water_info']
+    lib.translate['tck_water_sha2'] = '水杀'
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------
@@ -502,6 +553,12 @@ const natureConfig = {
     lib.translate['tck_lie_effect'] = '烈酒'
     lib.translate['tck_lie_jiu_info'] = '同酒<br/>下一张杀伤害+2，<br/>下一张杀使用时判定，若为黑色，该杀失效。<br/>（效果持续至回合结束）'
     // ----------------------- 酒属性 end --------------------------
+
+    // ---------------------- 其他属性 begin -----------------------
+    lib.translate['_tck_water_effect'] = '水属性伤害'
+    lib.translate['_tck_water_effect_info'] = '造成伤害让本次受伤者获得水负面效果'
+    lib.translate['tck_water_debuff'] = '水负面效果'
+    // ----------------------- 其他属性 end ------------------------
   },
   // 重设属性，参考金庸群侠传扩展的代码
   resetLib: function () {
