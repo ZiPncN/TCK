@@ -1340,9 +1340,144 @@ export const cards = {
         }
       },
     },
+    "tck_card_bei": {
+      image: "ext:TCK/imgs/cards/tck_card_bei.png",
+      fullskin: true,
+      type: "delay",               // 判定牌
+      filterTarget(card, player, target) {
+        return !target.hasJudge('tck_card_bei') && player != target;  // 判断目标是否已有同名判定牌
+      },
+      judge(card) {    // 判定函数
+        if (get.suit(card) == 'spade' || get.suit(card) == 'diamond') return -2;
+        if (get.suit(card) == 'club') return -1;
+        return 1;
+      },
+      effect() {          // 判定效果
+        if (result.suit == 'diamond')
+          player.addTempSkill("tck_card_bei_skill_diamond", { player: "phaseJieshuAfter" })
+        if (result.suit == 'club')
+          player.addTempSkill("tck_card_bei_skill_club", { player: "phaseJieshuAfter" })
+        if (result.suit == 'spade')
+          player.addTempSkill("tck_card_bei_skill_spade", { player: "phaseJieshuAfter" })
+      },
+    },
+    "tck_card_su": {
+      image: "ext:TCK/imgs/cards/tck_card_su.png",
+      fullskin: true,
+      toself: true,
+      enable(card, player) {
+        return player.isDamaged();
+      },
+      savable: true,
+      selectTarget: [1, 2],
+      filterTarget(card, player, target) {
+        return target.isDamaged();
+      },
+      modTarget(card, player, target) {
+        return target.isDamaged();
+      },
+      type: "basic",
+      async content(event, trigger, player) {
+        const targets = event.targets
+        if (targets.length == 1) {
+          await targets[0].recover(1)
+          await targets[0].recover(1)
+        } else {
+          await event.target.recover(1)
+        }
+      },
+      ai: {
+        tag: {
+          recover: 2,
+          save: 2,
+        },
+      }
+    },
+    // todo 猴子偷桃不能被无懈
+    "tck_hou_zi_tou_tao": {
+      image: "ext:TCK/imgs/cards/tck_hou_zi_tou_tao.png",
+      fullskin: true,
+      type: 'trick',
+      filterTarget: true,
+      global: 'g_tck_hou_zi_tou_tao',
+      async content(event, trigger, player) {
+        let info = event.getParent(2).tck_hou_zi_tou_taoinfo || event.getParent(3).tck_hou_zi_tou_taoinfo
+        if (!info) {
+          await event.finish()
+          return
+        }
+        player.$fullscreenpop('猴子偷桃', 'fire');
+        await info.evt.cancel()
+        await player.gain(info.evt.cards, 'gain2')
+      }
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    // todo 猴子偷桃不能被无懈
+    "g_tck_hou_zi_tou_tao": {
+      trigger: { global: ['useCard'] },
+      direct: true,
+      filter: function (event, player) {
+        if (event.player == player) return false;
+        if (!lib.filter.targetEnabled({ name: 'tck_hou_zi_tou_tao' }, player, event.player)) return false;
+        if (!taoList.contains(get.name(event.card))) return false
+        return player.hasUsableCard('tck_hou_zi_tou_tao');
+      },
+      content: function () {
+        event.tck_hou_zi_tou_taoinfo = {
+          source: trigger.player,
+          evt: trigger
+        }
+        player.chooseToUse(
+          get.prompt('tck_hou_zi_tou_tao', trigger.player).replace(/发动/, '使用'),
+          function (card, player) {
+            if (card.name != 'tck_hou_zi_tou_tao') return false;
+            return lib.filter.cardEnabled(card, player, 'forceEnable');
+          },
+          trigger.player,
+          -1).targetRequired = true
+      }
+    },
+    "tck_card_bei_skill_spade": {
+      //跳过出牌阶段
+      cardSkill: true,
+      forced: true,
+      trigger: {
+        player: "phaseUseBefore",
+      },
+      async content(event, trigger, player) {
+        await trigger.cancel();
+      },
+    },
+    "tck_card_bei_skill_club": {
+      //少摸1张牌
+      cardSkill: true,
+      forced: true,
+      trigger: {
+        player: "phaseDrawBegin2",
+      },
+      filter(event, player) {
+        return !event.numFixed;
+      },
+      async content(event, trigger, player) {
+        trigger.num--;
+      },
+    },
+    "tck_card_bei_skill_diamond": {
+      //少摸2张牌
+      cardSkill: true,
+      forced: true,
+      trigger: {
+        player: "phaseDrawBegin2",
+      },
+      filter(event, player) {
+        return !event.numFixed;
+      },
+      async content(event, trigger, player) {
+        trigger.num -= 2;
+      },
+    },
     "tck_land_hai_tckland_effect": {
       ruleSkill: true,
       direct: true,
@@ -2590,6 +2725,12 @@ export const cards = {
     },
   },
   translate: {
+    "tck_hou_zi_tou_tao": "猴子偷桃",
+    "tck_hou_zi_tou_tao_info": "当有玩家使用桃时使用，获得那张桃。",
+    "tck_card_su": "酥",
+    "tck_card_su_info": "同桃，可指定2人或结算2次。",
+    "tck_card_bei": "碑",
+    "tck_card_bei_info": "判黑桃过回合，梅花少摸一张，方块少摸两张，红桃无效。",
     "tck_bing_tian_xue_di": "冰天雪地",
     "tck_bing_tian_xue_di_info": "其他所有人需使用一张杀或闪，否则受到一点水属性伤害。",
     "tck_shui_gong": "水攻",
@@ -2842,6 +2983,10 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['heart', 9, 'tck_hou_zi_tou_tao'],
+    ['diamond', 6, 'tck_hou_zi_tou_tao'],
+    ['heart', 12, 'tck_card_su'],
+    ['club', 10, 'tck_card_bei'],
     ['club', 13, 'tck_bing_tian_xue_di'],
     ['spade', 11, 'tck_shui_gong'],
     ['club', 3, 'tck_ni_shui_xing_zhou'],
@@ -3188,5 +3333,8 @@ export const cards = {
     ['diamond', 1, 'qixingbaodao'],
   ],
 }
+
+// 桃类基本牌
+const taoList = ['tao', 'tck_ju', 'tck_li', 'tck_xiang_jiao', 'tck_card_su']
 
 export default cards
