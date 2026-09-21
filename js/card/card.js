@@ -1393,6 +1393,119 @@ export const cards = {
         },
       }
     },
+    "tck_xuan_wu_hu_bi": {
+      image: "ext:TCK/imgs/cards/tck_xuan_wu_hu_bi.png",
+      fullskin: true,
+      type: "equip",               // 装备牌
+      subtype: "equip2",           // 防具
+      async onEquip(event, trigger, player) {
+        await player.gainMaxHp(1)
+      },
+      async onLose(event, trigger, player) {
+        await player.loseMaxHp(1)
+      }
+    },
+    "tck_zou_wei_shang_ji": {
+      image: "ext:TCK/imgs/cards/tck_zou_wei_shang_ji.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: -1,
+      toSelf: true,
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      async content(event, trigger, player) {
+        await event.target.rest({ type: "round", count: 1 })
+      }
+    },
+    "tck_lin_zhen_huan_jiang": {
+      image: "ext:TCK/imgs/cards/tck_lin_zhen_huan_jiang.png",
+      fullskin: true,
+      type: "trick",
+      enable(card, player, event) {
+        return player.countCards("h") > 1
+      },
+      selectTarget: -1,
+      toSelf: true,
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      async content(event, trigger, player) {
+        const target = event.target
+        const res = await target.chooseToDiscard(true, [1, Infinity], "h").forResult()
+        const disCardNum = res.cards.length
+        let list = []
+        const charList = Object.keys(lib.character)
+        if (charList.length > 0) {
+          for (let i = 0; i < disCardNum && charList.length > 0; i++) {
+            const j = Math.floor(Math.random() * charList.length)
+            list.push(charList.splice(j, 1)[0])
+          }
+        }
+        if (!list.length) {
+          return
+        }
+        const result = await player
+          .chooseButton()
+          .set("createDialog", ["请选择其中一个代替你的将牌", [list, "character"]])
+          .forResult()
+        if (result?.links?.length) {
+          await player.reinitCharacter(player.name, result.links[0])
+        }
+      }
+    },
+    "tck_shang_yao": {
+      image: "ext:TCK/imgs/cards/tck_shang_yao.png",
+      fullskin: true,
+      enable: true,
+      selectTarget: 1,
+      filterTarget: true,
+      type: "basic",
+      async content(event, trigger, player) {
+        await event.target.draw(1)
+        // 移除所有负面效果
+        const skills = await event.target.getSkills().filter(skill => skill.includes("debuff"))
+        await event.target.removeSkills(skills, false)
+      },
+      ai: {
+        tag: {
+          draw: 1,
+        },
+      }
+    },
+    "tck_scp_500": {
+      image: "ext:TCK/imgs/cards/tck_scp_500.png",
+      fullskin: true,
+      type: "delay",
+      filterTarget(card, player, target) {
+        return !target.hasJudge('tck_scp_500');
+      },
+      judge(card) {
+        if (get.suit(card) == 'heart') return 1;
+        return -1;
+      },
+      effect() {
+        if (result.bool) {
+          if (result.suit == 'heart') {
+            // 移除所有负面效果
+            const skills = player.getSkills().filter(skill => skill.includes("debuff"))
+            player.removeSkills(skills, false)
+            player.recoverTo(player.maxHp)
+          }
+        }
+      },
+    },
+    "tck_tian_ming_cha": {
+      image: "ext:TCK/imgs/cards/tck_tian_ming_cha.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      skills: ["tck_tian_ming_cha_skill"],
+      distance: {
+        attackFrom: -4,
+      },
+    },
     // todo 猴子偷桃不能被无懈
     "tck_hou_zi_tou_tao": {
       image: "ext:TCK/imgs/cards/tck_hou_zi_tou_tao.png",
@@ -1426,7 +1539,6 @@ export const cards = {
       },
       content: function () {
         event.tck_hou_zi_tou_taoinfo = {
-          source: trigger.player,
           evt: trigger
         }
         player.chooseToUse(
@@ -1437,6 +1549,57 @@ export const cards = {
           },
           trigger.player,
           -1).targetRequired = true
+      }
+    },
+    "tck_tian_ming_cha_effect": {
+      equipSkill: true,
+      forced: true,
+      trigger: { player: "shaMiss" },
+      async content(event, trigger, player) {
+        const target = trigger.target
+        const res = await target.chooseToDiscard("天命刹：请弃置一张基本牌，否则此【杀】依然造成伤害", card => get.type(card) == 'basic').forResult()
+        if (res.bool) {
+          trigger.result = { bool: false }
+          trigger.trigger("shaUnhirt")
+          return
+        }
+        await target.damage(get.nature(trigger.card))
+        trigger.result = { bool: true }
+        trigger.trigger("shaDamage")
+        trigger.finish()
+      }
+    },
+    "tck_tian_ming_cha_skill": {
+      equipSkill: true,
+      trigger: { player: "useCardToPlayered" },
+      filter(event, player) {
+        return event.card.name == "sha";
+      },
+      logTarget: "target",
+      preHidden: true,
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.color(card) == 'red') {
+            return 1
+          } else if (get.color(card) == 'black') {
+            return 2
+          } return -0.5
+        }).forResult()
+        if (get.color(res) == 'black') {
+          trigger.getParent().directHit.add(trigger.target)
+        } else if (get.color(res) == 'red') {
+          await player.addTempSkill("tck_tian_ming_cha_effect")
+          const id = trigger.target.playerid
+          const map = trigger.getParent().customArgs
+          if (!map[id]) {
+            map[id] = {}
+          }
+          if (typeof map[id].shanRequired == "number") {
+            map[id].shanRequired++
+          } else {
+            map[id].shanRequired = 2;
+          }
+        }
       }
     },
     "tck_card_bei_skill_spade": {
@@ -2725,6 +2888,21 @@ export const cards = {
     },
   },
   translate: {
+    "tck_tian_ming_cha": "天命刹",
+    "tck_tian_ming_cha_info": "判黑，不能闪<br/>红，两张闪<br/>需在弃一张基本牌。",
+    "tck_tian_ming_cha_effect": "天命刹",
+    "tck_tian_ming_cha_skill": "天命刹",
+    "tck_tian_ming_cha_skill_info": "判黑，不能闪，红，两张闪，需在弃一张基本牌。",
+    "tck_scp_500": "SCP500 万能药",
+    "tck_scp_500_info": "对任一角色使用，判定，若为红桃，则移除所有负面效果并将体力回复至上限。",
+    "tck_shang_yao": "伤药",
+    "tck_shang_yao_info": "令一名角色摸一张牌并移除负面效果。",
+    "tck_lin_zhen_huan_jiang": "临阵换将",
+    "tck_lin_zhen_huan_jiang_info": "使用后弃X张牌（至少1张），然后你摸X张将牌，你选择1个代替你的将牌。（体力不变）",
+    "tck_zou_wei_shang_ji": "走为上计",
+    "tck_zou_wei_shang_ji_info": "对自己使用，移出游戏一轮。",
+    "tck_xuan_wu_hu_bi": "玄武护臂",
+    "tck_xuan_wu_hu_bi_info": "装备后你增加1点体力上限，失去后减少1点体力上限。",
     "tck_hou_zi_tou_tao": "猴子偷桃",
     "tck_hou_zi_tou_tao_info": "当有玩家使用桃时使用，获得那张桃。",
     "tck_card_su": "酥",
@@ -2983,6 +3161,14 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['diamond', 2, 'tck_tian_ming_cha'],
+    ['heart', 8, 'tck_scp_500'],
+    ['diamond', 10, 'tck_shang_yao'],
+    ['heart', 1, 'tck_shang_yao'],
+    ['heart', 11, 'tck_shang_yao'],
+    ['club', 8, 'tck_lin_zhen_huan_jiang'],
+    ['diamond', 13, 'tck_zou_wei_shang_ji'],
+    ['club', 9, 'tck_xuan_wu_hu_bi'],
     ['heart', 9, 'tck_hou_zi_tou_tao'],
     ['diamond', 6, 'tck_hou_zi_tou_tao'],
     ['heart', 12, 'tck_card_su'],
