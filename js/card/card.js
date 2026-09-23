@@ -137,24 +137,23 @@ export const cards = {
     "tck_xjx_de_zeng_li": {
       image: "ext:TCK/imgs/cards/tck_xjx_de_zeng_li.png",
       fullskin: true,
-      type: "delay",               // 判定牌
-      //装备牌默认只能对自己用
+      type: "delay",
       filterTarget(card, player, target) {
-        return !target.hasJudge('tck_xjx_de_zeng_li');  // 判断目标是否已有同名判定牌
+        return !target.hasJudge('tck_xjx_de_zeng_li')
       },
       judge(card) {    // 判定函数
-        if (get.suit(card) == 'heart') return 2;
-        if (get.suit(card) == 'diamond') return 1;
-        return -1;
+        if (get.suit(card) == 'heart') return 2
+        if (get.suit(card) == 'diamond') return 1
+        return -1
       },
-      effect() {          // 判定效果
+      async effect(event, trigger, player, result) {
         if (result.bool) {
           if (result.suit == 'heart')
-            player.draw(2);
+            player.draw(2)
           if (result.suit == 'diamond')
-            player.draw(1);
+            player.draw(1)
         }
-      },
+      }
     },
     "tck_ti_xing_chong_su": {
       image: "ext:TCK/imgs/cards/tck_ti_xing_chong_su.png",
@@ -1412,11 +1411,13 @@ export const cards = {
       enable: true,
       selectTarget: -1,
       toSelf: true,
+      global: "tck_zou_wei_shang_ji_effect",
       filterTarget(card, player, target) {
         return target == player
       },
       async content(event, trigger, player) {
-        await event.target.rest({ type: "round", count: 1 })
+        event.target.storage.tck_zou_wei_shang_ji = player.hp
+        await event.target.rest()
       }
     },
     "tck_lin_zhen_huan_jiang": {
@@ -1506,12 +1507,12 @@ export const cards = {
         attackFrom: -4,
       },
     },
-    // todo 猴子偷桃不能被无懈
     "tck_hou_zi_tou_tao": {
       image: "ext:TCK/imgs/cards/tck_hou_zi_tou_tao.png",
       fullskin: true,
       type: 'trick',
       filterTarget: true,
+      wuxieable: true,    // 可被无懈
       global: 'g_tck_hou_zi_tou_tao',
       async content(event, trigger, player) {
         let info = event.getParent(2).tck_hou_zi_tou_taoinfo || event.getParent(3).tck_hou_zi_tou_taoinfo
@@ -1524,10 +1525,279 @@ export const cards = {
         await player.gain(info.evt.cards, 'gain2')
       }
     },
+    "tck_cheng_shi_bai_tian": {
+      image: "ext:TCK/imgs/cards/tck_cheng_shi_bai_tian.png",
+      fullskin: true,
+      type: "land",
+      enable: true,
+      notarget: true,
+      async content(event, trigger, player) {
+        player.changeTckLand("tck_cheng_shi_bai_tian")
+        game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
+    "tck_cheng_shi_hei_ye": {
+      image: "ext:TCK/imgs/cards/tck_cheng_shi_hei_ye.png",
+      fullskin: true,
+      type: "land",
+      enable: true,
+      notarget: true,
+      async content(event, trigger, player) {
+        player.changeTckLand("tck_cheng_shi_hei_ye")
+        game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
+    "tck_scp_018": {
+      image: "ext:TCK/imgs/cards/tck_scp_018.png",
+      fullskin: true,
+      type: "delay",
+      filterTarget(card, player, target) {
+        return !target.hasJudge('tck_scp_018')
+      },
+      judge(card) {
+        if (get.color(card) == 'red') return -1
+        return 1
+      },
+      judge2(result) {
+        if (result.bool == false) {
+          return true
+        }
+        return false
+      },
+      cardPrompt(card) {
+        let str = "判定，若为红色受到X点伤害（X为本牌已造成的伤害+1），然后置于下家。"
+        if (card.storage?.tck_scp_018) {
+          str += '<br><span style="font-family:yuanli">此牌已判定命中过：' + card.storage.tck_scp_018 + "次</span>";
+        }
+        return str
+      },
+      async effect(event, trigger, player, result) {
+        const { card } = event
+        if (result.bool == false) {
+          if (card) {
+            if (typeof card.storage.tck_scp_018 != "number") {
+              card.storage.tck_scp_018 = 1
+            } else {
+              card.storage.tck_scp_018++
+            }
+            await player.damage(card.storage.tck_scp_018, "nosource")
+          }
+        }
+        await player.addJudgeNext(card)
+      },
+      async cancel(event, trigger, player) {
+        await player.addJudgeNext(event.card)
+      },
+      ai: {
+        tag: {
+          damage: Infinity,
+        },
+      },
+    },
+    "tck_xin_guan": {
+      image: "ext:TCK/imgs/cards/tck_xin_guan.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip2",
+      enable: false,   // 防止误装
+      skills: ["tck_xin_guan_skill"],
+      onEquip() {
+        player.addSkill("tck_xin_guan_debuff")
+      }
+    },
+    "tck_yi_miao_jia_qiang_zhen": {
+      image: "ext:TCK/imgs/cards/tck_yi_miao_jia_qiang_zhen.png",
+      fullskin: true,
+      enable: true,
+      type: "trick",
+      recastable: true,
+      targetprompt: "治疗新冠",
+      toSelf: true,
+      filterTarget(card, player, target) {
+        return target.hasSkill("tck_xin_guan_debuff") && player == target
+      },
+      async content(event, trigger, player) {
+        await event.target.removeSkill("tck_xin_guan_debuff")
+      },
+    },
+    "tck_scp_330": {
+      image: "ext:TCK/imgs/cards/tck_scp_330.png",
+      fullskin: true,
+      type: "land",
+      enable: true,
+      notarget: true,
+      async content(event, trigger, player) {
+        await player.changeTckLand("tck_scp_330")
+        if (!_status.tck_scp_330) {
+          _status.tck_scp_330 = []
+        }
+        _status.tck_scp_330 = await get.cards(10, false)
+        await game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
+    "tck_qi_xing_bao_dao": {
+      image: "ext:TCK/imgs/cards/tck_qi_xing_bao_dao.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      selectTarget: -1,
+      manualConfirm: true,
+      enable: false,   // 防止误装
+      skills: ["tck_qi_xing_bao_dao_skill"],
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
-    // todo 猴子偷桃不能被无懈
+    "tck_qi_xing_bao_dao_skill": {
+      equipSkill: true,
+      //少摸1张牌
+      forced: true,
+      trigger: {
+        player: "phaseDrawBegin2",
+      },
+      filter(event, player) {
+        return !event.numFixed;
+      },
+      async content(event, trigger, player) {
+        trigger.num--;
+      },
+    },
+    "tck_scp_330_tckland_skill": {
+      ruleSkill: true,
+      enable: "phaseUse",
+      prompt() {
+        return `本牌上还有${_status.tck_scp_330.length}张牌`
+      },
+      filter(event, player) {
+        return _status.tck_scp_330.length > 0
+      },
+      async content(event, trigger, player) {
+        const card = _status.tck_scp_330.shift()
+        await player.gain(card, "gain2")
+        await player.addMark("tck_scp_330_tckland_skill", 1)
+        if (player.countMark("tck_scp_330_tckland_skill") >= 3) {
+          await player.loseHp(player.hp)
+        }
+      }
+    },
+    "tck_xin_guan_skill": {
+      equipSkill: true,
+      forced: true,
+      lastDo: true,
+      trigger: {
+        player: "phaseZhunbei"
+      },
+      async content(event, trigger, player) {
+        await player.loseMaxHp(1)
+        if (!player.hasSkill("tck_xin_guan_debuff")) {
+          await player.addSkill("tck_xin_guan_debuff")
+        }
+        await player.addMark("tck_xin_guan_debuff", 1)
+      }
+    },
+    "tck_xin_guan_debuff": {
+      equipSkill: true,
+      marktext: "※",
+      intro: {
+        name: "新冠",
+        content: "当前已因新冠扣了#点体力上限"
+      },
+      async onremove(player, type) {
+        await player.gainMaxHp(player.countMark("tck_xin_guan_debuff"))
+        await player.clearMark("tck_xin_guan_debuff")
+      }
+    },
+    "tck_zou_wei_shang_ji_effect": {
+      cardSkill: true,
+      forced: true,
+      popup: false,
+      trigger: {
+        global: "roundStart"
+      },
+      async content(event, trigger, player) {
+        const players = game.players.filter(p => !!p.storage.tck_zou_wei_shang_ji)
+        for (let p of players) {
+          const hp = p.storage.tck_zou_wei_shang_ji
+          await p.restEnd({ hp: hp })
+          delete p.storage.tck_zou_wei_shang_ji
+        }
+      }
+    },
+    "tck_cheng_shi_hei_ye_tckland_skill_1": {
+      ruleSkill: true,
+      forced: true,
+      trigger: {
+        player: "useCard"
+      },
+      filter(event, player) {
+        return get.name(event.card) == "nanman"
+      },
+      async content(event, trigger, player) {
+        trigger.targets.length = 0;
+        trigger.all_excluded = true;
+      }
+    },
+    "tck_cheng_shi_hei_ye_tckland_skill_2": {
+      ruleSkill: true,
+      forced: true,
+      trigger: {
+        player: "useCard",
+      },
+      filter(event, player) {
+        return get.name(event.card) == "guohe" || get.name(event.card) == "shunshou"
+      },
+      async content(event, trigger, player) {
+        trigger.effectCount++
+      }
+    },
+    "tck_cheng_shi_bai_tian_tckland_skill": {
+      ruleSkill: true,
+      forced: true,
+      group: ["tck_cheng_shi_bai_tian_tckland_skill_sha",
+        "tck_cheng_shi_bai_tian_tckland_skill_shan"],
+      subSkill: {
+        "sha": {
+          ruleSkill: true,
+          enable: ["chooseToUse", "chooseToRespond"],
+          filterCard: { name: "shan" },
+          viewAs: { name: "sha" },
+          viewAsFilter(player) {
+            if (!player.countCards("h", "shan")) {
+              return false;
+            }
+          },
+          position: "h",
+          prompt: "将一张闪当杀使用或打出",
+        },
+        "shan": {
+          ruleSkill: true,
+          enable: ["chooseToRespond", "chooseToUse"],
+          filterCard: { name: "sha" },
+          viewAs: { name: "shan" },
+          prompt: "将一张杀当闪使用或打出",
+          position: "h",
+          viewAsFilter(player) {
+            if (!player.countCards("h", "sha")) {
+              return false;
+            }
+          }
+        }
+      },
+    },
+    "tck_cheng_shi_bai_tian_tckland_skill_1": {
+      ruleSkill: true,
+      forced: true,
+      trigger: {
+        player: "useCard"
+      },
+      filter(event, player) {
+        return get.name(event.card) == "nanman"
+      },
+      async content(event, trigger, player) {
+        trigger.targets.length = 0;
+        trigger.all_excluded = true;
+      }
+    },
     "g_tck_hou_zi_tou_tao": {
       trigger: { global: ['useCard'] },
       direct: true,
@@ -2888,12 +3158,42 @@ export const cards = {
     },
   },
   translate: {
+    "tck_qi_xing_bao_dao": "七星宝刀",
+    "tck_qi_xing_bao_dao_info": "此刀挂于玩家头顶，需每回合少摸一张牌。",
+    "tck_qi_xing_bao_dao_skill": "七星宝刀",
+    "tck_qi_xing_bao_dao_skill_info": "需每回合少摸一张牌。",
+    "tck_scp_330": "SCP330 只能拿两个",
+    "tck_scp_330_info": "场地效果：当替换为此场景时，将10张牌置于本牌上，一人于回合内可获得本牌上任意张牌，若有一人拿了3张及以上，其进入濒死状态。",
+    "tck_scp_330_tckland_skill": "SCP330 只能拿两个",
+    "tck_scp_330_tckland_skill_info": "当替换为此场景时，将10张牌置于本牌上，一人于回合内可获得本牌上任意张牌，若有一人拿了3张及以上，其进入濒死状态。",
+    "tck_yi_miao_jia_qiang_zhen": "疫苗加强针",
+    "tck_yi_miao_jia_qiang_zhen_info": "①你可以恢复你因“新冠”失去的体力上限。②重铸。",
+    "tck_xin_guan": "新冠",
+    "tck_xin_guan_info": "每回合扣一滴血量上限。",
+    "tck_xin_guan_append": "灵感来源：黑板报",
+    "tck_xin_guan_skill": "新冠",
+    "tck_xin_guan_skill_info": "每回合扣一滴血量上限。",
+    "tck_scp_018": "SCP-018 弹力球",
+    "tck_scp_018_info": "判定，若为红色受到X点伤害（X为本牌已造成的伤害+1），然后置于下家。",
+    "tck_cheng_shi_hei_ye": "城市（黑夜）",
+    "tck_cheng_shi_hei_ye_info": "场地效果：南蛮入侵无效，<br/>顺手牵羊及过河拆桥可以对2张牌生效。",
+    "tck_cheng_shi_hei_ye_tckland_skill": "城市（黑夜）",
+    "tck_cheng_shi_hei_ye_tckland_skill_info": "南蛮入侵无效，<br/>顺手牵羊及过河拆桥可以对2张牌生效。",
+    "tck_cheng_shi_hei_ye_tckland_skill_1": "城市（黑夜）",
+    "tck_cheng_shi_hei_ye_tckland_skill_2": "城市（黑夜）",
+    "tck_cheng_shi_bai_tian": "城市（白天）",
+    "tck_cheng_shi_bai_tian_info": "场地效果：杀可以当闪，<br/>闪可以当杀，<br/>免疫南蛮。",
+    "tck_cheng_shi_bai_tian_tckland_skill": "城市（白天）",
+    "tck_cheng_shi_bai_tian_tckland_skill_info": "杀可以当闪，<br/>闪可以当杀，<br/>免疫南蛮。",
+    "tck_cheng_shi_bai_tian_tckland_skill_1": "城市（白天）",
+    "tck_cheng_shi_bai_tian_tckland_skill_sha": "城市（白天）",
+    "tck_cheng_shi_bai_tian_tckland_skill_shan": "城市（白天）",
     "tck_tian_ming_cha": "天命刹",
     "tck_tian_ming_cha_info": "判黑，不能闪<br/>红，两张闪<br/>需在弃一张基本牌。",
     "tck_tian_ming_cha_effect": "天命刹",
     "tck_tian_ming_cha_skill": "天命刹",
     "tck_tian_ming_cha_skill_info": "判黑，不能闪，红，两张闪，需在弃一张基本牌。",
-    "tck_scp_500": "SCP500 万能药",
+    "tck_scp_500": "SCP-500 万能药",
     "tck_scp_500_info": "对任一角色使用，判定，若为红桃，则移除所有负面效果并将体力回复至上限。",
     "tck_shang_yao": "伤药",
     "tck_shang_yao_info": "令一名角色摸一张牌并移除负面效果。",
@@ -3161,6 +3461,14 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ["heart", 9, 'tck_qi_xing_bao_dao', null, ["gifts"]],
+    ['spade', 9, 'tck_scp_330'],
+    ["heart", 5, "tck_yi_miao_jia_qiang_zhen"],
+    ["heart", 6, "tck_yi_miao_jia_qiang_zhen"],
+    ["spade", 3, "tck_xin_guan", null, ["gifts"]],
+    ['heart', 8, 'tck_scp_018'],
+    ['spade', 13, 'tck_cheng_shi_hei_ye'],
+    ['heart', 1, 'tck_cheng_shi_bai_tian'],
     ['diamond', 2, 'tck_tian_ming_cha'],
     ['heart', 8, 'tck_scp_500'],
     ['diamond', 10, 'tck_shang_yao'],
@@ -3513,10 +3821,7 @@ export const cards = {
     ['heart', 3, 'tuixinzhifu'],
     ['heart', 1, 'taoyuan'],
     ['spade', 10, 'yitianjian'],
-    ['club', 13, 'suijiyingbian'],
-
-    //TODO TCK_QI_XING_DAO
-    ['diamond', 1, 'qixingbaodao'],
+    ['club', 13, 'suijiyingbian']
   ],
 }
 

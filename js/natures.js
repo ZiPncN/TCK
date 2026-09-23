@@ -399,7 +399,7 @@ const natureConfig = {
       lastDo: true,
       trigger: { player: 'useCardEnd' },
       filter(event, player) {
-        return get.nature(event.card) == 'tck_tian_xian' && !player.isDying()
+        return get.nature(event.card) == 'tck_tian_xian' && event.getParent(2).name != '_save'
       },
       async content(event, trigger, player) {
         await player.recover(1)
@@ -413,7 +413,7 @@ const natureConfig = {
       lastDo: true,
       trigger: { player: 'useCardEnd' },
       filter(event, player) {
-        return get.nature(event.card) == 'tck_lie' && !player.isDying()
+        return get.nature(event.card) == 'tck_lie' && event.getParent(2).name != '_save'
       },
       async content(event, trigger, player) {
         player.storage.jiu += 1

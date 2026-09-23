@@ -72,12 +72,22 @@ export default function () {
                         if (players) {
                             players.forEach(player => player.clearMark("tck_qi_xiao_tckland_skill"))
                         }
+                        //移除海的效果
                         const landName = this.skill.split("_").slice(0, 3).join("_")
                         if (landName == 'tck_land_hai') {
                             for (let player of players) {
                                 await player.removeSkill("tck_land_hai_tckland_effect")
                             }
                         }
+                        //清空SCP330的计数并把SCP330剩余的牌置入弃牌堆
+                        if (players) {
+                            players.forEach(player => player.clearMark("tck_scp_330_tckland_skill"))
+                        }
+                        // 把SCP330剩余的牌置入弃牌堆
+                        game.log(_status.tck_scp_330, "进入了弃牌堆")
+                        await game.cardsDiscard(_status.tck_scp_330)
+                        if (!!_status.tck_scp_330) delete _status.tck_scp_330
+
                         if (this.skill) {
                             //移除技能逻辑，下面的ui.skill只是作为展示
                             //适配多效果的场地
