@@ -384,7 +384,14 @@ export const cards = {
       selectTarget: 1,
       filterTarget: true,
       async content(event, trigger, player) {
-        let target = event.target
+        const target = event.target
+        if (player.hasSkill("tck_lao_dong_zui_guang_rong")) {
+          return
+        }
+        if (!player.hasSkill("tck_chi_ba_ba")) {
+          await target.loseHp(1)
+          return
+        }
         if (target == player) {
           let res = await target
             .chooseButton([
@@ -1645,9 +1652,114 @@ export const cards = {
       enable: false,   // 防止误装
       skills: ["tck_qi_xing_bao_dao_skill"],
     },
+    "tck_liang_yin_qiang": {
+      image: "ext:TCK/imgs/cards/tck_liang_yin_qiang.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      skills: ["tck_liang_yin_qiang_skill"],
+      distance: {
+        attackFrom: -2,
+      },
+    },
+    "tck_wei_jian_de_quan_zhang": {
+      image: "ext:TCK/imgs/cards/tck_wei_jian_de_quan_zhang.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      skills: ["tck_wei_jian_de_quan_zhang_skill"],
+      distance: {
+        attackFrom: -4,
+      },
+    },
+    "tck_zou_huo_ru_mo": {
+      image: "ext:TCK/imgs/cards/tck_zou_huo_ru_mo.png",
+      fullskin: true,
+      type: "delay",
+      filterTarget(card, player, target) {
+        return !target.hasJudge('tck_zou_huo_ru_mo') && player != target
+      },
+      judge(card) {
+        if (get.suit(card) != 'diamond') return -1
+        return 1
+      },
+      judge2(result) {
+        if (result.bool == false) {
+          return true
+        }
+        return false
+      },
+      async effect(event, trigger, player, result) {
+        if (result.bool == false) {
+          const skills = await player.getSkills(false)
+          await player.addTempSkill("tck_zou_huo_ru_mo_mark", "roundStart")
+          await player.tempBanSkill(skills, "roundStart")
+        }
+      },
+    },
+
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_zou_huo_ru_mo_mark": {
+      cardSkill: true,
+      unique: true,
+      mark: true,
+      marktext: "※",
+      intro: {
+        name: "走火入魔",
+        content: "技能全部失效一轮"
+      },
+    },
+    "tck_wei_jian_de_quan_zhang_skill": {
+      equipSkill: true,
+      trigger: {
+        global: "judge",
+      },
+      popup: false,
+      filter(event, player) {
+        return player.countCards("h") > 0;
+      },
+      async cost(event, trigger, player) {
+        event.result = await player
+          .chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt(event.skill), "h", function (card) {
+            const player = _status.event.player;
+            const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+            if (mod2 != "unchanged") {
+              return mod2;
+            }
+            const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+            if (mod != "unchanged") {
+              return mod;
+            }
+            return true;
+          })
+          .set("judging", trigger.player.judging[0])
+          .forResult();
+      },
+      async content(event, trigger, player) {
+        await player.respond(event.cards, "highlight", event.name, "noOrdering");
+        trigger.player.judging[0] = event.cards[0];
+        trigger.orderingCards.addArray(event.cards);
+        game.log(trigger.player, "的判定牌改为", event.cards[0]);
+        await game.delay(2);
+      },
+    },
+    "tck_liang_yin_qiang_skill": {
+      equipSkill: true,
+      trigger: {
+        player: "useCardEnd"
+      },
+      filter(event, player) {
+        return get.name(event.card) != "tck_liang_yin_qiang" && get.color(event.card) == "red" && player.countCards("he", card => get.color(card) == "black")
+      },
+      async content(event, trigger, player) {
+        const res = await player.chooseToDiscard("请弃置一张黑色牌", "he", card => get.color(card) == "black", true).forResult()
+        if (res.bool) {
+          await player.gain(trigger.cards, "gain2")
+        }
+      },
+    },
     "tck_qi_xing_bao_dao_skill": {
       equipSkill: true,
       //少摸1张牌
@@ -2968,7 +3080,7 @@ export const cards = {
       async content(event, trigger, player) {
         let shis = player.getCards("h").filter(card => get.name(card) == "tck_shi")
         await player.discard(shis)
-        if (player.name != "tch_hwj_wzh") {
+        if (!player.hasSkill("tck_lao_dong_zui_guang_rong")) {
           await player.loseHp(shis.length)
         }
       }
@@ -3158,6 +3270,16 @@ export const cards = {
     },
   },
   translate: {
+    "tck_zou_huo_ru_mo": "走火入魔",
+    "tck_zou_huo_ru_mo_info": "判定，若不为方块，技能全部失效一轮。",
+    "tck_wei_jian_de_quan_zhang": "玮健的权杖",
+    "tck_wei_jian_de_quan_zhang_info": "可以用手牌进行改判。",
+    "tck_wei_jian_de_quan_zhang_skill": "玮健的权杖",
+    "tck_wei_jian_de_quan_zhang_skill_info": "可以用手牌进行改判。",
+    "tck_liang_yin_qiang": "亮银枪",
+    "tck_liang_yin_qiang_info": "你使用的红牌结算后，你可以弃置一张黑牌，收回该红牌。",
+    "tck_liang_yin_qiang_skill": "亮银枪",
+    "tck_liang_yin_qiang_skill_info": "你使用的红牌结算后，你可以弃置一张黑牌，收回该红牌。",
     "tck_qi_xing_bao_dao": "七星宝刀",
     "tck_qi_xing_bao_dao_info": "此刀挂于玩家头顶，需每回合少摸一张牌。",
     "tck_qi_xing_bao_dao_skill": "七星宝刀",
@@ -3167,7 +3289,7 @@ export const cards = {
     "tck_scp_330_tckland_skill": "SCP330 只能拿两个",
     "tck_scp_330_tckland_skill_info": "当替换为此场景时，将10张牌置于本牌上，一人于回合内可获得本牌上任意张牌，若有一人拿了3张及以上，其进入濒死状态。",
     "tck_yi_miao_jia_qiang_zhen": "疫苗加强针",
-    "tck_yi_miao_jia_qiang_zhen_info": "①你可以恢复你因“新冠”失去的体力上限。②重铸。",
+    "tck_yi_miao_jia_qiang_zhen_info": "①你可以恢复你因“新冠”失去的体力上限。<br/>②重铸。",
     "tck_xin_guan": "新冠",
     "tck_xin_guan_info": "每回合扣一滴血量上限。",
     "tck_xin_guan_append": "灵感来源：黑板报",
@@ -3461,6 +3583,9 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['diamond', 1, 'tck_zou_huo_ru_mo'],
+    ['heart', 6, 'tck_wei_jian_de_quan_zhang'],
+    ['diamond', 7, 'tck_liang_yin_qiang'],
     ["heart", 9, 'tck_qi_xing_bao_dao', null, ["gifts"]],
     ['spade', 9, 'tck_scp_330'],
     ["heart", 5, "tck_yi_miao_jia_qiang_zhen"],
