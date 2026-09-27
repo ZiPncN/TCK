@@ -1242,12 +1242,13 @@ export const cards = {
         return target != player
       },
       async content(event, trigger, player) {
-        let cards = get.cards(1, true)
-        await event.target.showCards(cards)
+        const target = event.target
+        const cards = await get.cards(1, true)
         const suit = get.suit(cards[0])
+        await target.showCards(cards)
         const res = await player.chooseToDiscard(`是否弃置一张${get.translation(suit)}花色的手牌，对${get.translation(event.target)}造成一点水属性伤害`, card => get.suit(card) == suit).forResult()
         if (res.bool) {
-          await event.target.damage(player, 1, 'tck_water')
+          await target.damage(player, 1, 'tck_water')
         }
       },
       ai: {
@@ -1606,7 +1607,8 @@ export const cards = {
       fullskin: true,
       type: "equip",
       subtype: "equip2",
-      enable: false,   // 防止误装
+      manualConfirm: true,
+      enable: false, //  防止误装
       skills: ["tck_xin_guan_skill"],
       onEquip() {
         player.addSkill("tck_xin_guan_debuff")
@@ -1648,8 +1650,8 @@ export const cards = {
       type: "equip",
       subtype: "equip1",
       selectTarget: -1,
+      enable: false, //  防止误装
       manualConfirm: true,
-      enable: false,   // 防止误装
       skills: ["tck_qi_xing_bao_dao_skill"],
     },
     "tck_liang_yin_qiang": {
@@ -1697,10 +1699,86 @@ export const cards = {
         }
       },
     },
-
+    "tck_fang_di_hua_ji": {
+      image: "ext:TCK/imgs/cards/tck_fang_di_hua_ji.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      distance: { attackFrom: 5 },
+      skills: ["tck_fang_di_hua_ji_skill"],
+      global: ["tck_fang_di_hua_ji_use"],
+    },
+    "tck_card_nanmen": {
+      type: "trick",
+      enable: true,
+      selectTarget: -1,
+      filterTarget: true,
+      async content(event, trigger, player) {
+      }
+    },
+    "tck_card_zhe_ji": {
+      image: "ext:TCK/imgs/cards/tck_card_zhe_ji.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      manualConfirm: true,
+      enable: false, //  防止误装
+      distance: { attackFrom: 1 }
+    },
+    "tck_card_yin_feng_jia": {
+      image: "ext:TCK/imgs/cards/tck_card_yin_feng_jia.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip2",
+      manualConfirm: true,
+      enable: false, //  防止误装
+      skills: ["yinfengjia_skill"],
+    },
+    "tck_card_wu_feng_jian": {
+      image: "ext:TCK/imgs/cards/tck_card_wu_feng_jian.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      manualConfirm: true,
+      enable: false, //  防止误装
+      skills: ["wufengjian_skill"]
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_fang_di_hua_ji_use": {
+      forced: true,
+      cardSkill: true,
+      popup: false,
+      trigger: {
+        player: ["gainEnd"],
+        global: ["phaseBefore"],
+      },
+      filter(event, player) {
+        let cards = player.getCards("h");
+        return cards.some(card => get.name(card) == "tck_fang_di_hua_ji")
+      },
+      async content(event, trigger, player) {
+        let cards = player.getCards("h").filter(card => get.name(card) == "tck_fang_di_hua_ji")
+        for (let card of cards) {
+          await player.chooseUseTarget(card, true)
+        }
+      }
+    },
+    "tck_fang_di_hua_ji_skill": {
+      equipSkill: true,
+      enable: ["phaseUse"],
+      filter(event, player) {
+        return player.countCards("h") > 0
+      },
+      filterCard: true,
+      position: "h",
+      selectCard: -1,
+      async content(event, trigger, player) {
+        const card = game.createCard('sha')
+        await player.chooseUseTarget(card)
+      },
+    },
     "tck_zou_huo_ru_mo_mark": {
       cardSkill: true,
       unique: true,
@@ -2116,6 +2194,7 @@ export const cards = {
     },
     "tck_zhi_jie_sheng_li_effect": {
       cardSkill: true,
+      unique: true,
       forced: true,
       charlotte: true,
       trigger: {
@@ -2387,6 +2466,7 @@ export const cards = {
     },
     "tck_gong_shou_jian_bei_skill": {
       cardSkill: true,
+      unique: true,
       enable: ["chooseToUse", "chooseToResponse"],
       filter(event, player) {
         let cards = player.getCards("hs")
@@ -2473,6 +2553,7 @@ export const cards = {
     },
     "tck_card_ao_zhan_skill": {
       cardSkill: true,
+      unique: true,
       enable: ["chooseToUse", "chooseToResponse"],
       filter(event, player) {
         let cards = player.getCards("hs")
@@ -3270,6 +3351,18 @@ export const cards = {
     },
   },
   translate: {
+    "tck_card_wu_feng_jian": "无锋剑",
+    "tck_card_wu_feng_jian_info": "◆你使用杀时，须弃置一张牌。",
+    "tck_card_yin_feng_jia": "引蜂甲",
+    "tck_card_yin_feng_jia_info": "·你受到锦囊牌伤害+1。",
+    "tck_card_zhe_ji": "折戟",
+    "tck_card_zhe_ji_info": "这是一把坏掉的武器。",
+    "tck_card_nanmen": "南门",
+    "tck_fang_di_hua_ji": "方地画戟",
+    "tck_fang_di_hua_ji_info": "摸到立即装备，你可以弃置所有手牌，视为使用一张杀。",
+    "tck_fang_di_hua_ji_skill": "方地画戟",
+    "tck_fang_di_hua_ji_skill_info": "你可以弃置所有手牌，视为使用一张杀。",
+    "tck_fang_di_hua_ji_append": "恶搞武器",
     "tck_zou_huo_ru_mo": "走火入魔",
     "tck_zou_huo_ru_mo_info": "判定，若不为方块，技能全部失效一轮。",
     "tck_wei_jian_de_quan_zhang": "玮健的权杖",
@@ -3496,7 +3589,7 @@ export const cards = {
     "tck_yu_hang_fu": "宇航服",
     "tck_yu_hang_fu_info": "不占防具位，在月面行动自如。",
     "tck_wu_qie": "雾切",
-    "tck_wu_qie_info": "冰属性+1伤害，杀可以当冰杀，免对方冰属性。",
+    "tck_wu_qie_info": "冰属性+1伤害，杀可以当冰杀，免对方冰属性。<br/>范围+2",
     "tck_wu_qie_skill_1": "雾切",
     "tck_wu_qie_skill_2": "雾切",
     "tck_wu_qie_skill_3": "雾切",
@@ -3583,6 +3676,7 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ['diamond', 12, 'tck_fang_di_hua_ji'],
     ['diamond', 1, 'tck_zou_huo_ru_mo'],
     ['heart', 6, 'tck_wei_jian_de_quan_zhang'],
     ['diamond', 7, 'tck_liang_yin_qiang'],
@@ -3635,9 +3729,9 @@ export const cards = {
     ['diamond', 6, 'shan', 'tck_bi'],
     ['heart', 6, 'tck_card_jue_zhi_tong'],
     ['heart', 9, 'jiu', 'tck_tian_xian'],
-    ['spade', 10, 'shan', 'tck_shan_dian'],
-    ['club', 9, 'shan', 'tck_shan_dian'],
-    ['spade', 9, 'shan', 'tck_shan_dian'],
+    ['spade', 10, 'shan', 'tck_shan_dian', ["gifts"]],
+    ['club', 9, 'shan', 'tck_shan_dian', ["gifts"]],
+    ['spade', 9, 'shan', 'tck_shan_dian', ["gifts"]],
     ['diamond', 9, 'shan', 'tck_shan_sha'],
     ['heart', 10, 'shan', 'tck_shan_sha'],
     ['diamond', 6, 'shan', 'tck_shan_sha'],
@@ -3803,7 +3897,7 @@ export const cards = {
     ['diamond', 7, 'shan'],
     ['diamond', 9, 'shan'],
     ['diamond', 2, 'shan'],
-    ['diamond', 4, 'shan'],
+    ['diamond', 4, 'shan', ["gifts"]],
     ['heart', 1, 'wanjian'],
     ['heart', 6, 'wuzhong'],
     ['heart', 8, 'wuzhong'],
@@ -3904,7 +3998,7 @@ export const cards = {
     ['club', 5, 'chuqibuyi'],
     ['diamond', 12, 'fangtian'],
     ['diamond', 3, 'wugu'],
-    ['heart', 5, 'wugu'],
+    ['heart', 5, 'wugu', ["gifts"]],
     ['heart', 1, 'wugu'],
     ['spade', 10, 'zhujinqiyuan'],
     ['club', 3, 'renwang'],
@@ -3923,13 +4017,13 @@ export const cards = {
     ['spade', 7, 'guanshi'],
     ['club', 1, 'muniu'],
     ['club', 12, 'lanyinjia'],
-    ['heart', 5, 'zheji'],
+    ['heart', 5, 'tck_card_zhe_ji', null, ["gifts"]],
     ['spade', 12, 'zhanxiang'],
     ['diamond', 8, 'qijia'],
     ['spade', 2, 'cixiong'],
     ['spade', 2, 'juedou'],
     ['club', 1, 'juedou'],
-    ['club', 2, 'wufengjian'],
+    ['club', 2, 'tck_card_wu_feng_jian', null, ["gifts"]],
     ['spade', 2, 'hanbing'],
     ['diamond', 4, 'zhuque'],
     ['heart', 11, 'yiyi'],
@@ -3938,7 +4032,7 @@ export const cards = {
     ['diamond', 7, 'liulongcanjia'],
     ['heart', 1, 'zhuge'],
     ['diamond', 1, 'zhuge'],
-    ['club', 6, 'yinfengjia'],
+    ['club', 6, 'tck_card_yin_feng_jia', null, ["gifts"]],
     ['heart', 11, 'yuanjiao'],
     ['club', 10, 'zhibi'],
     ['diamond', 7, 'shengdong'],

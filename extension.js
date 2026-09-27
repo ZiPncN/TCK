@@ -7,7 +7,8 @@ import r_cards from "./js/card/card_r.js"
 import lxy_cards from "./js/card/card_lxy.js"
 import groups from "./js/groups.js"
 import natureConfig from "./js/natures.js"
-export const type = "extension";
+import globalSkills from "./js/globalSkill.js"
+export const type = "extension"
 export default function () {
     return {
         name: "TCK",
@@ -51,7 +52,7 @@ export default function () {
          * config为本扩展选项、pack为本扩展包
          */
         content: (config, pack) => {
-            //独立地图牌前提代码
+            //独立地图牌前提代码，参考BLEACH扩展代码
             lib.element.player.changeTckLand = async function (url) {
                 var next = game.createEvent('changeTckLand');
                 next.player = this;
@@ -258,11 +259,7 @@ export default function () {
             natureConfig.resetLib()
 
             // 添加全局技能
-            game.addGlobalSkill("tck_card_ao_zhan_skill")
-            game.addGlobalSkill("tck_gong_shou_jian_bei_skill")
-            game.addGlobalSkill("tck_zhi_jie_sheng_li_effect")
-            game.addGlobalSkill("tck_she_skill")
-            game.addGlobalSkill("tck_fei_dao_skill")
+            globalSkills.forEach(skill => game.addGlobalSkill(skill))
         },
         precontent: () => {
             groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))
@@ -356,4 +353,4 @@ export default function () {
         files: {},
         connect: true
     }
-};
+}

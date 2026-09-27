@@ -440,6 +440,30 @@ export const characters = {
       skills: ["tck_zhan", "tck_chu_zi", "tck_ban_ren_ban_ling"],
       img: "extension/TCK/imgs/charactors/tck_hunpoyaomeng.jpg",
     },
+    "tck_taowajiangpai": {
+      sex: "none",
+      group: "tck_group_tao_wa",
+      hp: 0,
+      maxHp: 0,
+      skills: ["tck_tao_wa"],
+      img: "extension/TCK/imgs/charactors/tck_taowajiangpai.jpg",
+    },
+    "tck_????": {
+      sex: "none",
+      group: "tck_group_?",
+      hp: 0,
+      maxHp: 0,
+      skills: ["tck_??"],
+      img: "extension/TCK/imgs/charactors/tck_wenhao.jpg",
+    },
+    "tck_tiannanmen": {
+      sex: "none",
+      group: null,
+      hp: 6,
+      maxHp: 6,
+      skills: ["tck_tian_nan_men"],
+      img: "extension/TCK/imgs/charactors/tck_tiannanmen.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -485,6 +509,9 @@ export const characters = {
 
   },
   translate: {
+    "tck_tiannanmen": "天南门",
+    "tck_????": "????",
+    "tck_taowajiangpai": "套娃武将",
     "tck_r_mmhf_wzh": "王子含",
     "tck_r_wzh_fhz_yc": "王子含 傅还政 隐藏角色",
     "tck_r_wzh": "王子含",
@@ -550,6 +577,7 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_????": "??",
     "tck_r_mmhf_wzh": "蒙面悍匪",
     "tck_r_wzh_fhz_yc": "婺城双杰",
     "tck_r_wzh": "老黄牛肉面馆",
@@ -624,7 +652,7 @@ export const characters = {
         "tck_laoba", "tck_gumingdilian", "tck_laofeng",
         "tck_xiangjiaojun", "tck_moduoluoyinqinai",
         "tck_dongfangzhangzhu", "tck_nanmen", "tck_hunpoyaomeng",
-
+        "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
       ],
 
       //三国

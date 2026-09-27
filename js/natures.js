@@ -1,6 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js"
-export const noNatures = ['tck_kan', 'tck_zhan', 'tck_she', 'tck_fei_dao']
-const simShaNatures = ['tck_light', 'tck_lxy_gou', 'tck_kan', 'tck_zhan', 'tck_she', 'tck_she_fire', 'tck_she_thunder', 'tck_fei_dao', 'tck_water']
+export const noNatures = ['tck_kan', 'tck_zhan', 'tck_she', 'tck_fei_dao', 'stab']
+const simShaNatures = ['tck_light', 'tck_kan', 'tck_zhan', 'tck_she', 'tck_she_fire', 'tck_she_thunder', 'tck_fei_dao', 'tck_water',
+  'tck_lxy_niu', 'tck_lxy_gou', 'tck_lxy_9',]
 const natureConfig = {
   shaNatures: [
     // 光杀
@@ -28,15 +29,6 @@ const natureConfig = {
         lineColor: [255, 239, 64],//使用属性杀指定目标的指示线颜色
         color: [255, 239, 64],//使用属性杀指定目标的指示线卡牌字体颜色
       },
-    ],
-    // 流星雨狗杀
-    [
-      'tck_lxy_gou',//添加的属性id
-      '流星雨·狗',//添加的属性翻译
-      {
-        linked: true,//是否触发铁索
-        background: "extension/TCK/imgs/cards/tck_lxy_gou_sha.png",//这张属性杀的图片
-      }
     ],
     // 砍
     [
@@ -107,6 +99,34 @@ const natureConfig = {
         color: [135, 211, 248],//使用属性杀指定目标的指示线卡牌字体颜色
       }
     ],
+    // 流星雨牛杀
+    [
+      'tck_lxy_niu',//添加的属性id
+      '流星雨·牛',//添加的属性翻译
+      {
+        linked: true,//是否触发铁索
+        background: "extension/TCK/imgs/cards/tck_lxy_niu_sha.png",//这张属性杀的图片
+      }
+    ],
+    // 流星雨狗杀
+    [
+      'tck_lxy_gou',//添加的属性id
+      '流星雨·狗',//添加的属性翻译
+      {
+        linked: true,//是否触发铁索
+        background: "extension/TCK/imgs/cards/tck_lxy_gou_sha.png",//这张属性杀的图片
+      }
+    ],
+
+    // 流星雨杀玖
+    [
+      'tck_lxy_9',//添加的属性id
+      '流星雨·玖',//添加的属性翻译
+      {
+        linked: true,//是否触发铁索
+        background: "extension/TCK/imgs/cards/tck_lxy_9_sha.png",//这张属性杀的图片
+      }
+    ],
   ],
   // 设置自定义属性的效果
   skills: function () {
@@ -128,19 +148,6 @@ const natureConfig = {
           }
         }).forResult();
         if (res.color == "red") trigger.num++
-      }
-    }
-    lib.skill['_tck_lxy_gou_effect'] = {
-      ruleSkill: true,
-      logTarget: 'player',
-      forced: true,
-      lastDo: true,
-      trigger: { source: 'damageBefore' },
-      filter(event, player) {
-        return event.hasNature('tck_lxy_gou') && !player.hasSkill('gzbuqu');
-      },
-      async content(event, trigger, player) {
-        await player.addSkill("gzbuqu")
       }
     }
     lib.skill['_tck_kan_effect'] = {
@@ -246,6 +253,7 @@ const natureConfig = {
     }
     lib.skill['tck_she_skill'] = {
       ruleSkill: true,
+      unique: true,
       mod: {
         targetInRange(card, player, target, now) {
           if (get.name(card) == 'sha' &&
@@ -272,6 +280,7 @@ const natureConfig = {
     }
     lib.skill['tck_fei_dao_skill'] = {
       ruleSkill: true,
+      unique: true,
       forced: true,
       popup: false,
       firstDo: true,
@@ -310,6 +319,47 @@ const natureConfig = {
         //   }
         // },
       },
+    }
+    lib.skill['tck_lxy_niu_skill'] = {
+      ruleSkill: true,
+      forced: true,
+      firstDo: true,
+      unique: true,
+      trigger: {
+        player: 'useCard'
+      },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_lxy_niu'
+      },
+      async content(event, trigger, player) {
+        await trigger.directHit.addArray(game.players);
+      }
+    }
+    lib.skill['_tck_lxy_gou_effect'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      lastDo: true,
+      trigger: { source: 'damageBefore' },
+      filter(event, player) {
+        return event.hasNature('tck_lxy_gou') && !player.hasSkill('gzbuqu');
+      },
+      async content(event, trigger, player) {
+        await player.addSkill("gzbuqu")
+      }
+    }
+    lib.skill['_tck_lxy_9_effect'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      lastDo: true,
+      trigger: { source: 'damageBefore' },
+      filter(event, player) {
+        return event.hasNature('tck_lxy_9')
+      },
+      async content(event, trigger, player) {
+        await trigger.player.link(true)
+      }
     }
     // ----------------------- 杀属性 end --------------------------
 
@@ -487,12 +537,6 @@ const natureConfig = {
     lib.translate['tck_light_sha'] = '光杀'
     lib.translate['tck_light_sha_info'] = lib.translate['sha_nature_tck_light_info']
     lib.translate['tck_light_sha2'] = '光杀'
-    lib.translate['_tck_lxy_gou_effect'] = '流星雨·狗'
-    lib.translate['_tck_lxy_gou_effect_info'] = '此杀命中得不屈'
-    lib.translate['sha_nature_tck_lxy_gou_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点流星雨·狗属性伤害，此杀命中得不屈。'
-    lib.translate['tck_lxy_gou_sha'] = '流星雨杀·狗'
-    lib.translate['tck_lxy_gou_sha_info'] = lib.translate['sha_nature_tck_lxy_gou_info']
-    lib.translate['tck_lxy_gou_sha2'] = '流星雨杀·狗'
     lib.translate['_tck_kan_effect'] = '砍'
     lib.translate['_tck_kan_effect_info'] = '砍命中后让对手选择1项：<br/>①弃2张牌。<br/>②额外扣1滴血。';
     lib.translate['sha_nature_tck_kan_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点伤害，砍命中后让对手选择1项：①弃2张牌。②额外扣1滴血。';
@@ -533,6 +577,26 @@ const natureConfig = {
     lib.translate['tck_water_sha'] = '水杀'
     lib.translate['tck_water_sha_info'] = lib.translate['sha_nature_tck_water_info']
     lib.translate['tck_water_sha2'] = '水杀'
+
+    lib.translate['_tck_lxy_niu_effect'] = '流星雨·牛'
+    lib.translate['_tck_lxy_niu_effect_info'] = '此杀不可被闪'
+    lib.translate['sha_nature_tck_lxy_niu_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点流星雨·牛属性伤害，此杀不可被闪。'
+    lib.translate['tck_lxy_niu_sha'] = '流星雨杀·牛'
+    lib.translate['tck_lxy_niu_sha_info'] = lib.translate['sha_nature_tck_lxy_niu_info']
+    lib.translate['tck_lxy_niu_sha2'] = '流星雨杀·牛'
+    lib.translate['_tck_lxy_gou_effect'] = '流星雨·狗'
+    lib.translate['_tck_lxy_gou_effect_info'] = '此杀命中得不屈'
+    lib.translate['sha_nature_tck_lxy_gou_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点流星雨·狗属性伤害，此杀命中得不屈。'
+    lib.translate['tck_lxy_gou_sha'] = '流星雨杀·狗'
+    lib.translate['tck_lxy_gou_sha_info'] = lib.translate['sha_nature_tck_lxy_gou_info']
+    lib.translate['tck_lxy_gou_sha2'] = '流星雨杀·狗'
+
+    lib.translate['_tck_lxy_9_effect'] = '流星雨·玖'
+    lib.translate['_tck_lxy_9_effect_info'] = '命中后武将横置'
+    lib.translate['sha_nature_tck_lxy_9_info'] = '出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，否则你对其造成1点流星雨·玖属性伤害，命中后武将横置。'
+    lib.translate['tck_lxy_9_sha'] = '流星雨杀·玖'
+    lib.translate['tck_lxy_9_sha_info'] = lib.translate['sha_nature_tck_lxy_9_info']
+    lib.translate['tck_lxy_9_sha2'] = '流星雨杀·玖'
     // ----------------------- 杀属性 end --------------------------
 
     // ---------------------- 闪属性 begin -------------------------

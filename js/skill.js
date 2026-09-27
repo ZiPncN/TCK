@@ -2006,7 +2006,7 @@ export const skills = {
         player: "enterGame",
       },
       filter(event, player) {
-        return player.storage.tck_e_mo
+        return player.storage.tck_e_mo && (event.name != "phase" || game.phaseNumber == 0)
       },
       async content(event, trigger, player) {
         let res = await player.chooseTarget("请选择一名目标，令其进入地狱", 1, true).forResult()
@@ -2015,7 +2015,8 @@ export const skills = {
           await target.loseHp(target.hp)
         }
         player.storage.tck_e_mo = false
-        player.awakenSkill("tck_e_mo")
+        await player.awakenSkill("tck_e_mo")
+        // await player.removeSkill("tck_e_mo")
       }
     },
     "tck_yi_ji": {
@@ -3011,6 +3012,55 @@ export const skills = {
         player.storage.tck_ban_ren_ban_ling = true
       },
     },
+    "tck_tao_wa": {
+      charlotte: true,
+      forced: true,
+      trigger: {
+        global: "gameStart"
+      },
+      async content(event, trigger, player) {
+        let list = []
+        const charList = Object.keys(lib.character)
+        if (charList.length > 0) {
+          for (let i = 0; i < 3 && charList.length > 0; i++) {
+            const j = Math.floor(Math.random() * charList.length)
+            list.push(charList.splice(j, 1)[0])
+          }
+        }
+        if (!list.length) {
+          return
+        }
+        const result = await player
+          .chooseButton(true)
+          .set("createDialog", ["请选择其中一个替换你的将牌", [list, "character"]])
+          .forResult()
+        if (result?.links?.length) {
+          await player.reinitCharacter(player.name, result.links[0])
+        }
+      },
+    },
+    "tck_??": {
+      charlotte: true,
+      forced: true,
+      trigger: {
+        global: "gameStart"
+      },
+      async content(event, trigger, player) {
+        const res = await player.chooseTarget("请选择一名其他角色，将武将牌变成其的武将。", true, (card, player, target) => target != player).forResult()
+        const target = res.targets[0]
+        await player.reinitCharacter(player.name, target.name1)
+      }
+    },
+    "tck_tian_nan_men": {
+      enable: "chooseToUse",
+      filterCard: true,
+      position: "h",
+      viewAs: { name: "tck_card_nanmen" },
+      viewAsFilter(player) {
+        return player.countCards("h") > 0
+      },
+      prompt: "手上任意一张牌当南门无限次数"
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -3458,6 +3508,12 @@ export const skills = {
     },
   },
   translate: {
+    "tck_tian_nan_men": "南门",
+    "tck_tian_nan_men_info": "手上任意一张牌当南门无限次数。",
+    "tck_??": "??",
+    "tck_??_info": "????????",
+    "tck_tao_wa": "套娃",
+    "tck_tao_wa_info": "锁定技，你从将牌堆内抽三张将牌选一个替换本将牌进行游戏。",
     "tck_r_meng_mian": "蒙面",
     "tck_r_meng_mian_info": "受到伤害时，可以将自己变身成任意一个名字中带有“含”字的角色，随后获得宝物面罩。面罩无作用，可现实生活中佩戴。",
     "tck_r_niu_lai": "牛来",

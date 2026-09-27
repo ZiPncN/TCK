@@ -80,7 +80,9 @@ export const lxy_cards = {
     "tck_liu_xing_cha_hua_info": "回复1点体力，回复1点体力上限，判红色再回1点体力。",
   },
   list: [
+    ['diamond', 10, 'sha', 'tck_lxy_niu'],
     ['diamond', 4, 'sha', 'tck_lxy_gou'],
+    ['club', 9, 'sha', 'tck_lxy_9'],
     ['heart', 4, "tck_liu_xing_cha_hua"],
     ['diamond', 7, "tck_liu_xing_yu_de_gong_yuan"],
   ],

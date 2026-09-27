@@ -53,7 +53,6 @@ const TCKUtil = {
 
     return true;
   },
-
   /**
    * 判断数组内所有对象内容全部相等
    * @param {Array} arr
@@ -64,11 +63,17 @@ const TCKUtil = {
     const first = arr[0];
     return arr.every(item => TCKUtil.isDeepEqual(item, first));
   },
-
-  //封装随机花色和点数的函数
+  /**
+   * 获取随机花色
+   * @returns 随机花色
+   */
   getRandomSuit() {
     return suits[Math.floor(Math.random() * suits.length)]
   },
+  /**
+   * 获取随机点数
+   * @returns 随机点数
+   */
   getRandomNumber() {
     return numbers[Math.floor(Math.random() * numbers.length)]
   },

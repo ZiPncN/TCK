@@ -55,6 +55,17 @@ export const r_cards = {
     "tck_r_mian_zhao_info": "无作用。",
   },
   list: [
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
+    // ['diamond', 10, 'sha', ''],
   ],
 }
 
