@@ -258,6 +258,8 @@ export default function () {
 
             natureConfig.resetLib()
 
+            // 添加语音
+
             // 添加全局技能
             globalSkills.forEach(skill => game.addGlobalSkill(skill))
         },

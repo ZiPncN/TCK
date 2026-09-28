@@ -1743,9 +1743,139 @@ export const cards = {
       enable: false, //  防止误装
       skills: ["wufengjian_skill"]
     },
+    "tck_card_nv_zhuang": {
+      image: "ext:TCK/imgs/cards/tck_card_nv_zhuang.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip2",
+      manualConfirm: true,
+      enable: false, //  防止误装
+      skills: ["tck_card_nv_zhuang_skill"],
+      onEquip() {
+        if (
+          player.sex == "male" &&
+          player.countCards("he", function (cardx) {
+            return card.cards && !card.cards.includes(cardx);
+          })
+        ) {
+          player
+            .chooseToDiscard(
+              true,
+              function (card) {
+                return !_status.event.card?.cards.includes(card)
+              },
+              "he"
+            )
+            .set("card", card)
+        }
+      },
+      onLose() {
+        if (player.sex != "male") {
+          return
+        }
+        var next = game.createEvent("tck_card_nv_zhuang_lose")
+        event.next.remove(next)
+        var evt = event.getParent()
+        if (evt.getlx === false) {
+          evt = evt.getParent()
+        }
+        evt.after.push(next)
+        next.player = player
+        next.setContent(function () {
+          if (player.countCards("he")) {
+            player.popup("tck_card_nv_zhuang")
+            player.chooseToDiscard(true, "he")
+          }
+        })
+      },
+    },
+    "tck_chen_huo_da_jie": {
+      image: "ext:TCK/imgs/cards/tck_chen_huo_da_jie.png",
+      fullskin: true,
+      type: 'trick',
+      filterTarget: true,
+      global: 'g_tck_chen_huo_da_jie',
+      wuxieable: true,
+      content: function () {
+        if (target.countCards('he')) {
+          player.gainPlayerCard('he', target, true);
+        }
+      },
+      ai: {
+        order: 1,
+        useful: 6,
+        value: 6,
+        result: {
+          target: -1
+        },
+        tag: {
+          loseCard: 1
+        }
+      }
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "g_tck_chen_huo_da_jie": {
+      trigger: { global: 'damageEnd' },
+      direct: true,
+      filter: function (event, player) {
+        if (event.player == player) return false;
+        if (!event.player.countCards('he')) return false;
+        if (!lib.filter.targetEnabled({ name: 'tck_chen_huo_da_jie' }, player, event.player)) return false;
+        if (event._notrigger.contains(event.player)) return false;
+        return player.hasUsableCard('tck_chen_huo_da_jie');
+      },
+      content: function () {
+        player.chooseToUse(
+          get.prompt('tck_chen_huo_da_jie', trigger.player).replace(/发动/, '使用'),
+          function (card, player) {
+            if (card.name != 'tck_chen_huo_da_jie') return false;
+            return lib.filter.cardEnabled(card, player, 'forceEnable');
+          }, trigger.player, -1).targetRequired = true;
+      }
+    },
+    "tck_card_nv_zhuang_skill": {
+      trigger: { target: "useCardToTargeted" },
+      forced: true,
+      equipSkill: true,
+      filter(event, player) {
+        if (player.hasSkillTag("unequip2")) {
+          return false;
+        }
+        if (
+          event.player.hasSkillTag("unequip", false, {
+            name: event.card ? event.card.name : null,
+            target: player,
+            card: event.card,
+          })
+        ) {
+          return false;
+        }
+        return event.card.name == "sha" && player.hasSex("male");
+      },
+      content() {
+        "step 0";
+        player.judge(function (card) {
+          return get.color(card) == "black" ? -2 : 0;
+        }).judge2 = function (result) {
+          return result.bool == false ? true : false;
+        };
+        "step 1";
+        if (result.bool === false) {
+          var map = trigger.customArgs,
+            id = player.playerid;
+          if (!map[id]) {
+            map[id] = {};
+          }
+          if (!map[id].extraDamage) {
+            map[id].extraDamage = 0;
+          }
+          map[id].extraDamage++;
+          game.log(trigger.card, "对", player, "的伤害+1");
+        }
+      },
+    },
     "tck_fang_di_hua_ji_use": {
       forced: true,
       cardSkill: true,
@@ -2930,6 +3060,18 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
+        if (player.hasSkillTag("unequip2")) {
+          return false;
+        }
+        if (
+          event.player.hasSkillTag("unequip", false, {
+            name: event.card ? event.card.name : null,
+            target: player,
+            card: event.card,
+          })
+        ) {
+          return false;
+        }
         return event.card.name == "sha" && get.color(event.card) == "red";
       },
       content() {
@@ -3351,6 +3493,11 @@ export const cards = {
     },
   },
   translate: {
+    "tck_chen_huo_da_jie": "趁火打劫",
+    "tck_chen_huo_da_jie_info": "当有角色受伤时使用，你获得其一张牌。",
+    "tck_card_nv_zhuang": "女装",
+    "tck_card_nv_zhuang_info": "当此牌进入或离开你的装备区<br/>·若你为男性，你需弃置一张非此牌的牌。<br/>·若你为男性，你被杀指定目标时判定，若为黑色，此杀伤害+1。",
+    "tck_card_nv_zhuang_skill": "女装",
     "tck_card_wu_feng_jian": "无锋剑",
     "tck_card_wu_feng_jian_info": "◆你使用杀时，须弃置一张牌。",
     "tck_card_yin_feng_jia": "引蜂甲",
@@ -3676,6 +3823,8 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ["club", 11, 'tck_chen_huo_da_jie'],
+    ["diamond", 8, 'tck_card_nv_zhuang', null, ["gifts"]],
     ['diamond', 12, 'tck_fang_di_hua_ji'],
     ['diamond', 1, 'tck_zou_huo_ru_mo'],
     ['heart', 6, 'tck_wei_jian_de_quan_zhang'],
