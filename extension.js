@@ -5,6 +5,7 @@ import cards from "./js/card/card.js"
 import ex_cards from "./js/card/card_ex.js"
 import r_cards from "./js/card/card_r.js"
 import lxy_cards from "./js/card/card_lxy.js"
+import character_cards from "./js/card/card_character.js"
 import groups from "./js/groups.js"
 import natureConfig from "./js/natures.js"
 import globalSkills from "./js/globalSkill.js"
@@ -255,11 +256,14 @@ export default function () {
             if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_LXY')) {
                 lib.card.list.addArray(lxy_cards.list);
             }
+            if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_CHARACTER')) {
+                lib.card.list.addArray(character_cards.list);
+            }
 
             natureConfig.resetLib()
 
             // 添加语音
-
+            game.addGlobalSkill("tck_send_skill_voice")
             // 添加全局技能
             globalSkills.forEach(skill => game.addGlobalSkill(skill))
         },
@@ -335,6 +339,20 @@ export default function () {
             if (!lib.config.cards.includes('TCK_LXY')) lib.config.cards.remove('TCK_LXY');
             lib.translate['TCK_LXY'] = 'TCK_LXY';
             if (!lib.config.TCK_LXY) game.saveConfig('cards', lib.config.cards.concat('TCK_LXY')), game.saveConfig('TCK_LXY', true);
+
+            game.import('card', function () {
+                return {
+                    name: "TCK_CHARACTER",
+                    connect: true,
+                    translate: { ...character_cards.translate },
+                    card: { ...character_cards.card },
+                    skill: { ...character_cards.skill },
+                }
+            })
+            lib.config.all.cards.push('TCK_CHARACTER');
+            if (!lib.config.cards.includes('TCK_CHARACTER')) lib.config.cards.remove('TCK_CHARACTER');
+            lib.translate['TCK_CHARACTER'] = 'TCK_CHARACTER';
+            if (!lib.config.TCK_CHARACTER) game.saveConfig('cards', lib.config.cards.concat('TCK_CHARACTER')), game.saveConfig('TCK_CHARACTER', true);
             //---------------------- 添加卡牌 end ----------------------
 
             //添加自定义属性

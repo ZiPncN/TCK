@@ -8,3 +8,5 @@ skill:      tck_skill
 全局:       tck_global
 
 负面效果：   _debuff
+
+_card：代表技能卡牌（锦囊）

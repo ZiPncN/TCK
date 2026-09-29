@@ -1424,7 +1424,7 @@ export const cards = {
         return target == player
       },
       async content(event, trigger, player) {
-        event.target.storage.tck_zou_wei_shang_ji = player.hp
+        event.target.storage.tck_zou_wei_shang_ji = event.target.hp
         await event.target.rest()
       }
     },
@@ -1813,9 +1813,197 @@ export const cards = {
         }
       }
     },
+    "tck_card_cang": {
+      image: "ext:TCK/imgs/cards/tck_card_cang.png",
+      fullskin: true,
+      toself: true,
+      enable(card, player) {
+        return !player.hasSkill("tck_card_cang_effect")
+      },
+      selectTarget: -1,
+      filterTarget(card, player, target) {
+        return target === player && !target.hasSkill("tck_card_cang_effect")
+      },
+      type: "basic",
+      async content(event, trigger, player) {
+        await player.addTempSkill("tck_card_cang_effect", { player: "phaseZhunbei" })
+      }
+    },
+    "tck_card_liang": {
+      image: "ext:TCK/imgs/cards/tck_card_liang.png",
+      fullskin: true,
+      type: 'basic',
+      toSelf: true,
+      selectTarget: -1,
+      filterTarget(card, player, target) {
+        return player == target
+      },
+      global: 'g_tck_card_liang',
+      async content(event, trigger, player) {
+        await event.target.draw(1)
+        let info = event.getParent(2).tck_card_liang || event.getParent(3).tck_card_liang
+        if (!info) {
+          await event.finish()
+          return
+        }
+        await info.evt.cancel()
+      }
+    },
+    "tck_shen_hong_dian_zuan": {
+      image: "ext:TCK/imgs/cards/tck_shen_hong_dian_zuan.png",
+      fullskin: true,
+      type: "trick",
+      selectTarget: 1,
+      enable: true,
+      filterTarget(card, player, target) {
+        return player != target
+      },
+      async content(event, trigger, player) {
+        const target = event.target
+        if (typeof event.shaRequired !== "number" || !event.shaRequired || event.shaRequired < 0) {
+          event.shaRequired = 2
+        }
+        if (typeof event.baseDamage !== "number") {
+          event.baseDamage = 2
+        }
+        while (event.shaRequired > 0) {
+          let result = { bool: false };
+          if (!event.directHit) {
+            const next = target.chooseToRespond();
+            next.set("filterCard", function (card, player) {
+              if (get.name(card) !== "sha") {
+                return false;
+              }
+              return lib.filter.cardRespondable(card, player);
+            });
+            next.set("prompt2", "打出【杀】来降低伤害，剩余伤害：" + event.shaRequired + "点");
+            next.set("ai", function (card) {
+              if (get.event().toRespond) {
+                return get.order(card);
+              }
+              return -1;
+            });
+            next.set(
+              "toRespond",
+              (() => {
+                if (target.hasSkillTag("noSha", null, "respond")) {
+                  return false;
+                }
+                if (target.hasSkillTag("useSha", null, "respond")) {
+                  return true;
+                }
+                if (event.baseDamage <= 0 || player.hasSkillTag("notricksource", null, event) || target.hasSkillTag("notrick", null, event)) {
+                  return false
+                }
+                if (event.baseDamage >= target.hp + (player.hasSkillTag("jueqing", false, target) || target.hasSkill("gangzhi") ? 0 : target.hujia)) {
+                  return true
+                }
+                const damage = get.damageEffect(target, player, target);
+                if (damage >= 0) {
+                  return false
+                }
+                if (
+                  event.shaRequired > 1 &&
+                  !target.hasSkillTag("freeSha", null, {
+                    player: player,
+                    card: event.card,
+                    type: "respond",
+                  }) &&
+                  event.shaRequired > target.mayHaveSha(target, "respond", null, "count")
+                ) {
+                  return false
+                }
+                return true
+              })()
+            )
+            next.set("respondTo", [player, event.card])
+            next.autochoose = lib.filter.autoRespondSha
+            result = await next.forResult()
+          }
+          if (!result?.bool) {
+            await target.damage(event.shaRequired)
+            break;
+          } else {
+            event.shaRequired--
+          }
+        }
+      },
+    },
+    "tck_yi_xie_meng_yan": {
+      image: "ext:TCK/imgs/cards/tck_yi_xie_meng_yan.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: 1,
+      filterTarget(card, player, target) {
+        return player != target && !target.hasSkill("tck_yi_xie_meng_yan_effect")
+      },
+      async content(event, trigger, player) {
+        if (player.hp > 1) {
+          await player.loseHp(1)
+        }
+        const target = event.target
+        await target.addSkill("tck_yi_xie_meng_yan_effect")
+      },
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_yi_xie_meng_yan_effect": {
+      mark: true,
+      marktext: "蒙",
+      intro: {
+        name: "蒙眼",
+        content: "下一张牌的效果失效"
+      },
+      cardSkill: true,
+      forced: true,
+      charlotte: true,
+      trigger: {
+        player: ["useCard"]
+      },
+      async content(event, trigger, player) {
+        trigger.targets.length = 0
+        trigger.all_excluded = true
+        await player.removeSkill("tck_yi_xie_meng_yan_effect")
+      }
+    },
+    "g_tck_card_liang": {
+      trigger: { player: 'phaseDiscardBefore' },
+      direct: true,
+      filter: function (event, player) {
+        if (event.player != player) return false
+        if (!lib.filter.targetEnabled({ name: 'tck_card_liang' }, player, event.player)) return false
+        return player.hasUsableCard('tck_card_liang')
+      },
+      content: function () {
+        event.tck_card_liang = {
+          evt: trigger
+        }
+        player.chooseToUse(
+          get.prompt('tck_card_liang', trigger.player).replace(/发动/, '使用'),
+          function (card, player) {
+            if (card.name != 'tck_card_liang') return false;
+            return lib.filter.cardEnabled(card, player, 'forceEnable');
+          },
+          trigger.player,
+          -1).targetRequired = true
+      }
+    },
+    "tck_card_cang_effect": {
+      cardSkill: true,
+      mark: true,
+      intro: {
+        content: "不能被伤害类基本牌选中"
+      },
+      mod: {
+        targetEnabled(card, player, target, now) {
+          if (get.is.damageCard(card) && get.type(card) == "basic") {
+            return false
+          }
+        },
+      },
+    },
     "g_tck_chen_huo_da_jie": {
       trigger: { global: 'damageEnd' },
       direct: true,
@@ -2848,7 +3036,7 @@ export const cards = {
           }
         ).forResult();
         if (get.type(res) == "equip") return
-        else if (get.suit(res) == "spade") await player.damage(3)
+        else if (get.suit(res) == "spade") await player.damage(3, "nosource")
         else if (get.suit(res) == "heart") await player.recover(2)
         else if (get.suit(res) == "diamond") await player.recover(1)
         else if (get.suit(res) == "club") await player.loseHp(player.hp)
@@ -3493,6 +3681,16 @@ export const cards = {
     },
   },
   translate: {
+    "tck_yi_xie_meng_yan": "以血蒙眼",
+    "tck_yi_xie_meng_yan_info": "出牌阶段，<br/>你自减一点体力，令一名玩家使用的下一张牌的效果失效。<br/>若你体力为1则无需减体力。",
+    "tck_yi_xie_meng_yan_effect": "以血蒙眼",
+    "tck_shen_hong_dian_zuan": "深红电钻",
+    "tck_shen_hong_dian_zuan_info": "伤害为2，无法闪避，只能出杀来降低伤害，可降到0。",
+    "tck_card_liang": "粮",
+    "tck_card_liang_info": "于弃牌阶段使用，你摸1张牌，然后跳过弃牌阶段。",
+    "tck_card_cang": "藏",
+    "tck_card_cang_info": "你下回合前不能被伤害类基本牌选中。",
+    "tck_card_cang_effect": "藏",
     "tck_chen_huo_da_jie": "趁火打劫",
     "tck_chen_huo_da_jie_info": "当有角色受伤时使用，你获得其一张牌。",
     "tck_card_nv_zhuang": "女装",
@@ -3823,6 +4021,11 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ["heart", 13, 'tck_yi_xie_meng_yan'],
+    ["heart", 5, 'tck_shen_hong_dian_zuan'],
+    ["club", 8, 'tck_card_liang'],
+    ["club", 8, 'tck_card_liang'],
+    ["diamond", 11, 'tck_card_cang'],
     ["club", 11, 'tck_chen_huo_da_jie'],
     ["diamond", 8, 'tck_card_nv_zhuang', null, ["gifts"]],
     ['diamond', 12, 'tck_fang_di_hua_ji'],

@@ -3035,7 +3035,8 @@ export const skills = {
           .set("createDialog", ["请选择其中一个替换你的将牌", [list, "character"]])
           .forResult()
         if (result?.links?.length) {
-          await player.reinitCharacter(player.name, result.links[0])
+          await player.reinit(player.name, result.links[0])
+          player.hp = player.maxHp
         }
       },
     },
@@ -3048,7 +3049,8 @@ export const skills = {
       async content(event, trigger, player) {
         const res = await player.chooseTarget("请选择一名其他角色，将武将牌变成其的武将。", true, (card, player, target) => target != player).forResult()
         const target = res.targets[0]
-        await player.reinitCharacter(player.name, target.name1)
+        await player.reinit(player.name, target.name1)
+        player.hp = player.maxHp
       }
     },
     "tck_tian_nan_men": {
@@ -3500,14 +3502,54 @@ export const skills = {
         if (result?.links?.length) {
           await player.reinitCharacter(player.name, result.links[0])
           await player.addSkill('tck_r_meng_mian')
-          const card = await game.createCard2('tck_r_mian_zhao', TCKUtil.getRandomSuit(), TCKUtil.getRandomNumber(), undefined)
+          const card = await game.createCard2('tck_r_mian_zhao', lib.suit.randomGet(), get.rand(1, 13), undefined)
           await player.gain(card, 'gain2')
           player.storage.tck_r_meng_mian = get.translation(result.links[0])
         }
       }
     },
+
+    // 添加语音
+    "tck_send_skill_voice": {
+      ruleSkill: true,
+      charlotte: true,
+      forced: true,
+      locked: true,
+      direct: true,
+      silent: true,
+      frequent: true,
+      firstDo: true,
+      popup: false,
+      enable: "phaseUse",
+      filter(event, player) {
+        const skills = player.getSkills(false, false)
+        if (skills.length == 0) return false
+        return true
+      },
+      async content(event, trigger, player) {
+        const skills = player.getSkills(false, false)
+        let allVoiceList = []
+        // 构建所有的技能：台词
+        skills.forEach(skill => {
+          const voiceMap = get.Audio.skill({ skill, player: player.name }).audioList
+          allVoiceList.push(...voiceMap)
+        })
+        if (allVoiceList.length == 0) return
+        let options = allVoiceList.map(voice => voice.text)
+        let result = await player.chooseButton(['选择一个语音播放', [options, "textbutton"]]).forResult()
+        if (result.bool) {
+          const skill = allVoiceList.find(voice => voice.text == result.links[0])
+          if (skill.text) {
+            await player.chat(skill.text)
+            game.broadcastAll(file => game.playAudio(file), skill.file)
+          }
+        }
+        player.markSkill(event.name)
+      }
+    }
   },
   translate: {
+    "tck_send_skill_voice": "技能语音",
     "tck_tian_nan_men": "南门",
     "tck_tian_nan_men_info": "手上任意一张牌当南门无限次数。",
     "tck_??": "??",
