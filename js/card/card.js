@@ -1247,14 +1247,12 @@ export const cards = {
         const suit = get.suit(cards[0])
         await target.showCards(cards)
         const res = await player.chooseToDiscard(`是否弃置一张${get.translation(suit)}花色的手牌，对${get.translation(event.target)}造成一点水属性伤害`, card => get.suit(card) == suit).forResult()
-        if (res.bool) {
-          await target.damage(player, 1, 'tck_water')
-        }
+        if (!res.bool) return
+        await target.damage(player, 1, 'tck_water')
       },
       ai: {
         tag: {
           damage: 1,
-          tck_waterDamage: 1,
           natureDamage: 1
         }
       }
@@ -1346,6 +1344,13 @@ export const cards = {
           }
         }
       },
+      ai: {
+        tag: {
+          damage: 1,
+          tck_waterDamage: 1,
+          natureDamage: 1
+        }
+      }
     },
     "tck_card_bei": {
       image: "ext:TCK/imgs/cards/tck_card_bei.png",
@@ -1946,9 +1951,93 @@ export const cards = {
         await target.addSkill("tck_yi_xie_meng_yan_effect")
       },
     },
+    "tck_qi_bing_bao_shuai": {
+      image: "ext:TCK/imgs/cards/tck_qi_bing_bao_shuai.png",
+      fullskin: true,
+      type: 'trick',
+      noTarget: true,
+      wuxieable: true,
+      global: 'g_tck_qi_bing_bao_shuai',
+      async content(event, trigger, player) {
+        let info = event.getParent(2).tck_qi_bing_bao_shuaiinfo || event.getParent(3).tck_qi_bing_bao_shuaiinfo
+        if (!info) {
+          await event.finish()
+          return
+        }
+        await player.discard(await player.getCards("h"))
+        await info.evt.cancel()
+      }
+    },
+    "tck_yin_ka": {
+      type: "trick",
+      fullskin: true,
+      image: "ext:TCK/imgs/cards/tck_yin_ka.png",
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_yin_ka_skill": {
+      cardSkill: true,
+      unique: true,
+      enable: ["chooseToUse", "chooseToResponse"],
+      filter(event, player) {
+        return player.countCards("hs", card => get.name(card) == "tck_yin_ka")
+      },
+      chooseButton: {
+        dialog(event, player) {
+          let list = [];
+          for (let name of lib.inpile) {
+            if (get.type(name) == "basic" || get.type(name) == "trick" || get.type(name) == "delay" || get.type(name) == "equip") {
+              list.push([get.translation(get.type(name)), "", name]);
+              if (name == "sha") {
+                for (let j of lib.inpile_nature) {
+                  list.push(["基本", "", "sha", j]);
+                }
+              }
+            }
+          }
+          return ui.create.dialog("怪异", [list, "vcard"]);
+        },
+        filter(button, player) {
+          return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
+        },
+        backup(links, player) {
+          let name = links[0][2]
+          let rawname = "tck_yin_ka"
+          return {
+            filterCard: { name: rawname },
+            popname: true,
+            viewAs: { name: name, nature: links[0][3] },
+          }
+        },
+        prompt(links, player) {
+          let name = links[0][2]
+          let rawname = "tck_yin_ka"
+          return "将一张" + get.translation(rawname) + "当做" + get.translation(name) + "使用"
+        },
+      },
+    },
+    "g_tck_qi_bing_bao_shuai": {
+      trigger: { player: 'damageBegin' },
+      direct: true,
+      filter: function (event, player) {
+        if (event.num < player.hp) return false
+        return player.hasUsableCard('tck_qi_bing_bao_shuai')
+      },
+      content: function () {
+        event.tck_qi_bing_bao_shuaiinfo = {
+          evt: trigger
+        }
+        player.chooseToUse(
+          '你受到了致命伤，' + get.prompt('tck_qi_bing_bao_shuai', trigger.player).replace(/发动/, '使用'),
+          function (card, player) {
+            if (card.name != 'tck_qi_bing_bao_shuai') return false
+            return lib.filter.cardEnabled(card, player, 'forceEnable')
+          },
+          trigger.player,
+          -1).targetRequired = true
+      }
+    },
     "tck_yi_xie_meng_yan_effect": {
       mark: true,
       marktext: "蒙",
@@ -3681,6 +3770,13 @@ export const cards = {
     },
   },
   translate: {
+    "tck_yin_ka": "印卡",
+    "tck_yin_ka_info": "可以当作任何卡使用，包括花色。",
+    "tck_yin_ka_append": "偶嘞の卡多哇<br/>新叽噜贼！",
+    "tck_yin_ka_skill": "印卡",
+    "tck_yin_ka_skill_info": "将一张印卡当任何卡使用。",
+    "tck_qi_bing_bao_shuai": "弃兵保帅",
+    "tck_qi_bing_bao_shuai_info": "你受到致命伤时使用，你弃置所有手牌（若无手牌则不弃），防止这次伤害。",
     "tck_yi_xie_meng_yan": "以血蒙眼",
     "tck_yi_xie_meng_yan_info": "出牌阶段，<br/>你自减一点体力，令一名玩家使用的下一张牌的效果失效。<br/>若你体力为1则无需减体力。",
     "tck_yi_xie_meng_yan_effect": "以血蒙眼",
@@ -4021,6 +4117,8 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ["club", 3, 'tck_yin_ka'],
+    ["diamond", 11, 'tck_qi_bing_bao_shuai'],
     ["heart", 13, 'tck_yi_xie_meng_yan'],
     ["heart", 5, 'tck_shen_hong_dian_zuan'],
     ["club", 8, 'tck_card_liang'],

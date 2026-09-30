@@ -3037,6 +3037,7 @@ export const skills = {
         if (result?.links?.length) {
           await player.reinit(player.name, result.links[0])
           player.hp = player.maxHp
+          player.group = lib.character[result.links[0]][1]
         }
       },
     },
@@ -3051,6 +3052,7 @@ export const skills = {
         const target = res.targets[0]
         await player.reinit(player.name, target.name1)
         player.hp = player.maxHp
+        player.group = lib.character[target.name1][1]
       }
     },
     "tck_tian_nan_men": {

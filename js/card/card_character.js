@@ -55,14 +55,141 @@ export const character_cards = {
         return target == player
       },
       async content(event, trigger, player) {
-        await player.recover(1)
-        if (player.isHealthy()) {
-          await player.loseHp(2)
+        await event.target.recover(1)
+        if (event.target.isHealthy()) {
+          await event.target.loseHp(2)
         }
       },
     },
+    "tck_hj_tian_rou_card": {
+      image: "ext:TCK/imgs/charactors/tck_hj_huanggai.jpg",
+      type: "trick",
+      enable(event, player) {
+        return player.countCards("he") > 2 && player.isDamaged()
+      },
+      toSelf: true,
+      selectTarget: -1,
+      filterTarget(card, player, target) {
+        return player == target
+      },
+      async content(event, trigger, player) {
+        await event.target.chooseToDiscard("he", 2, true)
+        await event.target.recover(1)
+      }
+    },
+    "tck_hj_jiang_chi_card": {
+      image: "ext:TCK/imgs/charactors/tck_hj_caozhang.jpg",
+      type: "trick",
+      enable: true,
+      toSelf: true,
+      selectTarget: -1,
+      filterTarget(card, player, target) {
+        return player == target
+      },
+      async content(event, trigger, player) {
+        await game.delay(1)
+        await event.target.chat(`${get.translation(player)}摸了摸牌`)
+        await game.delay(2)
+      }
+    },
+    "tck_lao_dong_zhi_xing_card": {
+      image: "ext:TCK/imgs/charactors/tck_wzh.jpg",
+      type: "trick",
+      enable: true,
+      toSelf: true,
+      selectTarget: -1,
+      filterTarget(card, player, target) {
+        return player == target
+      },
+      async content(event, trigger, player) {
+        await event.target.loseHp(1)
+        let cards = []
+        while (true) {
+          let res = await event.target.judge((card) => {
+            if (get.type(card) == "trick" || get.type(card) == "delay") return 0
+            return 1
+          }).forResult()
+          if (get.type(res.card) == "trick" || get.type(res.card) == "delay") {
+            cards.push(res.card)
+            break
+          }
+          cards.push(res.card)
+        }
+        await event.target.gain(cards, "gain2")
+      },
+    },
+    "tck_yi_yu_card": {
+      image: "ext:TCK/imgs/charactors/tck_rkshs_fuchuangzi.jpg",
+      type: "trick",
+      enable(event, player) {
+        return player.countCards("h") > 0;
+      },
+      selectTarget: 1,
+      filterTarget(card, player, target) {
+        return player != target && player.canCompare(target)
+      },
+      usable: 1,
+      async content(event, trigger, player) {
+        let res = await player.chooseToCompare(event.target).forResult();
+        if (res.bool) {
+          //拼点赢
+          let result = await event.target.chooseControl(["失去1点体力上限", "流失1点体力"])
+            .forResult();
+          switch (result.control) {
+            case '失去1点体力上限':
+              await event.target.loseMaxHp(1);
+              break;
+            case '流失1点体力':
+              await event.target.loseHp(1);
+              break;
+          }
+        } else {
+          //拼点输
+          await player.addMark("tck_zi_sha", 1)
+          if (player.countMark("tck_zi_sha") >= 12) {
+            await game.delay()
+            await player.die()
+          }
+        }
+      },
+    },
+    "tck_mi_huo_card": {
+      image: "ext:TCK/imgs/charactors/tck_bachidaren.jpg",
+      type: "trick",
+      enable(event, player) {
+        return player.countCards("h") > 1
+      },
+      usable: 1,
+      selectTarget: 1,
+      filterTarget(card, player, target) {
+        return target != player
+      },
+      async content(event, trigger, player) {
+        await player.chooseToDiscard("h", 1, true)
+        let result = await event.target.chooseControl(['翻面', '弃置所有手牌'])
+          .forResult()
+        switch (result.control) {
+          case '翻面':
+            await event.target.turnOver()
+            break
+          case '弃置所有手牌':
+            await event.target.discard(event.target.getCards('h'), true)
+            break
+        }
+      }
+    },
   },
   translate: {
+    "tck_mi_huo_card": "迷惑",
+    "tck_mi_huo_card_info": "出牌阶段限一次，你可以弃1张手牌，使一人选择一项：<br/>①翻面。<br/>②弃置所有手牌。",
+    "tck_yi_yu_card": "抑郁",
+    "tck_yi_yu_card_info": "出牌阶段限一次，你可与一人拼点，若你赢，其选择一项：<br/>①失去1点体力上限。<br/>②流失1点体力。<br/>若你输，你获得一个抑标记。",
+    "tck_lao_dong_zhi_xing_card": "劳动之星",
+    "tck_lao_dong_zhi_xing_card_info": "支付1颗勾玉，从牌堆获得至锦囊牌的所有牌。",
+    "tck_hj_jiang_chi_card": "将驰",
+    "tck_hj_jiang_chi_card_info": "出牌阶段，你可以摸一摸牌。",
+    "tck_hj_tian_rou_card": "甜肉",
+    "tck_hj_tian_rou_card_info": "出牌阶段，你可以弃置2张牌（至少为2），然后回复1点体力。",
     "TCK_CHARACTER": "TCK 将牌",
     "tck_qiu_chang_ji_qing_card": "球场鷄情",
     "tck_qiu_chang_ji_qing_card_info": "失去1点体力上限，使对手武将翻面1回合。",
@@ -75,10 +202,15 @@ export const character_cards = {
 
   },
   list: [
+    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
+    [lib.suit.randomGet(), get.rand(1, 13), 'tck_yi_yu_card'],
+    [lib.suit.randomGet(), get.rand(1, 13), 'tck_lao_dong_zhi_xing_card'],
+    [lib.suit.randomGet(), get.rand(1, 13), 'tck_hj_jiang_chi_card'],
     [lib.suit.randomGet(), get.rand(1, 13), 'tck_qiu_chang_ji_qing_card'],
     [lib.suit.randomGet(), get.rand(1, 13), 'tck_fei_sha_card'],
     [lib.suit.randomGet(), get.rand(1, 13), 'tck_li_huo_card'],
     [lib.suit.randomGet(), get.rand(1, 13), 'tck_feng_kuang_zuan_shi_card'],
+    [lib.suit.randomGet(), get.rand(1, 13), 'tck_hj_tian_rou_card'],
   ],
 }
 
