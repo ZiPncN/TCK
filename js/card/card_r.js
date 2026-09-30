@@ -55,21 +55,6 @@ export const r_cards = {
     "tck_r_mian_zhao_info": "无作用。",
   },
   list: [
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
-    [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'], [lib.suit.randomGet(), get.rand(1, 13), 'tck_mi_huo_card'],
   ],
 }
 
