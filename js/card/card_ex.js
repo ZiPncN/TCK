@@ -111,6 +111,7 @@ export const ex_cards = {
   },
   skill: {
     "tck_bian_ya_qi_bw_skill": {
+      equipSkill: true,
       trigger: {
         source: "damageBegin2"
       },
@@ -120,6 +121,7 @@ export const ex_cards = {
       }
     },
     "tck_bian_ya_qi_wq_skill": {
+      equipSkill: true,
       trigger: {
         source: "damageBegin1"
       },

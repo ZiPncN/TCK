@@ -1973,9 +1973,340 @@ export const cards = {
       fullskin: true,
       image: "ext:TCK/imgs/cards/tck_yin_ka.png",
     },
+    "tck_ting_che_chang": {
+      image: "ext:TCK/imgs/cards/tck_ting_che_chang.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip3",
+      distance: {
+        globalTo: 1,
+      },
+      skills: ["tck_ting_che_chang_skill"],
+    },
+    "tck_wu_wang_wo": {
+      image: "ext:TCK/imgs/cards/tck_wu_wang_wo.png",
+      fullskin: true,
+      type: "equip",               // 装备牌
+      subtype: "equip5",           // 宝物
+      skills: ["tck_wu_wang_wo_skill"]
+    },
+    "tck_fu_mian_zhi_liao": {
+      type: "trick",
+      image: "ext:TCK/imgs/cards/tck_fu_mian_zhi_liao.png",
+      fullskin: true,
+      enable: true,
+      selectTarget: -1,
+      toSelf: true,
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      global: ["tck_fu_mian_zhi_liao_skill"],
+      async content(event, trigger, player) {
+        await event.target.recover(1)
+        await event.target.loseMaxHp(1)
+        delete event.card.storage.zenged
+      },
+    },
+    "tck_card_qi_xing_dao": {
+      image: "ext:TCK/imgs/cards/tck_card_qi_xing_dao.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      manualConfirm: true,
+      enable: false, //  防止误装
+      distance: { attackFrom: -1 },
+      global: "tck_card_qi_xing_dao_skill"
+    },
+    "tck_card_piao": {
+      image: "ext:TCK/imgs/cards/tck_card_piao.png",
+      fullskin: true,
+      enable: false,
+      type: "basic",
+      global: ["tck_card_piao_skill"]
+    },
+    "tck_fei_ji": {
+      image: "ext:TCK/imgs/cards/tck_fei_ji.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip5",
+      skills: ["tck_fei_ji_skill"],
+      global: "tck_zou_wei_shang_ji_effect"
+    },
+    "tck_lan_se_xiu_gai_qi": {
+      image: "ext:TCK/imgs/cards/tck_lan_se_xiu_gai_qi.png",
+      fullskin: true,
+      type: "trick",
+      enable(event, player) {
+        return player.countCards("h") > 1
+      },
+      selectTarget: -1,
+      toSelf: true,
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      async content(event, trigger, player) {
+        const res = await event.target.chooseToDiscard(1, true, "h").forResult()
+        if (!res.bool) return
+        // 四选二
+        const cards = get.cards(4, true)
+        await game.cardsGotoOrdering(cards);
+        const result = await event.target
+          .chooseToMove("蓝色修改器：选择两张取得", true)
+          .set("list", [["牌堆顶", cards], ["取得"]])
+          .set("filterMove", function (from, to, moved) {
+            if (to == 1 && moved[1].length >= 2) {
+              return false
+            }
+            return true
+          })
+          .set("filterOk", function (moved) {
+            return moved[1].length == 2
+          })
+          .set("processAI", function (list) {
+            var cards = list[0][1].slice(0).sort(function (a, b) {
+              return get.value(b) - get.value(a)
+            });
+            return [cards, cards.splice(2)]
+          })
+          .forResult()
+        const gain = result.moved[1]
+        await event.target.gain(gain, "gain2")
+        game.washCardNoWithDiscard(result.moved[0])
+        await event.target.addMark('tck_fei_ji_piao_mark')
+      }
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_fei_ji_skill": {
+      equipSkill: true,
+      enable: "phaseUse",
+      filter(event, player) {
+        return player.hasMark("tck_fei_ji_piao_mark")
+      },
+      async content(event, trigger, player) {
+        await player.removeMark("tck_fei_ji_piao_mark", 1)
+        player.storage.tck_zou_wei_shang_ji = player.hp
+        await player.rest()
+      }
+    },
+    "tck_card_piao_skill": {
+      cardSkill: true,
+      forced: true,
+      trigger: {
+        player: ["gainEnd"],
+        global: ["phaseBefore"],
+      },
+      filter(event, player) {
+        if (event.name == 'gain' && !event.cards.some(card => get.name(card) == "tck_card_piao")) {
+          return false
+        }
+        if (event.name == "phase" && game.phaseNumber != 0) {
+          return false
+        }
+        let cards = player.getCards("h")
+        return player.countCards("he") > 2 && cards.some(card => get.name(card) == "tck_card_piao")
+      },
+      async content(event, trigger, player) {
+        let i = 0
+        while (true) {
+          if (!player.hasCard("tck_card_piao", "he")) {
+            return
+          }
+          if (player.countCards("he", "tck_card_piao") < i + 1) {
+            return
+          }
+          let piaos
+          if (trigger.name == 'gain') {
+            piaos = trigger.cards
+          } else if (event.name == "phase" && game.phaseNumber != 0) {
+            piaos = []
+          } else {
+            piaos = player.getCards("h").filter(card => get.name(card) == "tck_card_piao")
+          }
+          if (piaos.length == 0) {
+            return
+          }
+          const piao = piaos[i]
+          i++
+          const res = await player.chooseBool('是否弃置2张牌，获得一张飞机票？').forResult()
+          if (!res.bool) {
+            continue
+          }
+          await player.chooseToDiscard("he", 2, true, (card) => card != piao)
+          await player.discard(piao)
+          await player.addMark('tck_fei_ji_piao_mark', 1)
+        }
+      }
+    },
+    "tck_fei_ji_piao_mark": {
+      ruleSkill: true,
+      intro: {
+        content: "当前有#张飞机票"
+      }
+    },
+    "tck_card_qi_xing_dao_skill": {
+      trigger: { player: "equipAfter" },
+      forced: true,
+      equipSkill: true,
+      filter(event, player) {
+        if (!event.card || event.card.name != "tck_card_qi_xing_dao") {
+          return false;
+        }
+        return (
+          event.card?.cards.length > 0 &&
+          player.hasCard(card => {
+            return !event.card.cards.includes(card) && lib.filter.cardDiscardable(card, player, "tck_card_qi_xing_dao");
+          }, "e")
+        );
+      },
+      async content(event, trigger, player) {
+        const cards = player.getCards("e", card => {
+          return !trigger.card.cards.includes(card) && lib.filter.cardDiscardable(card, player, "tck_card_qi_xing_dao");
+        });
+        if (cards.length > 0) {
+          await player.discard(cards);
+        }
+      },
+    },
+    "tck_fu_mian_zhi_liao_skill": {
+      forced: true,
+      cardSkill: true,
+      trigger: {
+        player: ["gainAfter"],
+        global: ["phaseBegin"],
+      },
+      filter(event, player) {
+        let cards = player.getCards("h")
+        return cards.some(card => get.name(card) == "tck_fu_mian_zhi_liao")
+      },
+      async content(event, trigger, player) {
+        let cards = player.getCards("h").filter(card => get.name(card) == "tck_fu_mian_zhi_liao")
+        for (let card of cards) {
+          if (card.storage.zenged) {
+            await player.chooseUseTarget(card, true)
+          } else {
+            const res = await player.chooseTarget(1, '请选择赠予的目标', (card, player, target) => player != target && ui.selected.cards.every(value => player.canGift(value, target, true))).forResult()
+            if (!res.bool) {
+              await player.chooseUseTarget(card, true)
+              continue
+            }
+            const target = res.targets[0]
+            card.storage.zenged = true
+            await player.gift(card, target)
+          }
+        }
+      }
+    },
+    "tck_wu_wang_wo_effect_3": {
+      equipSkill: true,
+      forced: true,
+      popup: false,
+      trigger: {
+        player: "phaseJieshuAfter",
+      },
+      filter(event, player) {
+        return player.countMark("tck_wu_wang_wo_effect_1") > 0
+      },
+      async content(event, trigger, player) {
+        await player.removeMark("tck_wu_wang_wo_effect_1")
+        if (player.countMark("tck_wu_wang_wo_effect_1") == 0) {
+          await player.removeSkill(["tck_wu_wang_wo_effect_1", "tck_wu_wang_wo_effect_2", "tck_wu_wang_wo_effect_3"])
+        }
+      },
+    },
+    "tck_wu_wang_wo_effect_2": {
+      equipSkill: true,
+      forced: true,
+      trigger: {
+        player: "phaseDrawBegin2",
+      },
+      filter(event, player) {
+        return !event.numFixed
+      },
+      async content(event, trigger, player) {
+        trigger.num--
+      },
+    },
+    "tck_wu_wang_wo_effect_1": {
+      mark: true,
+      intro: {
+        content(storage, player) {
+          return "保持" + storage + "回合不死"
+        }
+      },
+      ondisable: true,
+      onremove(player, skill) {
+        player.clearMark("tck_wu_wang_wo_effect_1")
+        if (player.hp <= 0) {
+          player.dying({})
+        }
+      },
+      equipSkill: true,
+      trigger: { player: "changeHpEnd" },
+      forced: true,
+      filter(event, player) {
+        return player.hp <= 0 && event.num < 0 && player.countMark("tck_wu_wang_wo_effect_1") > 0
+      },
+      async content(event, trigger, player) {
+        if (player.countMark("tck_wu_wang_wo_effect_1") > 0) {
+          const evt = trigger.getParent();
+          if (evt.name == "damage" || evt.name == "loseHp") {
+            evt.nodying = true;
+          }
+        }
+      }
+    },
+    "tck_wu_wang_wo_skill": {
+      equipSkill: true,
+      trigger: { player: "changeHp" },
+      filter(event, player) {
+        return player.hp <= 0 && event.num < 0
+      },
+      async content(event, trigger, player) {
+        await player.addMark("tck_wu_wang_wo_effect_1", 5)
+        await player.addSkill(["tck_wu_wang_wo_effect_1", "tck_wu_wang_wo_effect_2", "tck_wu_wang_wo_effect_3"])
+        let e = player.getEquips("tck_wu_wang_wo")
+        if (e.length) {
+          player.discard(e)
+        }
+      }
+    },
+    "tck_ting_che_chang_skill": {
+      equipSkill: true,
+      forced: true,
+      trigger: {
+        player: "loseBegin"
+      },
+      filter(event, player) {
+        return event.cards.some(card => get.name(card) == 'muniu' && get.position(card) == 'e')
+      },
+      async content(event, trigger, player) {
+        trigger.cards = trigger.cards.filter(card => get.name(card) != 'muniu' && get.position(card) != 'e')
+      },
+      mod: {
+        cardDiscardable(card) {
+          if (get.name(card) == 'muniu' && get.position(card) == 'e') {
+            return false
+          }
+        },
+        cardEnabled(card) {
+          if (get.name(card) == 'muniu' && get.position(card) == 'e') {
+            return false
+          }
+        },
+        cardGiftable(card) {
+          if (get.name(card) == 'muniu' && get.position(card) == 'e') {
+            return false
+          }
+        },
+        cardRecastable(card) {
+          if (get.name(card) == 'muniu' && get.position(card) == 'e') {
+            return false
+          }
+        }
+      }
+    },
     "tck_yin_ka_skill": {
       cardSkill: true,
       unique: true,
@@ -3770,6 +4101,31 @@ export const cards = {
     },
   },
   translate: {
+    "tck_lan_se_xiu_gai_qi": "蓝色修改器",
+    "tck_lan_se_xiu_gai_qi_info": "来一发（票）<br/>丢弃1张手牌，可以从牌堆顶选4取2，选完对卡组进行洗切并获得一张飞机票。",
+    "tck_fei_ji": "飞机",
+    "tck_fei_ji_info": "逃出游戏一回合，需1张飞机票。",
+    "tck_fei_ji_skill": "飞机",
+    "tck_fei_ji_skill_info": "逃出游戏一回合，需1张飞机票。",
+    "tck_fei_ji_piao_mark": "飞机票",
+    "tck_card_piao": "票",
+    "tck_card_piao_info": "抽到弃2张牌，得一张飞机票。",
+    "tck_card_piao_skill": "票",
+    "tck_card_qi_xing_dao": "七星刀",
+    "tck_card_qi_xing_dao_info": "当此装备进入你的装备栏，你弃置其他所有装备。",
+    "tck_card_qi_xing_dao_skill": "七星刀",
+    "tck_fu_mian_zhi_liao": "负面治疗",
+    "tck_fu_mian_zhi_liao_info": "获得回复一点体力，减少1点体力上限。（立即使用，可赠一次）",
+    "tck_fu_mian_zhi_liao_skill": "负面治疗",
+    "tck_wu_wang_wo": "勿忘我",
+    "tck_wu_wang_wo_info": "死之后可使用，保持5回合不死，不过只能每回合抽1张牌。",
+    "tck_wu_wang_wo_skill": "勿忘我",
+    "tck_wu_wang_wo_effect_1": "勿忘我",
+    "tck_wu_wang_wo_effect_2": "勿忘我",
+    "tck_wu_wang_wo_effect_3": "勿忘我",
+    "tck_ting_che_chang": "停车场",
+    "tck_ting_che_chang_info": "木牛流马只能在这里，无法被取走。",
+    "tck_ting_che_chang_skill": "停车场",
     "tck_yin_ka": "印卡",
     "tck_yin_ka_info": "可以当作任何卡使用，包括花色。",
     "tck_yin_ka_append": "偶嘞の卡多哇<br/>新叽噜贼！",
@@ -4117,6 +4473,15 @@ export const cards = {
   },
   list: [
     //diy牌堆
+    ["club", 9, 'tck_lan_se_xiu_gai_qi'],
+    ["club", 13, 'tck_fei_ji'],
+    ["spade", 6, 'tck_card_piao'],
+    ["club", 7, 'tck_card_piao'],
+    ["diamond", 8, 'tck_card_piao'],
+    ["diamond", 1, 'tck_card_qi_xing_dao', null, ["gifts"]],
+    ["heart", 10, 'tck_fu_mian_zhi_liao', null, ["gifts"]],
+    ["heart", 13, 'tck_wu_wang_wo', null, ["gifts"]],
+    ["heart", 6, 'tck_ting_che_chang'],
     ["club", 3, 'tck_yin_ka'],
     ["diamond", 11, 'tck_qi_bing_bao_shuai'],
     ["heart", 13, 'tck_yi_xie_meng_yan'],
