@@ -2082,15 +2082,106 @@ export const cards = {
       global: ["g_tck_shan_mang", "lose_tck_shan_mang"],
       cardPrompt(card) {
         let str = "此牌可需拟两种自定义闪牌。（用2次后弃置之）"
-        if (card.storage.tck_shan_mang_used) {
+        if (card.storage?.tck_shan_mang_used) {
           return str += `<br>剩余可用${2 - card.storage.tck_shan_mang_used}次`
         }
         return str += `<br>剩余可用2次`
       },
     },
+    "tck_da_bai_er_gui": {
+      image: "ext:TCK/imgs/cards/tck_da_bai_er_gui.png",
+      fullskin: true,
+      type: 'trick',
+      noTarget: true,
+      global: "g_tck_da_bai_er_gui",
+      wuxieable: true,
+      async content(event, trigger, player) {
+        let evt = _status.event.getParent("phaseLoop", true)
+        if (evt) {
+          ui.clear()
+          let evtx = _status.event
+          while (evtx != evt) {
+            evtx.finish()
+            evtx.untrigger(true)
+            evtx = evtx.getParent()
+          }
+          evtx.player = player.getPrevious()
+        }
+      },
+    },
+    "tck_card_dang": {
+      image: "ext:TCK/imgs/cards/tck_card_dang.png",
+      fullskin: true,
+      type: "basic",
+      global: "g_tck_card_dang",
+      notarget: true,
+      async content(event, trigger, player) {
+        let info = event.getParent(2).tck_card_danginfo || event.getParent(3).tck_card_danginfo
+        if (!info) {
+          await event.finish()
+          return
+        }
+        const evt = info.evt.getParent(1)
+        const source = evt.player
+        const res = await player.chooseToPSS(source).forResult()
+        if (res.bool) {
+          // 赢
+          evt.targets.length = 0
+          evt.all_excluded = true
+          await info.evt.cancel()
+        }
+      }
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "g_tck_card_dang": {
+      cardSkill: true,
+      trigger: { target: "useCardToBegin" },
+      forced: true,
+      lastDo: true,
+      filter(event, player) {
+        if (event.directHit) {
+          return false
+        }
+        if (event.player == player) {
+          return false
+        }
+        return player.hasUsableCard("tck_card_dang")
+      },
+      content() {
+        event.tck_card_danginfo = {
+          evt: trigger
+        }
+        let next = player.chooseToUse()
+        next.set("prompt", "是否使用【挡】响应" + get.translation(trigger.player) + "使用的" + get.translation(trigger.card) + "？");
+        next.set("filterCard", function (card, player) {
+          if (get.name(card) != "tck_card_dang") {
+            return false;
+          }
+          return lib.filter.cardEnabled(card, player, "forceEnable");
+        })
+      },
+    },
+    "g_tck_da_bai_er_gui": {
+      trigger: { player: 'damageEnd' },
+      firstDo: true,
+      direct: true,
+      filter: function (event, player) {
+        if (_status.currentPhase == player) {
+          return false
+        }
+        return player.hasUsableCard('tck_da_bai_er_gui')
+      },
+      content: function () {
+        player.chooseToUse(get.prompt('tck_da_bai_er_gui').replace(/发动/, '使用'), function (card, player) {
+          if (card.name != 'tck_da_bai_er_gui') return false;
+          return lib.filter.cardEnabled(card, player, 'forceEnable');
+        },
+          trigger.player,
+          -1).targetRequired = true
+      }
+    },
     "lose_tck_shan_mang": {
       trigger: { player: "loseAfter" },
       popup: false,
@@ -4193,6 +4284,10 @@ export const cards = {
     },
   },
   translate: {
+    "tck_card_dang": "挡",
+    "tck_card_dang_info": "你被牌指定时用，与来源猜拳，若你赢，该牌失效。",
+    "tck_da_bai_er_gui": "大败而归",
+    "tck_da_bai_er_gui_info": "你于回合外受伤后使用，立即结束结算除濒死的所有事件，当前角色立即回合结束，然后从你开始进行回合。",
     "tck_shan_mang": "闪芒",
     "tck_shan_mang_info": "此牌可需拟两种自定义闪牌。（用2次后弃置之）",
     "tck_lan_se_xiu_gai_qi": "蓝色修改器",
@@ -4567,6 +4662,9 @@ export const cards = {
   },
   list: [
     // diy牌堆
+    ["heart", 9, 'tck_card_dang'],
+    ["diamond", 7, 'tck_card_dang'],
+    ["heart", 10, 'tck_da_bai_er_gui'],
     ["diamond", 10, 'tck_shan_mang'],
     ['club', 4, 'wuxie', 'tck_kanpo_yin'],
     ['heart', 13, 'wuxie', 'tck_kanpo_yin'],
