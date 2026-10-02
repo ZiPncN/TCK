@@ -55,14 +55,6 @@ export const r_cards = {
     "tck_r_mian_zhao_info": "无作用。",
   },
   list: [
-    ["heart", 9, 'tck_card_dang'],
-    ["diamond", 7, 'tck_card_dang'], ["heart", 9, 'tck_card_dang'],
-    ["diamond", 7, 'tck_card_dang'], ["heart", 9, 'tck_card_dang'],
-    ["diamond", 7, 'tck_card_dang'], ["heart", 9, 'tck_card_dang'],
-    ["diamond", 7, 'tck_card_dang'], ["heart", 9, 'tck_card_dang'],
-    ["diamond", 7, 'tck_card_dang'], ["heart", 9, 'tck_card_dang'],
-    ["diamond", 7, 'tck_card_dang'], ["heart", 9, 'tck_card_dang'],
-    ["diamond", 7, 'tck_card_dang'],
   ],
 }
 
