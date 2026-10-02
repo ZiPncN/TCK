@@ -2075,9 +2075,86 @@ export const cards = {
         await event.target.addMark('tck_fei_ji_piao_mark')
       }
     },
+    "tck_shan_mang": {
+      image: "ext:TCK/imgs/cards/tck_shan_mang.png",
+      fullskin: true,
+      type: 'trick',
+      global: ["g_tck_shan_mang", "lose_tck_shan_mang"],
+      cardPrompt(card) {
+        let str = "此牌可需拟两种自定义闪牌。（用2次后弃置之）"
+        if (card.storage.tck_shan_mang_used) {
+          return str += `<br>剩余可用${2 - card.storage.tck_shan_mang_used}次`
+        }
+        return str += `<br>剩余可用2次`
+      },
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "lose_tck_shan_mang": {
+      trigger: { player: "loseAfter" },
+      popup: false,
+      forced: true,
+      filter(event, player) {
+        return event.cards.some(card => card.name == 'tck_shan_mang')
+      },
+      async content(event, trigger, player) {
+        trigger.cards.filter(card => card.name == 'tck_shan_mang').forEach(card => {
+          delete card.storage.tck_shan_mang_used
+        })
+      },
+    },
+    "g_tck_shan_mang": {
+      trigger: { player: ["chooseToRespondBegin", "chooseToUseBegin"] },
+      direct: true,
+      filter: function (event, player) {
+        if (event.responded) return false
+        if (event.tck_shan_mang) return false
+        if (!event.filterCard || !event.filterCard({ name: "shan" }, player, event)) return false
+        if (event.name === "chooseToRespond" && !lib.filter.cardRespondable({ name: "shan" }, player, event)) return false
+        return player.hasUsableCard('tck_shan_mang')
+      },
+      async content(event, trigger, player) {
+        const res = await player.chooseCard(
+          get.prompt('tck_shan_mang').replace(/发动/, '使用'),
+          function (card, player) {
+            if (card.name != 'tck_shan_mang') return false
+            return lib.filter.cardEnabled(card, player, 'forceEnable')
+          }).forResult()
+        if (!res.bool) return
+        const card = res.cards[0]
+        if (!card.storage.tck_shan_mang_used) {
+          card.storage.tck_shan_mang_used = 0
+        }
+        card.storage.tck_shan_mang_used++
+        await player.showCards(card, `${get.translation(player)}使用了【闪芒】`)
+        trigger.tck_shan_mang = true
+        let list = []
+        for (let name of lib.inpile) {
+          if (name == "shan") {
+            list.push([get.translation(get.type(name)), "", name])
+            if (!!lib.card.shan['tck_nature']) {
+              for (let j of lib.card.shan['tck_nature']) {
+                list.push(["基本", "", name, j])
+              }
+            }
+          }
+        }
+        const res1 = await player.chooseButton(true, [
+          "请选择要使用的牌",
+          [list, "vcard"],
+          true
+        ]).set("ai", function (button) {
+          return get.value(button.link[2], player)
+        }).forResult()
+        trigger.untrigger()
+        trigger.set("responded", true)
+        trigger.result = { bool: true, card: { name: res1.links[0][2], nature: res1.links[0][3], isCard: true } };
+        if (card.storage.tck_shan_mang_used == 2) {
+          await player.discard(card)
+        }
+      }
+    },
     "tck_fei_ji_skill": {
       equipSkill: true,
       enable: "phaseUse",
@@ -2325,9 +2402,24 @@ export const cards = {
                   list.push(["基本", "", "sha", j]);
                 }
               }
+              if (name == "shan" && !!lib.card.shan['tck_nature']) {
+                for (let j of lib.card.shan['tck_nature']) {
+                  list.push(["基本", "", "shan", j]);
+                }
+              }
+              if (name == "jiu" && !!lib.card.jiu['tck_nature']) {
+                for (let j of lib.card.jiu['tck_nature']) {
+                  list.push(["基本", "", "jiu", j]);
+                }
+              }
+              if (name == "wuxie" && !!lib.card.wuxie['tck_nature']) {
+                for (let j of lib.card.wuxie['tck_nature']) {
+                  list.push(["锦囊", "", "wuxie", j]);
+                }
+              }
             }
           }
-          return ui.create.dialog("怪异", [list, "vcard"]);
+          return ui.create.dialog("印卡", [list, "vcard"]);
         },
         filter(button, player) {
           return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
@@ -2360,7 +2452,7 @@ export const cards = {
           evt: trigger
         }
         player.chooseToUse(
-          '你受到了致命伤，' + get.prompt('tck_qi_bing_bao_shuai', trigger.player).replace(/发动/, '使用'),
+          '你受到了致命伤，' + get.prompt('tck_qi_bing_bao_shuai').replace(/发动/, '使用'),
           function (card, player) {
             if (card.name != 'tck_qi_bing_bao_shuai') return false
             return lib.filter.cardEnabled(card, player, 'forceEnable')
@@ -2927,7 +3019,7 @@ export const cards = {
         return get.type(event.card) == "trick" || get.type(event.card) == "delay"
       },
       async content(event, trigger, player) {
-        trigger.directHit.addArray(game.players);
+        trigger.nowuxie = true
       },
     },
     "tck_zhi_jie_sheng_li_effect": {
@@ -4101,6 +4193,8 @@ export const cards = {
     },
   },
   translate: {
+    "tck_shan_mang": "闪芒",
+    "tck_shan_mang_info": "此牌可需拟两种自定义闪牌。（用2次后弃置之）",
     "tck_lan_se_xiu_gai_qi": "蓝色修改器",
     "tck_lan_se_xiu_gai_qi_info": "来一发（票）<br/>丢弃1张手牌，可以从牌堆顶选4取2，选完对卡组进行洗切并获得一张飞机票。",
     "tck_fei_ji": "飞机",
@@ -4472,7 +4566,13 @@ export const cards = {
     "tck_bai_niao_chao_feng_qiang_skill_info": "使用一张基本牌，获得一张牌。",
   },
   list: [
-    //diy牌堆
+    // diy牌堆
+    ["diamond", 10, 'tck_shan_mang'],
+    ['club', 4, 'wuxie', 'tck_kanpo_yin'],
+    ['heart', 13, 'wuxie', 'tck_kanpo_yin'],
+    ['spade', 11, 'wuxie', 'tck_kanpo_yin'],
+    ['club', 8, 'wuxie', 'tck_kanpo_yang'],
+    ['club', 12, 'wuxie', 'tck_kanpo_yang'],
     ["club", 9, 'tck_lan_se_xiu_gai_qi'],
     ["club", 13, 'tck_fei_ji'],
     ["spade", 6, 'tck_card_piao'],
@@ -4658,21 +4758,22 @@ export const cards = {
     ['spade', 7, "tck_dong_xue"],
     ['spade', 6, "tck_you_zhong_sheng_wu"],
 
-    //原版牌堆
-    ['spade', 11, 'wuxie'],
+    // 原版牌堆
+    // 替换无懈
+    // ['spade', 11, 'wuxie'],
+    // ['spade', 12, 'wuxie'],
+    // ['club', 12, 'wuxie'],
+    // ['club', 12, 'wuxie'],
+    // ['diamond', 12, 'wuxie'],
     ['spade', 11, 'wuxie'],
     ['spade', 1, 'wuxie'],
-    ['spade', 12, 'wuxie'],
     ['spade', 12, 'wuxie'],
     ['spade', 11, 'wuxie'],
     ['spade', 10, 'wuxie'],
     ['club', 13, 'wuxie'],
     ['club', 12, 'wuxie'],
-    ['club', 12, 'wuxie'],
-    ['club', 12, 'wuxie'],
     ['diamond', 11, 'wuxie'],
     ['diamond', 13, 'wuxie'],
-    ['diamond', 12, 'wuxie'],
     ['heart', 12, 'wuxie'],
     ['heart', 12, 'wuxie'],
     ['heart', 12, 'shan'],

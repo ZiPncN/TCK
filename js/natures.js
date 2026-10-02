@@ -491,6 +491,47 @@ const natureConfig = {
     }
     // ----------------------- 酒属性 end -------------------------- 
 
+    // ---------------------- 无懈属性 begin -----------------------
+    lib.skill['_tck_kanpo_yang'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      popup: false,
+      lastDo: true,
+      trigger: { player: ['useCardEnd', 'respondEnd'] },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_kanpo_yang'
+      },
+      async content(event, trigger, player) {
+        await player.draw(1)
+      }
+    }
+    lib.skill['_tck_kanpo_yin'] = {
+      ruleSkill: true,
+      logTarget: 'player',
+      forced: true,
+      popup: false,
+      lastDo: true,
+      trigger: { player: ['useCardEnd', 'respondEnd'] },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_kanpo_yin'
+      },
+      async content(event, trigger, player) {
+        const evt = event.getParent(7)
+        if (!evt) {
+          return
+        }
+        if (evt.name == 'phaseJudge') {
+          await player.draw(1)
+        } else {
+          const source = evt.player
+          await player.gainPlayerCard("hej", source, true).set("target", source)
+        }
+      }
+    }
+
+    // ----------------------- 无懈属性 end ------------------------
+
     // --------------------- 其他属性 begin ------------------------
     lib.skill['_tck_water_effect'] = {
       ruleSkill: true,
@@ -617,6 +658,13 @@ const natureConfig = {
     lib.translate['tck_lie_effect'] = '烈酒'
     lib.translate['tck_lie_jiu_info'] = '同酒<br/>下一张杀伤害+2，<br/>下一张杀使用时判定，若为黑色，该杀失效。<br/>（效果持续至回合结束）'
     // ----------------------- 酒属性 end --------------------------
+
+    // ---------------------- 无懈属性 begin -----------------------
+    lib.translate['tck_kanpo_yang'] = '看破一切 阳'
+    lib.translate['tck_kanpo_yang_wuxie_info'] = '同无懈，结算后摸1张牌。'
+    lib.translate['tck_kanpo_yin'] = '看破一切 阴'
+    lib.translate['tck_kanpo_yin_wuxie_info'] = '同无懈，结算后从来源摸一张牌。（判定牌来源视为牌堆）'
+    // ----------------------- 无懈属性 end ------------------------
 
     // ---------------------- 其他属性 begin -----------------------
     lib.translate['_tck_water_effect'] = '水属性伤害'
@@ -857,8 +905,30 @@ const natureConfig = {
     lib.cardPack.TCK.addArray(lib.tck_nature_jiu)
     // ----------------------- 酒属性 end --------------------------
 
-
-
+    // ---------------------- 无懈属性 begin -----------------------
+    lib.card.wuxie['tck_nature'] = ['tck_kanpo_yang', 'tck_kanpo_yin']
+    lib.tck_nature_wuxie = ['tck_kanpo_yang_wuxie', 'tck_kanpo_yin_wuxie']
+    // 无懈
+    for (var i of lib.card.wuxie['tck_nature']) {
+      lib.translate[i + "_wuxie"] = lib.translate[i];
+      lib.translate[i + "_wuxie2"] = lib.translate[i];
+      lib.card[i + "_wuxie"] = {
+        naturex: i,
+        type: 'trick',
+        image: "ext:TCK/imgs/cards/" + i + "_wuxie.png",
+        derivationpack: 'TCK',
+        fullskin: true,
+      };
+    }
+    lib.card.wuxie.cardPrompt = function (card) {
+      const cardNature = Array.isArray(card) ? card[3] : get.nature(card);
+      if (!cardNature || typeof cardNature != "string") return lib.translate.wuxie_info;
+      const info = lib.translate[cardNature + '_wuxie_info'];
+      if (info && info.length) return info;
+      return lib.translate.wuxie_info;
+    }
+    lib.cardPack.TCK.addArray(lib.tck_nature_wuxie)
+    // ----------------------- 无懈属性 end ------------------------
 
     lib.tck_card_init = lib.element.card.init
     lib.element.card.init = function (card) {
@@ -895,7 +965,17 @@ const natureConfig = {
           cardx.node.image.classList.add(card[3])
           return cardx
         }
-        else if (lib.tck_nature_jiu.includes(card[2]) || lib.tck_nature_shan.includes(card[2])) {
+        else if (card[2] == 'wuxie' && card[3] && lib.card.wuxie.tck_nature.includes(card[3])) {
+          card[2] = card[3] + '_wuxie'
+          var cardx = lib.tck_card_init.call(this, card)
+          card[2] = 'wuxie'
+          cardx.name = 'wuxie'
+          cardx.nature = card[3]
+          cardx.classList.add(card[3])
+          cardx.node.image.classList.add(card[3])
+          return cardx
+        }
+        else if (lib.tck_nature_jiu.includes(card[2]) || lib.tck_nature_shan.includes(card[2]) || lib.card.wuxie.tck_nature.includes(card[2])) {
           var nature = lib.card[card[2]].naturex
           card[3] = nature
           var cardx = lib.tck_card_init.call(this, card)
@@ -941,7 +1021,7 @@ const natureConfig = {
           if (player["_tck_nature_use3"]) return;
           if (get.name(card) != 'jiu') return;
           // if (get.nature(card) != 'jy_tusu') return; // 排除使用的属性
-
+ 
           player["_tck_nature_use3"] = true;
           const mod = game.checkMod(card, player, target, 'unchanged', 'cardSavable', player);
           delete player["_tck_nature_use3"];
@@ -1006,7 +1086,7 @@ const natureConfig = {
         //       if (trigger.all_excluded) return;
         //       const trueTargets = trigger.targets.filter(i => !trigger.excluded.includes(i));
         //       if (trueTargets.includes(player) && (bool1 || bool2)) {
-
+ 
         //         if (!player.countCards('hs', { suit: 'club' })) return;
         //         const next = player.chooseToUse();
         //         next.set('openskilldialog', '玉壶春:将一张梅花手牌当无中生有使用');
