@@ -48,6 +48,17 @@ export default function () {
                     }
                 });
             }
+            lib.message.client.tck_scp_330_init = function (cardInfoList) {
+                _status.tck_scp_330 = cardInfoList.map(info => game.createCard(info))
+            }
+            lib.message.client.tck_scp_330_shift = function () {
+                if (_status.tck_scp_330 && _status.tck_scp_330.length) {
+                    _status.tck_scp_330.shift()
+                }
+            }
+            lib.message.client.tck_scp_330_clear = function () {
+                delete _status.tck_scp_330
+            }
         },
         /* 游戏数据加载后、界面加载前
          * config为本扩展选项、pack为本扩展包
@@ -86,9 +97,11 @@ export default function () {
                             players.forEach(player => player.clearMark("tck_scp_330_tckland_skill"))
                         }
                         // 把SCP330剩余的牌置入弃牌堆
-                        game.log(_status.tck_scp_330, "进入了弃牌堆")
-                        await game.cardsDiscard(_status.tck_scp_330)
-                        if (!!_status.tck_scp_330) delete _status.tck_scp_330
+                        if (_status.tck_scp_330 && _status.tck_scp_330.length) {
+                            game.log(_status.tck_scp_330, "进入了弃牌堆")
+                            await game.cardsDiscard(_status.tck_scp_330)
+                            game.broadcastAll("tck_scp_330_clear")
+                        }
 
                         if (this.skill) {
                             //移除技能逻辑，下面的ui.skill只是作为展示

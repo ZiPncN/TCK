@@ -390,7 +390,7 @@ const natureConfig = {
       },
       async content(event, trigger, player) {
         const source = trigger.respondTo[0]
-        if (source) {
+        if (source && player.canUse('sha', source, false, false)) {
           const sha = await game.createCard({ name: 'sha' })
           await player.useCard(source, sha)
         }

@@ -1245,14 +1245,25 @@ export const cards = {
         const target = event.target
         const cards = await get.cards(1, true)
         const suit = get.suit(cards[0])
+        if (suit === undefined) return
         await target.showCards(cards)
-        const res = await player.chooseToDiscard(`是否弃置一张${get.translation(suit)}花色的手牌，对${get.translation(event.target)}造成一点水属性伤害`, card => get.suit(card) == suit).forResult()
+
+        const next = player.chooseToDiscard(
+          `是否弃置一张${get.translation(suit)}花色的手牌，对${get.translation(target)}造成一点水属性伤害`
+        )
+        next.set("suit", suit)
+        next.set("filterCard", function (card) {
+          return get.suit(card) == get.event().suit
+        })
+        const res = await next.forResult()
+
         if (!res.bool) return
         await target.damage(player, 1, 'tck_water')
       },
       ai: {
         tag: {
           damage: 1,
+          tck_waterDamage: 1,
           natureDamage: 1
         }
       }
@@ -1580,7 +1591,7 @@ export const cards = {
       cardPrompt(card) {
         let str = "判定，若为红色受到X点伤害（X为本牌已造成的伤害+1），然后置于下家。"
         if (card.storage?.tck_scp_018) {
-          str += '<br><span style="font-family:yuanli">此牌已判定命中过：' + card.storage.tck_scp_018 + "次</span>";
+          str += '<br><span style="font-family:yuanli">此牌已判定命中过：' + card.storage.tck_scp_018 + "次</span>"
         }
         return str
       },
@@ -1641,12 +1652,24 @@ export const cards = {
       enable: true,
       notarget: true,
       async content(event, trigger, player) {
-        await player.changeTckLand("tck_scp_330")
-        if (!_status.tck_scp_330) {
-          _status.tck_scp_330 = []
-        }
-        _status.tck_scp_330 = await get.cards(10, false)
-        await game.cardsGotoSpecial(event.card.cards, "toTckLand")
+        await player.changeTckLand("tck_scp_330");
+
+        const cards = get.cards(10, false);
+        _status.tck_scp_330 = cards;
+
+        // 用 broadcast（只发其他客户端），房主端已手动赋值真牌，避免被覆盖
+        game.broadcast(
+          "tck_scp_330_init",
+          cards.map(c => ({
+            name: get.name(c),
+            suit: get.suit(c),
+            number: get.number(c),
+            nature: get.nature(c),
+            type: get.type(c),
+          }))
+        );
+
+        await game.cardsGotoSpecial(event.card.cards, "toTckLand");
       }
     },
     "tck_qi_xing_bao_dao": {
@@ -1746,7 +1769,7 @@ export const cards = {
       subtype: "equip1",
       manualConfirm: true,
       enable: false, //  防止误装
-      skills: ["wufengjian_skill"]
+      skills: ["tck_card_wu_feng_jian_skill"]
     },
     "tck_card_nv_zhuang": {
       image: "ext:TCK/imgs/cards/tck_card_nv_zhuang.png",
@@ -2135,6 +2158,30 @@ export const cards = {
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    "tck_card_wu_feng_jian_skill": {
+      equipSkill: true,
+      trigger: { player: "useCard" },
+      forced: true,
+      filter(event, player) {
+        if (event.card.name != "sha") {
+          return false;
+        }
+        var cards = player.getEquips("tck_card_wu_feng_jian");
+        return player.hasCard(function (card) {
+          return !cards.includes(card);
+        }, "he");
+      },
+      content() {
+        if (player != game.me && !player.isUnderControl() && !player.isOnline()) {
+          game.delayx();
+        }
+        player
+          .chooseToDiscard(true, "he", function (card) {
+            return !_status.event.cards?.includes(card);
+          })
+          .set("cards", player.getEquips("tck_card_wu_feng_jian"))
+      },
+    },
     "g_tck_card_dang": {
       cardSkill: true,
       trigger: { target: "useCardToBegin" },
@@ -2354,7 +2401,7 @@ export const cards = {
           if (card.storage.zenged) {
             await player.chooseUseTarget(card, true)
           } else {
-            const res = await player.chooseTarget(1, '请选择赠予的目标', (card, player, target) => player != target && ui.selected.cards.every(value => player.canGift(value, target, true))).forResult()
+            const res = await player.chooseTarget(1, '请选择【负面治疗】赠予的目标', (card, player, target) => player != target && ui.selected.cards.every(value => player.canGift(value, target, true))).forResult()
             if (!res.bool) {
               await player.chooseUseTarget(card, true)
               continue
@@ -2486,7 +2533,7 @@ export const cards = {
         dialog(event, player) {
           let list = [];
           for (let name of lib.inpile) {
-            if (get.type(name) == "basic" || get.type(name) == "trick" || get.type(name) == "delay" || get.type(name) == "equip") {
+            if (get.type(name) == "basic" || get.type(name) == "trick" || get.type(name) == "delay" || get.type(name) == "equip" || get.type(name) == "land") {
               list.push([get.translation(get.type(name)), "", name]);
               if (name == "sha") {
                 for (let j of lib.inpile_nature) {
@@ -2777,15 +2824,20 @@ export const cards = {
       ruleSkill: true,
       enable: "phaseUse",
       prompt() {
-        return `本牌上还有${_status.tck_scp_330.length}张牌`
+        return `本牌上还有${(_status.tck_scp_330 || []).length}张牌`
       },
       filter(event, player) {
-        return _status.tck_scp_330.length > 0
+        return (_status.tck_scp_330 || []).length > 0
       },
       async content(event, trigger, player) {
-        const card = _status.tck_scp_330.shift()
+        const list = _status.tck_scp_330
+        if (!list || !list.length) return
+
+        const card = list.shift()
+        game.broadcast("tck_scp_330_shift")
+
         await player.gain(card, "gain2")
-        await player.addMark("tck_scp_330_tckland_skill", 1)
+        await player.addMark("tck_scp_330_tckland_skill", 1);
         if (player.countMark("tck_scp_330_tckland_skill") >= 3) {
           await player.loseHp(player.hp)
         }
@@ -4284,6 +4336,7 @@ export const cards = {
     },
   },
   translate: {
+    "tck_card_wu_feng_jian_skill": "无锋剑",
     "tck_card_dang": "挡",
     "tck_card_dang_info": "你被牌指定时用，与来源猜拳，若你赢，该牌失效。",
     "tck_da_bai_er_gui": "大败而归",
