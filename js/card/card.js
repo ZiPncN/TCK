@@ -2155,9 +2155,74 @@ export const cards = {
         }
       }
     },
+    "tck_ping_jiao_ku": {
+      image: "ext:TCK/imgs/cards/tck_ping_jiao_ku.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip2",
+      skills: ["tck_ping_jiao_ku_skill"]
+    },
+    // todo
+    "tck_liu_long_can_jia": {
+      image: "ext:TCK/imgs/cards/tck_liu_long_can_jia.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip6",
+      subtypes: ["equip3", "equip4"],
+      distance: {
+        globalFrom: -1,
+        globalTo: +1,
+      },
+      global: ["tck_liu_long_can_jia_skill1", "tck_liu_long_can_jia_skill2"],
+    },
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    // todo
+    "tck_liu_long_can_jia_skill1": {
+      trigger: { player: "equipAfter" },
+      forced: true,
+      equipSkill: true,
+      filter(event, player) {
+        if (!event.card || event.card.name != "tck_liu_long_can_jia") {
+          return false;
+        }
+        return (
+          event.card?.cards.length > 0 &&
+          player.hasCard(card => {
+            return ["equip3", "equip4", "equip6"].includes(get.type(card)) && !event.card.cards.includes(card) && lib.filter.cardDiscardable(card, player, "tck_liu_long_can_jia");
+          }, "e")
+        )
+      },
+      async content(event, trigger, player) {
+        const cards = player.getCards("e", card => {
+          return ["equip3", "equip4", "equip6"].includes(get.type(card)) && !trigger.card.cards.includes(card) && lib.filter.cardDiscardable(card, player, "tck_liu_long_can_jia");
+        })
+        if (cards.length > 0) {
+          await player.discard(cards)
+        }
+      },
+    },
+    "tck_ping_jiao_ku_skill": {
+      equipSkill: true,
+      forced: true,
+      trigger: { target: "useCardToTarget" },
+      filter(event, player) {
+        return get.name(event.card) == "sha"
+      },
+      async content(event, trigger, player) {
+        // 再出一张杀才能造成伤害
+        const source = trigger.player
+        const res = await source.chooseCard("h", "再出一张杀才能造成伤害", (card) => get.name(card) == 'sha').forResult()
+        if (!res.bool) {
+          // 没出杀
+          await trigger.getParent().cancel()
+          return
+        }
+        const shaCard = res.cards[0]
+        await source.useCard(shaCard, true)
+      }
+    },
     "tck_card_wu_feng_jian_skill": {
       equipSkill: true,
       trigger: { player: "useCard" },
@@ -2325,30 +2390,31 @@ export const cards = {
       async content(event, trigger, player) {
         let i = 0
         while (true) {
-          if (!player.hasCard("tck_card_piao", "he")) {
-            return
-          }
-          if (player.countCards("he", "tck_card_piao") < i + 1) {
-            return
-          }
+          if (!player.hasCard("tck_card_piao", "he")) return
+          if (player.countCards("he", "tck_card_piao") < i + 1) return
+
           let piaos
           if (trigger.name == 'gain') {
-            piaos = trigger.cards
+            piaos = trigger.cards.filter(card => get.name(card) == "tck_card_piao")
           } else if (event.name == "phase" && game.phaseNumber != 0) {
             piaos = []
           } else {
             piaos = player.getCards("h").filter(card => get.name(card) == "tck_card_piao")
           }
-          if (piaos.length == 0) {
-            return
-          }
+          if (piaos.length == 0) return
+
           const piao = piaos[i]
           i++
           const res = await player.chooseBool('是否弃置2张牌，获得一张飞机票？').forResult()
-          if (!res.bool) {
-            continue
-          }
-          await player.chooseToDiscard("he", 2, true, (card) => card != piao)
+          if (!res.bool) continue
+
+          const next = player.chooseToDiscard("he", 2, true)
+          next.set("piao", piao)
+          next.set("filterCard", function (card) {
+            return card != get.event().piao
+          })
+          await next.forResult()
+
           await player.discard(piao)
           await player.addMark('tck_fei_ji_piao_mark', 1)
         }
@@ -2797,7 +2863,10 @@ export const cards = {
         player: "useCardEnd"
       },
       filter(event, player) {
-        return get.name(event.card) != "tck_liang_yin_qiang" && get.color(event.card) == "red" && player.countCards("he", card => get.color(card) == "black")
+        return get.name(event.card) != "tck_liang_yin_qiang" &&
+          get.color(event.card) == "red" &&
+          get.type(event.card) == "basic" &&
+          player.countCards("he", card => get.color(card) == "black")
       },
       async content(event, trigger, player) {
         const res = await player.chooseToDiscard("请弃置一张黑色牌", "he", card => get.color(card) == "black", true).forResult()
@@ -4336,6 +4405,12 @@ export const cards = {
     },
   },
   translate: {
+    "tck_liu_long_can_jia": "六龙骖驾",
+    "tck_liu_long_can_jia_skill1": "六龙骖驾",
+    "tck_liu_long_can_jia_info": "该装备进入你装备栏，你弃置其它所有坐骑，你可以额外装备1个坐骑。",
+    "tck_ping_jiao_ku": "平角裤",
+    "tck_ping_jiao_ku_info": "对手必须出2张杀才可以对你造成伤害。",
+    "tck_ping_jiao_ku_skill": "平角裤",
     "tck_card_wu_feng_jian_skill": "无锋剑",
     "tck_card_dang": "挡",
     "tck_card_dang_info": "你被牌指定时用，与来源猜拳，若你赢，该牌失效。",
@@ -4409,9 +4484,9 @@ export const cards = {
     "tck_wei_jian_de_quan_zhang_skill": "玮健的权杖",
     "tck_wei_jian_de_quan_zhang_skill_info": "可以用手牌进行改判。",
     "tck_liang_yin_qiang": "亮银枪",
-    "tck_liang_yin_qiang_info": "你使用的红牌结算后，你可以弃置一张黑牌，收回该红牌。",
+    "tck_liang_yin_qiang_info": "你使用的红色基本牌结算后，你可以弃置一张黑牌，收回该红牌。",
     "tck_liang_yin_qiang_skill": "亮银枪",
-    "tck_liang_yin_qiang_skill_info": "你使用的红牌结算后，你可以弃置一张黑牌，收回该红牌。",
+    "tck_liang_yin_qiang_skill_info": "你使用的红色基本牌结算后，你可以弃置一张黑牌，收回该红牌。",
     "tck_qi_xing_bao_dao": "七星宝刀",
     "tck_qi_xing_bao_dao_info": "此刀挂于玩家头顶，需每回合少摸一张牌。",
     "tck_qi_xing_bao_dao_skill": "七星宝刀",
@@ -4715,6 +4790,7 @@ export const cards = {
   },
   list: [
     // diy牌堆
+    ["heart", 6, 'tck_ping_jiao_ku'],
     ["heart", 9, 'tck_card_dang'],
     ["diamond", 7, 'tck_card_dang'],
     ["heart", 10, 'tck_da_bai_er_gui'],

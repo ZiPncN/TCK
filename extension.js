@@ -8,6 +8,7 @@ import lxy_cards from "./js/card/card_lxy.js"
 import character_cards from "./js/card/card_character.js"
 import groups from "./js/groups.js"
 import natureConfig from "./js/natures.js"
+import { noNatures } from './js/natures.js'
 import globalSkills from "./js/globalSkill.js"
 export const type = "extension"
 export default function () {
@@ -47,17 +48,6 @@ export default function () {
                         }, _status.tckLand)
                     }
                 });
-            }
-            lib.message.client.tck_scp_330_init = function (cardInfoList) {
-                _status.tck_scp_330 = cardInfoList.map(info => game.createCard(info))
-            }
-            lib.message.client.tck_scp_330_shift = function () {
-                if (_status.tck_scp_330 && _status.tck_scp_330.length) {
-                    _status.tck_scp_330.shift()
-                }
-            }
-            lib.message.client.tck_scp_330_clear = function () {
-                delete _status.tck_scp_330
             }
         },
         /* 游戏数据加载后、界面加载前
@@ -274,6 +264,45 @@ export default function () {
             }
 
             natureConfig.resetLib()
+
+            lib.message.client.tck_scp_330_init = function (cardInfoList) {
+                _status.tck_scp_330 = cardInfoList.map(info => game.createCard(info))
+            }
+            lib.message.client.tck_scp_330_shift = function () {
+                if (_status.tck_scp_330 && _status.tck_scp_330.length) {
+                    _status.tck_scp_330.shift()
+                }
+            }
+            lib.message.client.tck_scp_330_clear = function () {
+                delete _status.tck_scp_330
+            }
+            lib.skill['tengjia3'] = {
+                equipSkill: true,
+                audio: "tengjia1",
+                trigger: { target: "shaBefore" },
+                forced: true,
+                filter(event, player) {
+                    if (player.hasSkillTag("unequip2")) {
+                        return false;
+                    }
+                    if (
+                        event.player.hasSkillTag("unequip", false, {
+                            name: event.card ? event.card.name : null,
+                            target: player,
+                            card: event.card,
+                        })
+                    ) {
+                        return false;
+                    }
+                    if (event.card.name == "sha" && (!game.hasNature(event.card) || noNatures.some(n => n == get.nature(event.card)))) {
+                        return true;
+                    }
+                    return false;
+                },
+                content() {
+                    trigger.cancel();
+                },
+            }
 
             // 添加语音
             game.addGlobalSkill("tck_send_skill_voice")

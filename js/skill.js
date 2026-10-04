@@ -3526,6 +3526,13 @@ export const skills = {
       filter(event, player) {
         const skills = player.getSkills(false, false)
         if (skills.length == 0) return false
+        let allVoiceList = []
+        // 构建所有的技能：台词
+        skills.forEach(skill => {
+          const voiceMap = get.Audio.skill({ skill, player: player.name }).audioList
+          allVoiceList.push(...voiceMap)
+        })
+        if (allVoiceList.length == 0) return false
         return true
       },
       async content(event, trigger, player) {
