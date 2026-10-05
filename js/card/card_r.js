@@ -55,6 +55,19 @@ export const r_cards = {
     "tck_r_mian_zhao_info": "无作用。",
   },
   list: [
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
+    ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"], ["spade", 4, "tck_card_hcl"],
   ],
 }
 

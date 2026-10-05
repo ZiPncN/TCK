@@ -2244,6 +2244,14 @@ export const cards = {
         next.backup('tck_gang_bi_zi_yong_skill')
       },
     },
+    "tck_card_hcl": {
+      image: "ext:TCK/imgs/cards/tck_card_hcl.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip2",
+      skills: ["tck_card_hcl_skill"],
+      recastable: true,
+    },
     // todo
     "tck_liu_long_can_jia": {
       image: "ext:TCK/imgs/cards/tck_liu_long_can_jia.png",
@@ -2260,6 +2268,10 @@ export const cards = {
   },
   //装备技能&场地技能&卡牌附加技能
   skill: {
+    // todo
+    "tck_card_hcl_skill": {
+      equipSkill: true,
+    },
     // todo
     "tck_liu_long_can_jia_skill1": {
       trigger: { player: "equipAfter" },
@@ -4570,6 +4582,10 @@ export const cards = {
     },
   },
   translate: {
+    "tck_card_hcl": "胡晨亮",
+    "tck_card_hcl_info": "①旧/新神装备可以将基本牌当锦囊。<br/>②重铸。",
+    "tck_card_hcl_skill": "胡晨亮",
+    "tck_card_hcl_skill_info": "",
     "tck_gang_bi_zi_yong": "刚愎自用",
     "tck_gang_bi_zi_yong_info": "你将所有手牌当一张不计入次数，无距离限制，无视防具的杀，若命中，此杀伤害+1。",
     "tck_gang_bi_zi_yong_effect2": "刚愎自用",
@@ -4960,6 +4976,7 @@ export const cards = {
   },
   list: [
     // diy牌堆
+    ["spade", 4, "tck_card_hcl"],
     ["spade", 10, "tck_gang_bi_zi_yong"],
     ["heart", 9, "tck_xiong_huang_jiu"],
     ["spade", 9, "tck_xiong_huang_jiu"],
