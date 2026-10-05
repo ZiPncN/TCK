@@ -2162,6 +2162,88 @@ export const cards = {
       subtype: "equip2",
       skills: ["tck_ping_jiao_ku_skill"]
     },
+    "tck_xiong_huang_jiu": {
+      image: "ext:TCK/imgs/cards/tck_xiong_huang_jiu.png",
+      fullskin: true,
+      type: "basic",
+      toself: true,
+      enable: true,
+      savable(card, player, dying) {
+        return dying == player || player.hasSkillTag("jiuOther", null, dying, true);
+      },
+      usable: 1,
+      selectTarget: -1,
+      modTarget: true,
+      filterTarget(card, player, target) {
+        return target == player;
+      },
+      content() {
+        if (target.isDying() || event.getParent(2).type == "dying") {
+          target.recover();
+          if (_status.currentPhase == target && typeof target.getStat().card.tck_xiong_huang_jiu == "number") {
+            target.getStat().card.tck_xiong_huang_jiu--;
+          }
+        }
+        else {
+          game.addVideo("jiuNode", target, true);
+          if (cards && cards.length) {
+            card = cards[0];
+          }
+          if (!target.storage.tck_xiong_huang_jiu) {
+            target.storage.tck_xiong_huang_jiu = 0;
+          }
+          game.broadcastAll(
+            function (target, card, gain2) {
+              target.addSkill("tck_xiong_huang_jiu_effect");
+              // if (!target.node.jiu && lib.config.jiu_effect) {
+              //   target.node.jiu = ui.create.div(".playerjiu", target.node.avatar);
+              //   target.node.jiu2 = ui.create.div(".playerjiu", target.node.avatar2);
+              // }
+              if (gain2 && card.clone && (card.clone.parentNode == target.parentNode || card.clone.parentNode == ui.arena)) {
+                card.clone.moveDelete(target);
+              }
+            },
+            target,
+            card,
+            target == targets[0] && cards.length == 1
+          );
+          if (target == targets[0] && cards.length == 1) {
+            if (card.clone && (card.clone.parentNode == target.parentNode || card.clone.parentNode == ui.arena)) {
+              game.addVideo("gain2", target, get.cardsInfo([card]));
+            }
+          }
+        }
+      },
+      ai: {
+        tag: {
+          save: 1,
+          recover: 0.1,
+        },
+      },
+    },
+    "tck_gang_bi_zi_yong": {
+      image: "ext:TCK/imgs/cards/tck_gang_bi_zi_yong.png",
+      fullskin: true,
+      type: "trick",
+      enable(event, player) {
+        return player.hasUseTarget('sha', false, true) && player.countCards("h") >= 2
+      },
+      global: ['tck_gang_bi_zi_yong_effect1', 'tck_gang_bi_zi_yong_effect2'],
+      toSelf: true,
+      selectTarget: -1,
+      filterTarget(card, player, target) {
+        return player == target
+      },
+      async content(event, trigger, player) {
+        let next = player.chooseToUse()
+        // next.set('logSkill', 'tck_gang_bi_zi_yong')
+        next.set('openskilldialog', '刚愎自用：将所有手牌当一张不计入次数，无距离限制，无视防具的杀')
+        next.set('norestore', true)
+        next.set('_backupevent', 'tck_gang_bi_zi_yong_skill')
+        next.set('custom', { add: {}, replace: { window: function () { } } })
+        next.backup('tck_gang_bi_zi_yong_skill')
+      },
+    },
     // todo
     "tck_liu_long_can_jia": {
       image: "ext:TCK/imgs/cards/tck_liu_long_can_jia.png",
@@ -2201,6 +2283,89 @@ export const cards = {
         if (cards.length > 0) {
           await player.discard(cards)
         }
+      },
+    },
+    "tck_gang_bi_zi_yong_skill": {
+      cardSkill: true,
+      popup: false,
+      nopop: true,
+      position: "h",
+      log: false,
+      viewAs: {
+        name: "sha",
+        storage: {
+          tck_gang_bi_zi_yong: true,
+        }
+      },
+      filterCard: true,
+      selectCard: -1,
+    },
+    "tck_gang_bi_zi_yong_effect1": {
+      cardSkill: true,
+      popup: false,
+      nopop: true,
+      log: false,
+      mod: {
+        //不计入次数
+        cardUsable(card, player) {
+          if (card?.storage?.tck_gang_bi_zi_yong) {
+            return Infinity;
+          }
+        },
+        //无距离限制
+        targetInRange(card, player, target) {
+          if (get.name(card) == "sha" && card.storage?.tck_gang_bi_zi_yong) {
+            return true;
+          }
+        },
+      },
+      charlotte: true,
+      trigger: {
+        player: "useCardToTargeted",
+      },
+      filter(event, player) {
+        return get.name(event.card) == "sha" && event.card.storage?.tck_gang_bi_zi_yong
+      },
+      async content(event, trigger, player) {
+        await trigger.target.addTempSkill("qinggang2");
+        await trigger.target.storage.qinggang2.add(trigger.card);
+        await trigger.target.markSkill("qinggang2");
+      },
+      forced: true,
+    },
+    "tck_gang_bi_zi_yong_effect2": {
+      cardSkill: true,
+      trigger: { source: "damageBegin" },
+      filter(event) {
+        return event.card && event.card.name == "sha" && event.card.storage?.tck_gang_bi_zi_yong
+      },
+      charlotte: true,
+      forced: true,
+      async content(event, trigger, player) {
+        trigger.num++
+      },
+    },
+    "tck_xiong_huang_jiu_effect": {
+      trigger: { player: "shaHit" },
+      forced: true,
+      charlotte: true,
+      firstDo: true,
+      async content(event, trigger, player) {
+        await player.draw(1)
+        trigger.tck_xiong_huang_jiu = true
+        trigger.tck_xiong_huang_jiu_add = player.storage.tck_xiong_huang_jiu
+        game.broadcastAll(function (player) {
+          player.removeSkill("tck_xiong_huang_jiu_effect")
+        }, player)
+        game.addVideo("jiuNode", player, false)
+      },
+      temp: true,
+      vanish: true,
+      silent: true,
+      popup: false,
+      nopop: true,
+      onremove(player) {
+        delete player.storage.tck_xiong_huang_jiu
       },
     },
     "tck_ping_jiao_ku_skill": {
@@ -2905,7 +3070,7 @@ export const cards = {
         const card = list.shift()
         game.broadcast("tck_scp_330_shift")
 
-        await player.gain(card, "gain2")
+        await player.gain(card, "draw2")
         await player.addMark("tck_scp_330_tckland_skill", 1);
         if (player.countMark("tck_scp_330_tckland_skill") >= 3) {
           await player.loseHp(player.hp)
@@ -4405,6 +4570,11 @@ export const cards = {
     },
   },
   translate: {
+    "tck_gang_bi_zi_yong": "刚愎自用",
+    "tck_gang_bi_zi_yong_info": "你将所有手牌当一张不计入次数，无距离限制，无视防具的杀，若命中，此杀伤害+1。",
+    "tck_gang_bi_zi_yong_effect2": "刚愎自用",
+    "tck_xiong_huang_jiu": "雄黄酒",
+    "tck_xiong_huang_jiu_info": "使你下一张杀命中后摸一张牌。",
     "tck_liu_long_can_jia": "六龙骖驾",
     "tck_liu_long_can_jia_skill1": "六龙骖驾",
     "tck_liu_long_can_jia_info": "该装备进入你装备栏，你弃置其它所有坐骑，你可以额外装备1个坐骑。",
@@ -4790,6 +4960,9 @@ export const cards = {
   },
   list: [
     // diy牌堆
+    ["spade", 10, "tck_gang_bi_zi_yong"],
+    ["heart", 9, "tck_xiong_huang_jiu"],
+    ["spade", 9, "tck_xiong_huang_jiu"],
     ["heart", 6, 'tck_ping_jiao_ku'],
     ["heart", 9, 'tck_card_dang'],
     ["diamond", 7, 'tck_card_dang'],
