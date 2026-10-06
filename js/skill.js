@@ -3065,6 +3065,262 @@ export const skills = {
       },
       prompt: "手上任意一张牌当南门无限次数"
     },
+    "tck_chi_shou_dian_tong": {
+      trigger: {
+        player: "recoverBegin",
+      },
+      async content(event, trigger, player) {
+        await player.draw(2)
+        let target = await player.getNext()
+        while (target && target != player) {
+          const card = await game.createCard({ name: 'sha', nature: 'tck_light' })
+          await player.useCard(card, target)
+          target = await target.getNext()
+        }
+      }
+    },
+    "tck_xia_si_ren": {
+      trigger: {
+        player: "damageEnd",
+      },
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.suit(card) == "spade") return 1
+          return -1
+        }).forResult()
+        if (get.suit(res) == "spade") {
+          const res = await player.chooseTarget(true, (card, player, target) => player != target).forResult()
+          await res.targets[0].damage(2, player)
+        }
+      }
+    },
+    "tck_jing_ce": {
+      trigger: {
+        player: "phaseJieshuBegin"
+      },
+      intro: {
+        content: "本回合已使用#张牌"
+      },
+      filter(event, player) {
+        return player.hasMark("tck_jing_ce")
+      },
+      async content(event, trigger, player) {
+        const useNum = await player.countMark("tck_jing_ce")
+        await player.draw(useNum)
+        await player.clearMark("tck_jing_ce")
+        const evt = trigger.getParent("phase", true)
+        if (evt) {
+          evt.phaseList.splice(evt.num + 1, 0, `phaseUse|${event.name}`)
+        }
+      },
+      group: ["tck_jing_ce_use"],
+      subSkill: {
+        "use": {
+          popup: false,
+          forced: true,
+          charlotte: true,
+          trigger: {
+            player: "useCard"
+          },
+          filter(event, player) {
+            const evt = event.getParent("phase", true)
+            return _status.currentPhase == player && evt && evt.phaseList[evt.num] == "phaseUse"
+          },
+          async content(event, trigger, player) {
+            await player.addMark("tck_jing_ce", 1)
+          }
+        }
+      }
+    },
+    "tck_shi_yong": {
+      forced: true,
+      trigger: {
+        player: "damageEnd"
+      },
+      filter(event, player) {
+        return (!!event.card && get.color(event.card) == "red") || event.num >= 2
+      },
+      async content(event, trigger, player) {
+        if (trigger.num >= 2) {
+          const source = trigger.source
+          if (!!source) {
+            await source.draw(1)
+          }
+          await player.draw(trigger.num - 1)
+        } else {
+          await player.draw(1)
+        }
+      }
+    },
+    "tck_jian_lai": {
+      enable: "phaseUse",
+      position: "h",
+      viewAs: { name: "wanjian" },
+      filterCard: true,
+      selectCard: 2
+    },
+    "tck_pai_lai": {
+      forced: true,
+      trigger: {
+        global: "die"
+      },
+      async content(event, trigger, player) {
+        await player.draw(3)
+      }
+    },
+    "tck_yin_ka": {
+      mark: true,
+      intro: {
+        content: "整局游戏剩余可用#次"
+      },
+      init(player) {
+        player.storage.tck_yin_ka = 3
+      },
+      enable: ["chooseToUse", "chooseToResponse"],
+      filter(event, player) {
+        return player.countCards("h") > 0 && player.storage.tck_yin_ka > 0
+      },
+      chooseButton: {
+        dialog(event, player) {
+          let list = [];
+          for (let name of lib.inpile) {
+            if (get.type(name) == "basic" || get.type(name) == "trick" || get.type(name) == "delay" || get.type(name) == "equip" || get.type(name) == "land") {
+              list.push([get.translation(get.type(name)), "", name]);
+              if (name == "sha") {
+                for (let j of lib.inpile_nature) {
+                  list.push(["基本", "", "sha", j]);
+                }
+              }
+              if (name == "shan" && !!lib.card.shan['tck_nature']) {
+                for (let j of lib.card.shan['tck_nature']) {
+                  list.push(["基本", "", "shan", j]);
+                }
+              }
+              if (name == "jiu" && !!lib.card.jiu['tck_nature']) {
+                for (let j of lib.card.jiu['tck_nature']) {
+                  list.push(["基本", "", "jiu", j]);
+                }
+              }
+              if (name == "wuxie" && !!lib.card.wuxie['tck_nature']) {
+                for (let j of lib.card.wuxie['tck_nature']) {
+                  list.push(["锦囊", "", "wuxie", j]);
+                }
+              }
+            }
+          }
+          return ui.create.dialog("印卡", [list, "vcard"]);
+        },
+        filter(button, player) {
+          return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
+        },
+        backup(links, player) {
+          return {
+            filterCard: true,
+            popname: true,
+            viewAs: { name: links[0][2], nature: links[0][3] },
+            onuse() {
+              player.storage.tck_yin_ka--
+              if (player.storage.tck_yin_ka < 0) player.storage.tck_yin_ka = 0
+              player.updateMark("tck_yin_ka")
+            },
+            onrespond() {
+              player.storage.tck_yin_ka--
+              if (player.storage.tck_yin_ka < 0) player.storage.tck_yin_ka = 0
+              player.updateMark("tck_yin_ka")
+            }
+          }
+        },
+        prompt(links, player) {
+          return "将一张手牌当做" + get.translation(links[0][2]) + "使用或打出"
+        },
+      }
+    },
+    "tck_ao_xi_li_si": {
+      mod: {
+        globalTo(from, to, distance) {
+          return distance + 1;
+        },
+      },
+    },
+    "tck_ling_hun_chong_ji": {
+      enable: "phaseUse",
+      async content(event, trigger, player) {
+        const pileCards = await get.cards(3, false)
+        const res = await player.chooseToMove(3)
+          .set("list", [["牌堆顶", pileCards]])
+          .forResult()
+
+        if (res.bool) {
+          const cards = res.moved[0].slice(0)
+          if (cards?.length) {
+            cards.reverse()
+            game.log(player, "将", cards, "置于牌堆顶")
+            await game.cardsGotoPile(cards, "insert")
+          }
+        }
+      },
+      group: ["tck_ling_hun_chong_ji_watch"],
+      subSkill: {
+        "watch": {
+          enable: "phaseUse",
+          round: 2,
+          filterTarget(card, player, target) {
+            return target.countCards("h") > 0 && player != target
+          },
+          async content(event, trigger, player) {
+            await player.viewHandcards(event.target)
+          }
+        }
+      }
+    },
+    "tck_xin_shan": {
+      trigger: {
+        source: "damageBefore"
+      },
+      forced: true,
+      filter(event, player) {
+        return get.name(event.card) == 'sha' && event.player.hp < 2
+      },
+      async content(event, trigger, player) {
+        trigger.num--
+      },
+      group: ["tck_xin_shan_1"],
+      subSkill: {
+        "1": {
+          trigger: {
+            player: "damageBefore"
+          },
+          forced: true,
+          filter(event, player) {
+            return player.hp <= 3
+          },
+          async content(event, trigger, player) {
+            trigger.num--
+          }
+        }
+      }
+    },
+    "tck_jiu_jie": {
+      trigger: {
+        source: "damageBegin",
+        player: "damageBegin"
+      },
+      async content(event, trigger, player) {
+        await trigger.cancel()
+        await trigger.player.loseHp(trigger.num)
+        const res = await player.judge(card => {
+          if (get.color(card) == 'red') return 1
+          else if (get.color(card) == 'black') return -2
+          return -1
+        }).forResult()
+        if (get.color(res) == 'red') {
+          await player.draw(1)
+          await player.recover(1)
+        } else if (get.color(res) == 'black') {
+          await player.chooseToDiscard(1, true, "he")
+        }
+      }
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -3558,6 +3814,29 @@ export const skills = {
     }
   },
   translate: {
+    "tck_xin_shan": "心善",
+    "tck_xin_shan_info": "你对体力为1的角色杀伤害-1，若你体力为3或以下，你受到的伤害-1。",
+    "tck_jiu_jie": "纠结",
+    "tck_jiu_jie_info": "你造成或受到伤害时可将此伤害改为体力流失，然后你需判定：若为红色，你摸1张牌并回复1点体力，若为黑色，你弃一张牌。",
+    "tck_yin_ka": "印卡",
+    "tck_yin_ka_info": "手上的卡可以随意更换，整局游戏限3次。",
+    "tck_ao_xi_li_si": "奥西里斯",
+    "tck_ao_xi_li_si_info": "与对手距离永远+1。",
+    "tck_ling_hun_chong_ji": "灵魂冲击",
+    "tck_ling_hun_chong_ji_info": "可以观察牌顶3张牌并改变位置，以及2回合1次观察对手所有手牌。",
+    "tck_ling_hun_chong_ji_watch_info": "观察对手所有手牌。",
+    "tck_jian_lai": "剑来",
+    "tck_jian_lai_info": "弃置两张牌当万箭齐发（无限）。",
+    "tck_pai_lai": "牌来",
+    "tck_pai_lai_info": "场上死亡一人摸三张。",
+    "tck_shi_yong": "恃勇",
+    "tck_shi_yong_info": "你受到红牌伤害后，你摸1张牌，你受到伤害若大于1，则来源摸1张牌，然后你摸X张牌。<br/>（X为伤害量减一）。",
+    "tck_jing_ce": "精策",
+    "tck_jing_ce_info": "回合结束，若你于回合内使用了X张牌，则你摸X张牌，然后执行一个额外的出牌阶段。",
+    "tck_chi_shou_dian_tong": "吃手电筒",
+    "tck_chi_shou_dian_tong_info": "你回血时，你摸2张牌，然后你视为对全场使用光杀。",
+    "tck_xia_si_ren": "吓死人",
+    "tck_xia_si_ren_info": "你受到伤害，可以吓人，判定，若为黑桃，对一角色造成2点伤害。",
     "tck_send_skill_voice": "技能语音",
     "tck_tian_nan_men": "南门",
     "tck_tian_nan_men_info": "手上任意一张牌当南门无限次数。",

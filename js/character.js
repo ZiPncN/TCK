@@ -392,14 +392,6 @@ export const characters = {
       skills: ["tck_xia_du", "tck_jue_bao"],
       img: "extension/TCK/imgs/charactors/tck_laofeng.jpg",
     },
-    "tck_laofeng": {
-      sex: "male",
-      group: "tck_luan_ru",
-      hp: 4,
-      maxHp: 4,
-      skills: ["tck_xia_du", "tck_jue_bao"],
-      img: "extension/TCK/imgs/charactors/tck_laofeng.jpg",
-    },
     "tck_xiangjiaojun": {
       sex: "male",
       group: "tck_luan_ru",
@@ -464,6 +456,54 @@ export const characters = {
       skills: ["tck_tian_nan_men"],
       img: "extension/TCK/imgs/charactors/tck_tiannanmen.jpg",
     },
+    "tck_chaonengxiansheng": {
+      sex: "male",
+      group: "tck_luan_ru",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_chi_shou_dian_tong", "tck_xia_si_ren"],
+      img: "extension/TCK/imgs/charactors/tck_chaonengxiansheng.jpg",
+    },
+    "tck_guohuai": {
+      sex: "male",
+      group: "wei",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_jing_ce"],
+      img: "extension/TCK/imgs/charactors/tck_guohuai.jpg",
+    },
+    "tck_huaxiong": {
+      sex: "male",
+      group: "qun",
+      hp: 6,
+      maxHp: 6,
+      skills: ["tck_shi_yong"],
+      img: "extension/TCK/imgs/charactors/tck_huaxiong.jpg",
+    },
+    "tck_yuanshao": {
+      sex: "male",
+      group: "tck_luan_ru",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_jian_lai", "tck_pai_lai"],
+      img: "extension/TCK/imgs/charactors/tck_yuanshao.jpg",
+    },
+    "tck_wutengyouxian": {
+      sex: "male",
+      group: "tck_group_you",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_yin_ka", "tck_ao_xi_li_si", "tck_ling_hun_chong_ji"],
+      img: "extension/TCK/imgs/charactors/tck_wutengyouxian.jpg",
+    },
+    "tck_rkshs_weiaola": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_xin_shan", "tck_jiu_jie"],
+      img: "extension/TCK/imgs/charactors/tck_rkshs_weiaola.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -509,6 +549,12 @@ export const characters = {
 
   },
   translate: {
+    "tck_rkshs_weiaola": "薇奥拉",
+    "tck_wutengyouxian": "武藤游戏（暗）",
+    "tck_yuanshao": "袁绍",
+    "tck_huaxiong": "华雄",
+    "tck_guohuai": "郭淮",
+    "tck_chaonengxiansheng": "超能先生",
     "tck_tiannanmen": "天南门",
     "tck_????": "????",
     "tck_taowajiangpai": "套娃武将",
@@ -577,6 +623,11 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_rkshs_weiaola": "日恐四幻神",
+    "tck_wutengyouxian": "游戏王",
+    "tck_huaxiong": "恃勇之夫",
+    "tck_guohuai": "方策精响",
+    "tck_chaonengxiansheng": "超人总动员",
     "tck_????": "??",
     "tck_r_mmhf_wzh": "蒙面悍匪",
     "tck_r_wzh_fhz_yc": "婺城双杰",
@@ -653,6 +704,8 @@ export const characters = {
         "tck_xiangjiaojun", "tck_moduoluoyinqinai",
         "tck_dongfangzhangzhu", "tck_nanmen", "tck_hunpoyaomeng",
         "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
+        "tck_chaonengxiansheng", "tck_wutengyouxian",
+        "tck_rkshs_weiaola",
       ],
 
       //三国
@@ -660,7 +713,8 @@ export const characters = {
         "tck_hj_huanggai", "tck_sp_sunshangxiang",
         "tck_guanyu_zhangfei", "tck_shen_jiaxu", "tck_liaohua",
         "tck_tongyuan", "tck_guojia", "tck_hj_zhouyu",
-        "tck_lingcao", "tck_huatuo",
+        "tck_lingcao", "tck_huatuo", "tck_guohuai",
+        "tck_huaxiong", "tck_yuanshao",
       ],
 
       //重制版

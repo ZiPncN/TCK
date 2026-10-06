@@ -272,8 +272,11 @@ export const cards = {
       async content(event, trigger, player) {
         let res = await player.chooseCard("he", true, 1).set('prompt', '请弃置一张牌').forResult()
         await player.discard(res.cards)
-        let targets = game.players.filter(target => target != player).filter(target => target.countCards("hej") > 0)
-        targets.forEach(async target => await player.discardPlayerCard(target, "hej", true))
+        let target = await player.getNext()
+        while (target && target != player) {
+          await player.discardPlayerCard(target, "hej", true)
+          target = await target.getNext()
+        }
       }
     },
     "tck_sen_lin": {
@@ -1991,10 +1994,10 @@ export const cards = {
         await info.evt.cancel()
       }
     },
-    "tck_yin_ka": {
+    "tck_card_yin_ka": {
       type: "trick",
       fullskin: true,
-      image: "ext:TCK/imgs/cards/tck_yin_ka.png",
+      image: "ext:TCK/imgs/cards/tck_card_yin_ka.png",
     },
     "tck_ting_che_chang": {
       image: "ext:TCK/imgs/cards/tck_ting_che_chang.png",
@@ -2765,12 +2768,12 @@ export const cards = {
         }
       }
     },
-    "tck_yin_ka_skill": {
+    "tck_card_yin_ka_skill": {
       cardSkill: true,
       unique: true,
       enable: ["chooseToUse", "chooseToResponse"],
       filter(event, player) {
-        return player.countCards("hs", card => get.name(card) == "tck_yin_ka")
+        return player.countCards("hs", card => get.name(card) == "tck_card_yin_ka")
       },
       chooseButton: {
         dialog(event, player) {
@@ -2807,7 +2810,7 @@ export const cards = {
         },
         backup(links, player) {
           let name = links[0][2]
-          let rawname = "tck_yin_ka"
+          let rawname = "tck_card_yin_ka"
           return {
             filterCard: { name: rawname },
             popname: true,
@@ -2816,8 +2819,8 @@ export const cards = {
         },
         prompt(links, player) {
           let name = links[0][2]
-          let rawname = "tck_yin_ka"
-          return "将一张" + get.translation(rawname) + "当做" + get.translation(name) + "使用"
+          let rawname = "tck_card_yin_ka"
+          return "将一张" + get.translation(rawname) + "当做" + get.translation(name) + "使用或打出"
         },
       },
     },
@@ -3082,7 +3085,7 @@ export const cards = {
         const card = list.shift()
         game.broadcast("tck_scp_330_shift")
 
-        await player.gain(card, "draw2")
+        await player.gain(card, "draw")
         await player.addMark("tck_scp_330_tckland_skill", 1);
         if (player.countMark("tck_scp_330_tckland_skill") >= 3) {
           await player.loseHp(player.hp)
@@ -4629,11 +4632,11 @@ export const cards = {
     "tck_ting_che_chang": "停车场",
     "tck_ting_che_chang_info": "木牛流马只能在这里，无法被取走。",
     "tck_ting_che_chang_skill": "停车场",
-    "tck_yin_ka": "印卡",
-    "tck_yin_ka_info": "可以当作任何卡使用，包括花色。",
-    "tck_yin_ka_append": "偶嘞の卡多哇<br/>新叽噜贼！",
-    "tck_yin_ka_skill": "印卡",
-    "tck_yin_ka_skill_info": "将一张印卡当任何卡使用。",
+    "tck_card_yin_ka": "印卡",
+    "tck_card_yin_ka_info": "可以当作任何卡使用，包括花色。",
+    "tck_card_yin_ka_append": "偶嘞の卡多哇<br/>新叽噜贼！",
+    "tck_card_yin_ka_skill": "印卡",
+    "tck_card_yin_ka_skill_info": "将一张印卡当任何卡使用。",
     "tck_qi_bing_bao_shuai": "弃兵保帅",
     "tck_qi_bing_bao_shuai_info": "你受到致命伤时使用，你弃置所有手牌（若无手牌则不弃），防止这次伤害。",
     "tck_yi_xie_meng_yan": "以血蒙眼",
@@ -4999,7 +5002,7 @@ export const cards = {
     ["heart", 10, 'tck_fu_mian_zhi_liao', null, ["gifts"]],
     ["heart", 13, 'tck_wu_wang_wo', null, ["gifts"]],
     ["heart", 6, 'tck_ting_che_chang'],
-    ["club", 3, 'tck_yin_ka'],
+    ["club", 3, 'tck_card_yin_ka'],
     ["diamond", 11, 'tck_qi_bing_bao_shuai'],
     ["heart", 13, 'tck_yi_xie_meng_yan'],
     ["heart", 5, 'tck_shen_hong_dian_zuan'],

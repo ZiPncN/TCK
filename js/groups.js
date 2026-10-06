@@ -25,6 +25,7 @@ const groups = [
   { id: "tck_group_han", short: "含", name: "含", config: { color: "", image: "", } },
   { id: "tck_group_tao_wa", short: "套", name: "套娃", config: { color: "", image: "", } },
   { id: "tck_group_?", short: "?", name: "?", config: { color: "", image: "", } },
+  { id: "tck_group_you", short: "游", name: "游", config: { color: "", image: "", } },
 ]
 
 export default groups
