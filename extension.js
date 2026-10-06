@@ -1,6 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import characters from "./js/character.js"
-import skills from "./js/skill.js"
+import characters from "./js/character/character.js"
+import skills from "./js/skill/skill.js"
+import guaiqi_characters from "./js/character/character_guaiqi.js"
+import guaiqi_skills from "./js/skill/skill_guaiqi.js"
 import cards from "./js/card/card.js"
 import ex_cards from "./js/card/card_ex.js"
 import r_cards from "./js/card/card_r.js"
@@ -9,7 +11,7 @@ import character_cards from "./js/card/card_character.js"
 import groups from "./js/groups.js"
 import natureConfig from "./js/natures.js"
 import { noNatures } from './js/natures.js'
-import globalSkills from "./js/globalSkill.js"
+import globalSkills from "./js/skill/globalSkill.js"
 export const type = "extension"
 export default function () {
     return {
@@ -324,7 +326,18 @@ export default function () {
                     skill: { ...skills.skill },
                 }
             })
-
+            game.import('character', function () {
+                return {
+                    name: "TCK_GUAIQI",
+                    connect: true,
+                    character: { ...guaiqi_characters.character },
+                    // characterSort: guaiqi_characters.characterSort,
+                    characterTitle: { ...guaiqi_characters.characterTitle },
+                    // characterIntro: { ...guaiqi_characters.characterIntro },
+                    translate: { ...guaiqi_characters.translate, ...guaiqi_skills.translate },
+                    skill: { ...guaiqi_skills.skill },
+                }
+            })
             //--------------------- 添加卡牌 begin ---------------------
             game.import('card', function () {
                 return {

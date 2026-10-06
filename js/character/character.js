@@ -160,14 +160,6 @@ export const characters = {
       skills: ["tck_yi_yu", "tck_zi_sha"],
       img: "extension/TCK/imgs/charactors/tck_rkshs_fuchuangzi.jpg",
     },
-    "tck_bachidaren": {
-      sex: "female",
-      group: "tck_guai_qi",
-      hp: 3,
-      maxHp: 3,
-      skills: ["tck_mi_huo", "tck_xi_shou"],
-      img: "extension/TCK/imgs/charactors/tck_bachidaren.jpg",
-    },
     "tck_wuyumolisha": {
       sex: "female",
       group: "tck_dong",
@@ -595,7 +587,6 @@ export const characters = {
     "tck_guanyu_zhangfei": "关羽 张飞",
     "tck_fhz": "傅还政",
     "tck_wuyumolisha": "雾雨魔理沙",
-    "tck_bachidaren": "八尺大人",
     "tck_rkshs_fuchuangzi": "附窗子",
     "tck_ban": "班",
     "tck_r_zpn": "朱沛宁",
@@ -663,7 +654,6 @@ export const characters = {
     "tck_guanyu_zhangfei": "桃园之义",
     "tck_fhz": "画家",
     "tck_wuyumolisha": "普通的魔法使",
-    "tck_bachidaren": "都市传说",
     "tck_ban": "老师",
     "tck_r_zpn": "肌肉",
     "tck_spc_173": "爱学习的鲨鱼",
@@ -693,7 +683,7 @@ export const characters = {
         "tck_hxc", "tck_yjc", "tck_pmk_ailian",
         "tck_rkshs_IB", "tck_aoerjia", "tck_marry",
         "tck_scp_035", "tck_spc_173", "tck_ban",
-        "tck_rkshs_fuchuangzi", "tck_bachidaren",
+        "tck_rkshs_fuchuangzi", "tck_rkshs_weiaola",
         "tck_wuyumolisha", "tck_fhz", "tck_scp_001_wjlt",
         "tck_fengfeisha", "tck_jiutuntongzi", "tck_scp_999",
         "tck_buzhihuo", "tck_jiliangjiying", "tck_qiaoni",
@@ -705,7 +695,6 @@ export const characters = {
         "tck_dongfangzhangzhu", "tck_nanmen", "tck_hunpoyaomeng",
         "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
         "tck_chaonengxiansheng", "tck_wutengyouxian",
-        "tck_rkshs_weiaola",
       ],
 
       //三国
