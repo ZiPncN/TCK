@@ -493,8 +493,16 @@ export const characters = {
       group: "tck_luan_ru",
       hp: 4,
       maxHp: 4,
-      skills: ["tck_xin_shan", "tck_jiu_jie"],
+      skills: ["tck_rkshs_xin_shan", "tck_jiu_jie"],
       img: "extension/TCK/imgs/charactors/tck_rkshs_weiaola.jpg",
+    },
+    "tck_weioula": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_dan_chun", "tck_xin_shan"],
+      img: "extension/TCK/imgs/charactors/tck_weioula.jpg",
     },
 
     //重制版
@@ -541,6 +549,7 @@ export const characters = {
 
   },
   translate: {
+    "tck_weioula": "维欧拉",
     "tck_rkshs_weiaola": "薇奥拉",
     "tck_wutengyouxian": "武藤游戏（暗）",
     "tck_yuanshao": "袁绍",
@@ -614,6 +623,7 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_weioula": "少女",
     "tck_rkshs_weiaola": "日恐四幻神",
     "tck_wutengyouxian": "游戏王",
     "tck_huaxiong": "恃勇之夫",
@@ -695,6 +705,7 @@ export const characters = {
         "tck_dongfangzhangzhu", "tck_nanmen", "tck_hunpoyaomeng",
         "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
         "tck_chaonengxiansheng", "tck_wutengyouxian",
+        "tck_weioula",
       ],
 
       //三国

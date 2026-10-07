@@ -3072,7 +3072,7 @@ export const skills = {
           evt.phaseList.splice(evt.num + 1, 0, `phaseUse|${event.name}`)
         }
       },
-      group: ["tck_jing_ce_use"],
+      group: ["tck_jing_ce_use", "tck_jing_ce_clear"],
       subSkill: {
         "use": {
           popup: false,
@@ -3087,6 +3087,20 @@ export const skills = {
           },
           async content(event, trigger, player) {
             await player.addMark("tck_jing_ce", 1)
+          }
+        },
+        "clear": {
+          popup: false,
+          forced: true,
+          charlotte: true,
+          trigger: {
+            player: "phaseEnd"
+          },
+          filter(event, player) {
+            return player.hasMark("tck_jing_ce")
+          },
+          async content(event, trigger, player) {
+            await player.clearMark("tck_jing_ce")
           }
         }
       }
@@ -3113,10 +3127,13 @@ export const skills = {
     },
     "tck_jian_lai": {
       enable: "phaseUse",
-      position: "h",
+      position: "he",
       viewAs: { name: "wanjian" },
+      viewAsFilter(player) {
+        return player.countCards("he") > 1
+      },
       filterCard: true,
-      selectCard: 2
+      selectCard: 2,
     },
     "tck_pai_lai": {
       forced: true,
@@ -3232,7 +3249,7 @@ export const skills = {
         }
       }
     },
-    "tck_xin_shan": {
+    "tck_rkshs_xin_shan": {
       trigger: {
         source: "damageBefore"
       },
@@ -3243,7 +3260,7 @@ export const skills = {
       async content(event, trigger, player) {
         trigger.num--
       },
-      group: ["tck_xin_shan_1"],
+      group: ["tck_rkshs_xin_shan_1"],
       subSkill: {
         "1": {
           trigger: {
@@ -3277,6 +3294,64 @@ export const skills = {
           await player.recover(1)
         } else if (get.color(res) == 'black') {
           await player.chooseToDiscard(1, true, "he")
+        }
+      }
+    },
+    "tck_dan_chun": {
+      charlotte: true,
+      forced: true,
+      trigger: {
+        target: "useCardToTarget"
+      },
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.color(card) == 'red') return 1
+          else if (get.color(card) == 'black') return -2
+          return -1
+        }).forResult()
+        if (get.color(res) == 'red') {
+          const source = trigger.player
+          const res = await source.chooseToDiscard(`请弃置一张牌，否则${get.translation(trigger.card)}失效`, 1, "he").forResult()
+          if (!res.bool) {
+            // 该牌失效
+            const evt = trigger.getParent(1)
+            evt.targets.length = 0
+            evt.all_excluded = true
+            await trigger.cancel()
+          }
+        } else if (get.color(res) == 'black') {
+          await trigger.directHit.addArray(game.players)
+        }
+      }
+    },
+    "tck_xin_shan": {
+      enable: "phaseUse",
+      usable: 1,
+      filterTarget: true,
+      selectTarget: 1,
+      async content(event, trigger, player) {
+        const target = event.target
+        let options = [
+          ["draw", `摸2张牌`],
+        ]
+        if (target.isDamaged()) {
+          options.push(["recover", `回复1点体力`])
+        }
+        const res = await target
+          .chooseButton([
+            get.prompt(event.name),
+            [options, "textbutton",]
+          ], true)
+          .forResult();
+        if (res.bool) {
+          switch (res.links[0]) {
+            case 'draw':
+              await target.draw(2);
+              break;
+            case 'recover':
+              await target.recover()
+              break;
+          }
         }
       }
     },
@@ -3773,8 +3848,12 @@ export const skills = {
     }
   },
   translate: {
+    "tck_dan_chun": "单纯",
+    "tck_dan_chun_info": "锁定技，你被牌指定为目标时判定，若为黑色，你无法响应此牌，若为红色，来源需弃1张牌，否则该牌失效。",
     "tck_xin_shan": "心善",
-    "tck_xin_shan_info": "你对体力为1的角色杀伤害-1，若你体力为3或以下，你受到的伤害-1。",
+    "tck_xin_shan_info": "出牌阶段限一次，你令一人选择一项，摸2张牌或回复1点体力。",
+    "tck_rkshs_xin_shan": "心善",
+    "tck_rkshs_xin_shan_info": "你对体力为1的角色杀伤害-1，若你体力为3或以下，你受到的伤害-1。",
     "tck_jiu_jie": "纠结",
     "tck_jiu_jie_info": "你造成或受到伤害时可将此伤害改为体力流失，然后你需判定：若为红色，你摸1张牌并回复1点体力，若为黑色，你弃一张牌。",
     "tck_yin_ka": "印卡",
