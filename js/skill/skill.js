@@ -2167,9 +2167,14 @@ export const skills = {
       },
       async content(event, trigger, player) {
         trigger.num = 3
-        await game.delay(1)
-        await player.chat('哈哈哈')
-        await game.delay(2)
+        const voices = [
+          ...get.Audio.skill({ skill: "yingzi", player: "zhouyu" }).audioList,
+          ...get.Audio.skill({ skill: "reyingzi", player: "re_zhouyu" }).audioList,
+        ].filter(v => v.text?.includes("哈哈"))
+        if (!voices.length) return
+        const voice = voices[Math.floor(Math.random() * voices.length)]
+        await player.chat(voice.text)
+        game.broadcastAll(file => game.playAudio(file), voice.file)
       },
     },
     "tck_hj_fan_jian": {
@@ -3152,7 +3157,7 @@ export const skills = {
       init(player) {
         player.storage.tck_yin_ka = 3
       },
-      enable: ["chooseToUse", "chooseToResponse"],
+      enable: ["chooseToUse", "chooseToRespond"],
       filter(event, player) {
         return player.countCards("h") > 0 && player.storage.tck_yin_ka > 0
       },

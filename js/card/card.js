@@ -645,17 +645,20 @@ export const cards = {
     "tck_po_di_qian_qi": {
       image: "ext:TCK/imgs/cards/tck_po_di_qian_qi.png",
       fullskin: true,
-      type: "trick",               // 锦囊牌
+      type: "trick",
       enable: function (card, player) {
-        return game.players.some(player => player.countCards("e", card => get.subtype(card) == "equip4" || get.subtype(card) == "equip3")) > 0
+        return game.players.some(p =>
+          p.countCards("e", c => ["equip3", "equip4", "equip6"].includes(get.subtype(c))) > 0
+        )
       },
-      notarget: true, //无目标,写了就不用写filterTarget
+      notarget: true,
       async content(event, trigger, player) {
-        let players = game.players
-        players.forEach(async player => {
-          await player.discard(await player.getCards("e", card => get.subtype(card) == "equip4" || get.subtype(card) == "equip3"))
+        game.players.forEach(target => {
+          target.discard(target.getCards("e", card =>
+            ["equip3", "equip4", "equip6"].includes(get.subtype(card))
+          ))
         })
-      },
+      }
     },
     "tck_shen_wang_dun": {
       image: "ext:TCK/imgs/cards/tck_shen_wang_dun.png",
@@ -2023,6 +2026,7 @@ export const cards = {
       enable: true,
       selectTarget: -1,
       toSelf: true,
+      wuxieable: true,
       filterTarget(card, player, target) {
         return target == player
       },
@@ -2096,7 +2100,7 @@ export const cards = {
           })
           .forResult()
         const gain = result.moved[1]
-        await event.target.gain(gain, "gain2")
+        await event.target.gain(gain, "gain")
         game.washCardNoWithDiscard(result.moved[0])
         await event.target.addMark('tck_fei_ji_piao_mark')
       }
@@ -2771,7 +2775,7 @@ export const cards = {
     "tck_card_yin_ka_skill": {
       cardSkill: true,
       unique: true,
-      enable: ["chooseToUse", "chooseToResponse"],
+      enable: ["chooseToUse", "chooseToRespond"],
       filter(event, player) {
         return player.countCards("hs", card => get.name(card) == "tck_card_yin_ka")
       },
@@ -3689,7 +3693,7 @@ export const cards = {
     "tck_gong_shou_jian_bei_skill": {
       cardSkill: true,
       unique: true,
-      enable: ["chooseToUse", "chooseToResponse"],
+      enable: ["chooseToUse", "chooseToRespond"],
       filter(event, player) {
         let cards = player.getCards("hs")
         for (let i of cards) {
@@ -3776,7 +3780,7 @@ export const cards = {
     "tck_card_ao_zhan_skill": {
       cardSkill: true,
       unique: true,
-      enable: ["chooseToUse", "chooseToResponse"],
+      enable: ["chooseToUse", "chooseToRespond"],
       filter(event, player) {
         let cards = player.getCards("hs")
         for (let i of cards) {
