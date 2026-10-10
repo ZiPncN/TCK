@@ -3446,7 +3446,8 @@ export const cards = {
         await game.delay(3)
         await player.$skill('直接胜利')
         await game.delay(3)
-        game.over(`${get.translation(player)}战斗胜利`)
+        const winners = player.getFriends()
+        game.over(player == game.me || winners.includes(game.me))
       },
     },
     "tck_card_li_equip_skill": {

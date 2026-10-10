@@ -2189,7 +2189,7 @@ export const skills = {
           return
         }
         const card = res.cards[0]
-        const res2 = await player.chooseTarget('请选择一名其他角色，将此牌交给该角色', target => target != player).forResult()
+        const res2 = await player.chooseTarget('请选择一名其他角色，将此牌交给该角色', (card, player, target) => target != player).forResult()
         if (!res2.bool) {
           return
         }
