@@ -8,6 +8,7 @@ import ex_cards from "./js/card/card_ex.js"
 import r_cards from "./js/card/card_r.js"
 import lxy_cards from "./js/card/card_lxy.js"
 import character_cards from "./js/card/card_character.js"
+import du_cards from "./js/card/card_du.js"
 import groups from "./js/groups.js"
 import natureConfig from "./js/natures.js"
 import { noNatures } from './js/natures.js'
@@ -264,6 +265,9 @@ export default function () {
             if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_CHARACTER')) {
                 lib.card.list.addArray(character_cards.list);
             }
+            if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_DU')) {
+                lib.card.list.addArray(du_cards.list);
+            }
 
             natureConfig.resetLib()
 
@@ -305,6 +309,8 @@ export default function () {
                     trigger.cancel();
                 },
             }
+            // 添加JOCKER : Number.MAX_VALUE
+            lib.numstrList.set(Number.MAX_VALUE, "JOCKER")
 
             // 添加语音
             game.addGlobalSkill("tck_send_skill_voice")
@@ -408,6 +414,20 @@ export default function () {
             if (!lib.config.cards.includes('TCK_CHARACTER')) lib.config.cards.remove('TCK_CHARACTER');
             lib.translate['TCK_CHARACTER'] = 'TCK_CHARACTER';
             if (!lib.config.TCK_CHARACTER) game.saveConfig('cards', lib.config.cards.concat('TCK_CHARACTER')), game.saveConfig('TCK_CHARACTER', true);
+
+            game.import('card', function () {
+                return {
+                    name: "TCK_DU",
+                    connect: true,
+                    translate: { ...du_cards.translate },
+                    card: { ...du_cards.card },
+                    skill: { ...du_cards.skill },
+                }
+            })
+            lib.config.all.cards.push('TCK_DU');
+            if (!lib.config.cards.includes('TCK_DU')) lib.config.cards.remove('TCK_DU');
+            lib.translate['TCK_DU'] = 'TCK_DU';
+            if (!lib.config.TCK_DU) game.saveConfig('cards', lib.config.cards.concat('TCK_DU')), game.saveConfig('TCK_DU', true);
             //---------------------- 添加卡牌 end ----------------------
 
             //添加自定义属性
@@ -423,7 +443,7 @@ export default function () {
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.2",
+            version: "1.3",
         },
         files: {},
         connect: true

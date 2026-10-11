@@ -3226,8 +3226,8 @@ export const skills = {
     "tck_ling_hun_chong_ji": {
       enable: "phaseUse",
       async content(event, trigger, player) {
-        const pileCards = await get.cards(3, false)
-        const res = await player.chooseToMove(3)
+        const pileCards = get.cards(3, false)
+        const res = await player.chooseToMove()
           .set("list", [["牌堆顶", pileCards]])
           .forResult()
 
@@ -3235,7 +3235,7 @@ export const skills = {
           const cards = res.moved[0].slice(0)
           if (cards?.length) {
             cards.reverse()
-            game.log(player, "将", cards, "置于牌堆顶")
+            // game.log(player, "将", cards, "置于牌堆顶")
             await game.cardsGotoPile(cards, "insert")
           }
         }

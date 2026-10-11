@@ -108,8 +108,183 @@ export const ex_cards = {
         await game.cardsGotoSpecial(event.cards);
       }
     },
+    "tck_card_dao": {
+      type: "basic",
+      fullskin: true,
+      image: "ext:TCK/imgs/cards/tck_card_dao.png",
+      global: "tck_card_dao_skill",
+    },
+    // 单挑模式下死一个随从就立即结束的问题，直接修改mode中的single.js
+    "tck_sa_dou_cheng_bing": {
+      image: "ext:TCK/imgs/cards/tck_sa_dou_cheng_bing.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: -1,
+      toSelf: true,
+      global: "tck_sa_dou_cheng_bing_effect",
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      async content(event, trigger, player) {
+        const target = event.target
+        const res = await target.judge(card => {
+          if (get.color(card) == 'red') return 1
+          if (get.color(card) == 'black') return -2
+          return -1
+        }).forResult()
+        if (get.color(res) == 'red') {
+          const list = Object.keys(lib.character)
+          if (!list || list.length == 0) {
+            return
+          }
+          const player2 = await game.addPlayerOL(target, list.randomGet(), undefined, true)
+          player2.storage.tck_sa_dou_cheng_bing = true
+          player2.identity = target.identity
+          // if (player2.identity == 'zhu') player2.identity = 'zhong'
+          await player2.setIdentity()
+          player2.identityShown = true
+          if (player2.maxHp > 1) {
+            await player2.loseMaxHp(player2.maxHp - 1)
+          }
+        } else if (get.color(res) == 'black') {
+          let options = []
+          if (target.countCards("h") > 0) options.push(["h", "手牌区"])
+          if (target.countCards("e") > 0) options.push(["e", "装备区"])
+          if (target.countCards("j") > 0) options.push(["j", "判定区"])
+          if (options.length == 0) return
+          if (options.length == 1) {
+            switch (options[0][0]) {
+              case 'h':
+                await target.discard(target.getCards("h"))
+                break;
+              case 'e':
+                await target.discard(target.getCards("e"))
+                break;
+              case 'j':
+                await target.discard(target.getCards("j"))
+                break;
+            }
+            return
+          }
+          let result = await target
+            .chooseButton([
+              '请选择弃置所有牌的区域',
+              [options, "textbutton"]
+            ], true)
+            .forResult()
+          if (result.bool) {
+            switch (result.links[0]) {
+              case 'h':
+                await target.discard(target.getCards("h"))
+                break;
+              case 'e':
+                await target.discard(target.getCards("e"))
+                break;
+              case 'j':
+                await target.discard(target.getCards("j"))
+                break;
+            }
+          }
+        }
+      },
+    },
+    "tck_tou_tian_huan_ri": {
+      image: "ext:TCK/imgs/cards/tck_tou_tian_huan_ri.png",
+      fullskin: true,
+      type: "trick",
+      enable: true,
+      selectTarget: -1,
+      toSelf: true,
+      filterTarget(card, player, target) {
+        return target == player
+      },
+      async content(event, trigger, player) {
+        await event.target.draw(2)
+        const pileCards = get.cards(2, false)
+        const res = await event.target.chooseToMove()
+          .set("list", [["牌堆顶", pileCards]])
+          .forResult()
+        if (res.bool) {
+          const cards = res.moved[0].slice(0)
+          if (cards?.length) {
+            cards.reverse()
+            await game.cardsGotoPile(cards, "insert")
+          }
+        }
+      }
+    },
   },
   skill: {
+    "tck_sa_dou_cheng_bing_effect": {
+      cardSkill: true,
+      unique: true,
+      forced: true,
+      popup: false,
+      firstDo: true,
+      trigger: {
+        global: "die"
+      },
+      filter(event, player) {
+        return event.player.storage.tck_sa_dou_cheng_bing
+      },
+      async content(event, trigger, player) {
+        delete trigger.player.storage.tck_sa_dou_cheng_bing
+        await game.removePlayerOL(trigger.player)
+      },
+    },
+    "tck_card_dao_skill": {
+      cardSkill: true,
+      unique: true,
+      direct: true,
+      enable: ["chooseToUse"],
+      filter(event, player) {
+        return player.countCards("hs", card => get.name(card) == "tck_card_dao")
+      },
+      chooseButton: {
+        dialog(event, player) {
+          let list = []
+          for (let name of lib.inpile) {
+            if (get.type(name) == "basic") {
+              list.push([get.translation(get.type(name)), "", name]);
+              if (name == "sha") {
+                for (let j of lib.inpile_nature) {
+                  list.push(["基本", "", "sha", j]);
+                }
+              }
+              if (name == "shan" && !!lib.card.shan['tck_nature']) {
+                for (let j of lib.card.shan['tck_nature']) {
+                  list.push(["基本", "", "shan", j]);
+                }
+              }
+              if (name == "jiu" && !!lib.card.jiu['tck_nature']) {
+                for (let j of lib.card.jiu['tck_nature']) {
+                  list.push(["基本", "", "jiu", j]);
+                }
+              }
+            }
+          }
+          return ui.create.dialog("道", [list, "vcard"]);
+        },
+        filter(button, player) {
+          return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
+        },
+        backup(links, player) {
+          let name = links[0][2]
+          let rawname = "tck_card_dao"
+          return {
+            filterCard: { name: rawname },
+            popname: true,
+            viewAs: { name: name, nature: links[0][3] },
+          }
+        },
+        prompt(links, player) {
+          let name = links[0][2]
+          let rawname = "tck_card_dao"
+          return "将一张" + get.translation(rawname) + "当做" + get.translation(name) + "使用"
+        },
+      },
+    },
     "tck_bian_ya_qi_bw_skill": {
       equipSkill: true,
       trigger: {
@@ -140,6 +315,13 @@ export const ex_cards = {
     },
   },
   translate: {
+    "tck_tou_tian_huan_ri": "偷天换日",
+    "tck_tou_tian_huan_ri_info": "你从牌堆顶摸2张牌并查看牌顶2张牌，然后调整顺序。",
+    "tck_sa_dou_cheng_bing": "撒豆成兵",
+    "tck_sa_dou_cheng_bing_info": "判定，若为红色，召唤一个一血的武将，若为黑色，弃置一个有牌区域的所有牌。",
+    "tck_card_dao": "道",
+    "tck_card_dao_info": "可当作任意基本牌使用。",
+    "tck_card_dao_skill": "道",
     "tck_plus_four_hp": "\t",
     "tck_plus_four_hp_info": "+4上限，+4体力。",
     "tck_chong_sheng_zhi_lu": "重生之路",
@@ -158,6 +340,9 @@ export const ex_cards = {
   },
   list: [
     //diy牌堆
+    ['heart', 7, "tck_tou_tian_huan_ri"],
+    ['heart', 13, "tck_sa_dou_cheng_bing"],
+    ['', Number.MAX_VALUE, "tck_card_dao"],
     ['heart', 9, "tck_plus_four_hp"],
     ['club', 8, 'tck_tou_zi'],
     ['spade', 9, 'tck_bian_ya_qi_bw'],

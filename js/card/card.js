@@ -17,11 +17,13 @@ export const cards = {
       type: "trick",
       fullskin: true,
       image: "ext:TCK/imgs/cards/tck_gong_shou_jian_bei.png",
+      global: 'tck_gong_shou_jian_bei_skill',
     },
     "tck_card_ao_zhan": {
       type: "basic",
       fullskin: true,
       image: "ext:TCK/imgs/cards/tck_card_ao_zhan.png",
+      global: 'tck_card_ao_zhan_skill',
     },
     "tck_tou_xiang": {
       type: "trick",   //锦囊牌
@@ -599,7 +601,6 @@ export const cards = {
         } else {
           await event.target.draw(2)
         }
-
       },
       image: "ext:TCK/imgs/cards/tck_wu_zhong_sheng_you_ex.png",
       fullskin: true,
@@ -989,13 +990,13 @@ export const cards = {
       },
       async content(event, trigger, player) {
         await event.target.recover()
-        let res = await event.player.judge(card => {
+        let res = await event.target.judge(card => {
           if (get.suit(card) == 'heart') {
             return -1
           } return 1
         }).forResult()
         if (get.suit(res) == 'heart') {
-          await event.player.damage(1, 'fire')
+          await event.target.damage(1, event.target, 'fire')
         }
       },
       ai: {
@@ -1006,7 +1007,6 @@ export const cards = {
           recover: 1,
           save: 1
         }
-
       }
     },
     "tck_xiang_jiao": {
@@ -2001,6 +2001,7 @@ export const cards = {
       type: "trick",
       fullskin: true,
       image: "ext:TCK/imgs/cards/tck_card_yin_ka.png",
+      global: "tck_card_yin_ka_skill",
     },
     "tck_ting_che_chang": {
       image: "ext:TCK/imgs/cards/tck_ting_che_chang.png",
@@ -2775,6 +2776,7 @@ export const cards = {
     "tck_card_yin_ka_skill": {
       cardSkill: true,
       unique: true,
+      direct: true,
       enable: ["chooseToUse", "chooseToRespond"],
       filter(event, player) {
         return player.countCards("hs", card => get.name(card) == "tck_card_yin_ka")
@@ -3694,6 +3696,7 @@ export const cards = {
     "tck_gong_shou_jian_bei_skill": {
       cardSkill: true,
       unique: true,
+      direct: true,
       enable: ["chooseToUse", "chooseToRespond"],
       filter(event, player) {
         let cards = player.getCards("hs")
@@ -3781,6 +3784,7 @@ export const cards = {
     "tck_card_ao_zhan_skill": {
       cardSkill: true,
       unique: true,
+      direct: true,
       enable: ["chooseToUse", "chooseToRespond"],
       filter(event, player) {
         let cards = player.getCards("hs")
@@ -5386,6 +5390,6 @@ export const cards = {
 }
 
 // 桃类基本牌
-const taoList = ['tao', 'tck_ju', 'tck_li', 'tck_xiang_jiao', 'tck_card_su']
+const taoList = ['tao', 'tck_ju', 'tck_li', 'tck_xiang_jiao', 'tck_card_su', 'tck_card_du_tao']
 
 export default cards
