@@ -2717,7 +2717,7 @@ export const cards = {
       trigger: { player: "changeHpEnd" },
       forced: true,
       filter(event, player) {
-        return player.hp <= 0 && event.num < 0 && player.countMark("tck_wu_wang_wo_effect_1") > 0
+        return player.hp <= 0 && event.num <= 0 && player.countMark("tck_wu_wang_wo_effect_1") > 0
       },
       async content(event, trigger, player) {
         if (player.countMark("tck_wu_wang_wo_effect_1") > 0) {
