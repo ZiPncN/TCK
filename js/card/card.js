@@ -2037,6 +2037,11 @@ export const cards = {
         await event.target.loseMaxHp(1)
         delete event.card.storage.zenged
       },
+      ai: {
+        tag: {
+          recover: 1
+        },
+      }
     },
     "tck_card_qi_xing_dao": {
       image: "ext:TCK/imgs/cards/tck_card_qi_xing_dao.png",

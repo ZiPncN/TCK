@@ -141,6 +141,7 @@ export const ex_cards = {
           const player2 = await game.addPlayerOL(target, list.randomGet(), undefined, true)
           player2.storage.tck_sa_dou_cheng_bing = true
           player2.identity = target.identity
+          player2.side = target.side
           // if (player2.identity == 'zhu') player2.identity = 'zhong'
           await player2.setIdentity()
           player2.identityShown = true
