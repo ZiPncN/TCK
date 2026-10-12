@@ -2156,7 +2156,8 @@ export const skills = {
           } return -1
         }).forResult()
         if (get.suit(res) == "heart" && get.number(res) == 9) {
-          game.over(`${get.translation(player)}战斗胜利`)
+          const winners = player.getFriends()
+          game.over(player == game.me || winners.includes(game.me))
         }
       },
     },
