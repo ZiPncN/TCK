@@ -1477,12 +1477,12 @@ export const cards = {
         if (!list.length) {
           return
         }
-        const result = await player
+        const result = await target
           .chooseButton()
           .set("createDialog", ["请选择其中一个代替你的将牌", [list, "character"]])
           .forResult()
         if (result?.links?.length) {
-          await player.reinitCharacter(player.name, result.links[0])
+          await target.reinitCharacter(target.name, result.links[0])
         }
       }
     },
