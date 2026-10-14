@@ -31,8 +31,14 @@ export default function () {
                         //在加入场地之前先把场地中的场地移至弃牌堆
                         let card = _status.tckLand[0]
                         if (card) {
-                            game.log(card, "进入了弃牌堆")
-                            await game.cardsDiscard(card).set("outRange", true).set("fromTckLand", true);
+                            if (get.name(card) == "zpy_jin_gang_cang") {
+                                await card.fix()
+                                await card.remove()
+                                card.destroyed = true
+                            } else {
+                                game.log(card, "进入了弃牌堆")
+                                await game.cardsDiscard(card).set("outRange", true).set("fromTckLand", true);
+                            }
                         }
                         _status.tckLand.addArray(
                             cards.filter(function (card) {
