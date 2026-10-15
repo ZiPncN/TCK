@@ -604,6 +604,11 @@ export const cards = {
       },
       image: "ext:TCK/imgs/cards/tck_wu_zhong_sheng_you_ex.png",
       fullskin: true,
+      ai: {
+        tag: {
+          draw: 3,
+        },
+      }
     },
     "tck_po_fu_chen_zhou": {
       image: "ext:TCK/imgs/cards/tck_po_fu_chen_zhou.png",
@@ -2256,6 +2261,30 @@ export const cards = {
         next.set('custom', { add: {}, replace: { window: function () { } } })
         next.backup('tck_gang_bi_zi_yong_skill')
       },
+    },
+    "tck_card_mian_bao": {
+      toself: true,
+      enable(card, player) {
+        return player.isDamaged()
+      },
+      selectTarget: -1,
+      filterTarget(card, player, target) {
+        return target === player && target.isDamaged()
+      },
+      modTarget(card, player, target) {
+        return target.isDamaged()
+      },
+      type: "basic",
+      async content(event, trigger, player) {
+        await event.target.recover()
+        await event.target.draw(2)
+      },
+      ai: {
+        tag: {
+          recover: 1,
+          draw: 2
+        },
+      }
     },
     "tck_card_hcl": {
       image: "ext:TCK/imgs/cards/tck_card_hcl.png",
@@ -4599,6 +4628,8 @@ export const cards = {
     },
   },
   translate: {
+    "tck_card_mian_bao": "面包",
+    "tck_card_mian_bao_info": "回复1体力并摸2张牌，不可在濒死时使用。",
     "tck_card_hcl": "胡晨亮",
     "tck_card_hcl_info": "①旧/新神装备可以将基本牌当锦囊。<br/>②重铸。",
     "tck_card_hcl_skill": "胡晨亮",

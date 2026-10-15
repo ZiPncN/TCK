@@ -504,6 +504,22 @@ export const characters = {
       skills: ["tck_dan_chun", "tck_xin_shan"],
       img: "extension/TCK/imgs/charactors/tck_weioula.jpg",
     },
+    "tck_hzy": {
+      sex: "male",
+      group: "tck_604",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_jian_shen", "tck_quan_ji"],
+      img: "extension/TCK/imgs/charactors/tck_hzy.jpg",
+    },
+    "tck_jiege": {
+      sex: "male",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_jie_feng", "tck_mian_bao"],
+      img: "extension/TCK/imgs/charactors/tck_jiege.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -549,6 +565,8 @@ export const characters = {
 
   },
   translate: {
+    "tck_jiege": "杰哥",
+    "tck_hzy": "胡子洋",
     "tck_weioula": "维欧拉",
     "tck_rkshs_weiaola": "薇奥拉",
     "tck_wutengyouxian": "武藤游戏（暗）",
@@ -623,6 +641,8 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_jiege": "辱彬逊",
+    "tck_hzy": "教练",
     "tck_weioula": "少女",
     "tck_rkshs_weiaola": "日恐四幻神",
     "tck_wutengyouxian": "游戏王",
@@ -705,7 +725,7 @@ export const characters = {
         "tck_dongfangzhangzhu", "tck_nanmen", "tck_hunpoyaomeng",
         "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
         "tck_chaonengxiansheng", "tck_wutengyouxian",
-        "tck_weioula",
+        "tck_weioula", "tck_hzy", "tck_jiege",
       ],
 
       //三国

@@ -3361,6 +3361,107 @@ export const skills = {
         }
       }
     },
+    "tck_jian_shen": {
+      enable: "phaseUse",
+      usable: 1,
+      async content(event, trigger, player) {
+        await player.loseHp(1)
+        let result = await player
+          .chooseButton([
+            get.prompt(event.name),
+            [[
+              ["①", `体力上限+1`],
+              ["②", `摸3张牌`],
+              ["③", `回复一点体力并摸1张牌`]
+            ], "textbutton"]
+          ], true)
+          .forResult()
+        if (result.bool) {
+          switch (result.links[0]) {
+            case '①':
+              await player.gainMaxHp(1)
+              break;
+            case '②':
+              await player.draw(3)
+              break;
+            case '③':
+              await player.recover(1)
+              await player.draw(1)
+              break;
+          }
+        }
+      }
+    },
+    "tck_quan_ji": {
+      enable: "phaseUse",
+      usable: 1,
+      filterTarget(card, player, target) {
+        return target.countCards("h") > 0 && player != target
+      },
+      filter(event, player) {
+        return player.countCards("h") > 0 && game.hasPlayer(function (current) {
+          return current != player && player.canCompare(current)
+        })
+      },
+      async content(event, trigger, player) {
+        const res = await player.chooseToCompare(event.target).forResult()
+        if (res.bool) {
+          // 赢
+          await player.gainPlayerCard("he", event.target, true).set("target", event.target)
+          await event.target.damage(player)
+        } else {
+          // 输
+          await event.target.discardPlayerCard(player, "he", true)
+        }
+      }
+    },
+    "tck_jie_feng": {
+      trigger: {
+        player: "phaseZhunbei"
+      },
+      filter(event, player) {
+        return player.countCards("he") > 0
+      },
+      async content(event, trigger, player) {
+        const res = await player.chooseToDiscard("he", true).forResult()
+        if (res.bool) {
+          await player.addTempSkill("tck_jie_feng_effect", { player: "phaseJieshuAfter" })
+        }
+      },
+      subSkill: {
+        "effect": {
+          sub: true,
+          sourceSkill: "tck_jie_feng",
+          mark: true,
+          marktext: "解",
+          intro: {
+            name: "解封",
+            content: "本回合你造成的伤害+1",
+          },
+          trigger: {
+            source: "damageBegin"
+          },
+          charlotte: true,
+          forced: true,
+          async content(event, trigger, player) {
+            trigger.num += 1
+          }
+        }
+      }
+    },
+    "tck_mian_bao": {
+      enable: "chooseToUse",
+      usable: 1,
+      filterCard: true,
+      position: "he",
+      viewAs: { name: "tck_card_mian_bao" },
+      viewAsFilter(player) {
+        if (!player.hasCards("he")) {
+          return false;
+        }
+      },
+      prompt: "将一张牌当面包使用",
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -3854,6 +3955,14 @@ export const skills = {
     }
   },
   translate: {
+    "tck_jie_feng": "解封",
+    "tck_jie_feng_info": "回合开始时，你可以弃1张牌，然后你本回合伤害+1。",
+    "tck_mian_bao": "面包",
+    "tck_mian_bao_info": "出牌阶段限一次，你可将1张牌当“面包”使用。（面包：回复1体力并摸2张牌，不可在濒死时使用）",
+    "tck_jian_shen": "健身",
+    "tck_jian_shen_info": "出牌阶段限一次，你可以自减一点体力，然后选择一项：①体力上限+1，<br/>②摸3张牌。③回复一点体力并摸1张牌。",
+    "tck_quan_ji": "拳击",
+    "tck_quan_ji_info": "出牌阶段一次，你选择一人进行拼点，若你赢，你摸其一张牌并对其造成一点伤害，若你输，其弃置你一张牌。",
     "tck_dan_chun": "单纯",
     "tck_dan_chun_info": "锁定技，你被牌指定为目标时判定，若为黑色，你无法响应此牌，若为红色，来源需弃1张牌，否则该牌失效。",
     "tck_xin_shan": "心善",
