@@ -3462,6 +3462,217 @@ export const skills = {
       },
       prompt: "将一张牌当面包使用",
     },
+    "tck_jian_xi": {
+      mod: {
+        targetInRange(card, player, target, now) {
+          if (["trick", "delay"].includes(get.type(card))) {
+            return true
+          }
+        }
+      }
+    },
+    "tck_shi_shen": {
+      enable: "phaseUse",
+      filterCard(card, player) {
+        if (ui.selected.cards.length) {
+          return get.suit(card) == get.suit(ui.selected.cards[0])
+        }
+        return true
+      },
+      position: "he",
+      selectCard: 3,
+      complexCard: true,
+      filter(event, player) {
+        return player.countCards("he") > 2 && !game.hasPlayer(p => p.name == 'tck_bayunlan' && p.storage.tck_shi_shen)
+      },
+      async content(event, trigger, player) {
+        const player2 = await game.addPlayerOL(player, "tck_bayunlan", undefined, true)
+        player2.storage.tck_shi_shen = true
+        player2.identity = player.identity
+        player2.side = player.side
+        await player2.setIdentity()
+        player2.identityShown = true
+      },
+      group: ['tck_shi_shen_effect'],
+      subSkill: {
+        "effect": {
+          unique: true,
+          forced: true,
+          popup: false,
+          firstDo: true,
+          trigger: {
+            global: "die"
+          },
+          filter(event, player) {
+            return event.player.storage.tck_shi_shen
+          },
+          async content(event, trigger, player) {
+            delete trigger.player.storage.tck_shi_shen
+            await game.removePlayerOL(trigger.player)
+          },
+        },
+      }
+    },
+    "tck_jie_jie": {
+      global: "tck_jie_jie",
+      mod: {
+        targetInRange(card, player, target, now) {
+          if (get.name(card) == 'sha') {
+            return true
+          }
+        }
+      }
+    },
+    "tck_dong_mian": {
+      round: 4,
+      trigger: {
+        player: "phaseZhunbei"
+      },
+      filter(event, player) {
+        return player.isDamaged()
+      },
+      async content(event, trigger, player) {
+        await player.skip("phaseDraw")
+        await player.skip("phaseUse")
+        await player.recover(1)
+      }
+    },
+    "tck_ji_suan_ji": {
+      ai: {
+        viewHandcard: true,
+        skillTagFilter(player, tag, arg) {
+          if (player == arg) {
+            return false;
+          }
+        },
+      },
+    },
+    "tck_shi_shen2": {
+      enable: "phaseUse",
+      filterCard(card, player) {
+        if (ui.selected.cards.length) {
+          return get.suit(card) == get.suit(ui.selected.cards[0])
+        }
+        return true
+      },
+      position: "he",
+      selectCard: 2,
+      complexCard: true,
+      filter(event, player) {
+        return player.countCards("he") > 1 && !game.hasPlayer(p => p.name == 'tck_cheng' && p.storage.tck_shi_shen)
+      },
+      async content(event, trigger, player) {
+        const player2 = await game.addPlayerOL(player, "tck_cheng", undefined, true)
+        player2.storage.tck_shi_shen = true
+        player2.identity = player.identity
+        player2.side = player.side
+        await player2.setIdentity()
+        player2.identityShown = true
+      },
+      group: ['tck_shi_shen_effect'],
+    },
+    "tck_xin_ruan": {
+      trigger: {
+        player: "phaseZhunbei"
+      },
+      filter(event, player) {
+        return game.hasPlayer(p => p.hasSkill("tck_xin_ruan_mark"))
+      },
+      async content(event, trigger, player) {
+        let result = await player
+          .chooseButton([
+            get.prompt(event.name),
+            [[
+              ["①", `伤害+1`],
+              ["②", `每回合摸对手1张牌`]
+            ], "textbutton"]
+          ], true)
+          .forResult()
+        if (result.bool) {
+          switch (result.links[0]) {
+            case '①':
+              await player.addTempSkill("tck_xin_ruan_1", { player: "phaseJieshuAfter" })
+              break;
+            case '②':
+              await player.addTempSkill("tck_xin_ruan_2", { player: "phaseJieshuAfter" })
+              break;
+          }
+        }
+      },
+      subSkill: {
+        "1": {
+          forced: true,
+          sub: true,
+          sourceSkill: "tck_xin_ruan",
+          trigger: {
+            source: "damageBegin"
+          },
+          filter(event, player) {
+            return event.player.hasSkill("tck_xin_ruan_mark")
+          },
+          async content(event, trigger, player) {
+            trigger.num += 1
+          }
+        },
+        "2": {
+          init(player) {
+            player.storage.tck_xin_ruan_2 = []
+          },
+          sub: true,
+          sourceSkill: "tck_xin_ruan",
+          enable: "phaseUse",
+          filter(event, player) {
+            return game.hasPlayer(p => p.hasSkill("tck_xin_ruan_mark") && !player.storage.tck_xin_ruan_2.some(currunt => currunt == p) && p.countCards("he") > 0)
+          },
+          filterTarget(card, player, target) {
+            return target.hasSkill("tck_xin_ruan_mark") && !player.storage.tck_xin_ruan_2.some(p => p == target) && target.countCards("he") > 0
+          },
+          async content(event, trigger, player) {
+            await player.gainPlayerCard(event.target, "he", true)
+            player.storage.tck_xin_ruan_2.push(event.target)
+          }
+        },
+        "mark": {
+          charlotte: true,
+          onremove: true,
+          sub: true,
+          sourceSkill: "tck_xin_ruan",
+          mark: true,
+          marktext: "软",
+          intro: {
+            name: "心软标记",
+          },
+        }
+      }
+    },
+    "tck_mai_meng": {
+      trigger: { target: "useCardToTarget" },
+      forced: true,
+      async content(event, trigger, player) {
+        if (!trigger.player.hasSkill("tck_xin_ruan_mark"))
+          await trigger.player.addSkill("tck_xin_ruan_mark")
+        const res = await trigger.player.chooseBool('你下得去手吗？').forResult()
+        if (res.bool) {
+          const evt = trigger.getParent();
+          evt.triggeredTargets2.remove(player);
+          evt.targets.remove(player);
+        }
+      },
+    },
+    "tck_sa_jiao": {
+      enable: "phaseUse",
+      filterTarget(card, player, target) {
+        return player != target && target.countCards("he") > 0
+      },
+      filter(event, player) {
+        return game.hasPlayer(p => p != player && p.countCards("he") > 0)
+      },
+      async content(event, trigger, player) {
+        if (!event.target.hasSkill("tck_xin_ruan_mark"))
+          await event.target.addSkill("tck_xin_ruan_mark")
+        await event.target.chooseToGive(`是否交给${get.translation(player)}一至两张牌？`, "he", player, [1, 2])
+      },
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -3952,9 +4163,56 @@ export const skills = {
         }
         player.markSkill(event.name)
       }
-    }
+    },
+    // todo 交换控制权（随从由玩家自己操作）
+    "tck_swap_control": {
+      firstDo: true,
+      trigger: {
+        player: ["chooseToUseBegin", "chooseToRespondBegin", "chooseToDiscardBegin", "chooseToCompareBegin", "chooseButtonBegin", "chooseCardBegin", "chooseTargetBegin", "chooseCardTargetBegin", "chooseControlBegin", "chooseBoolBegin", "choosePlayerCardBegin", "discardPlayerCardBegin", "gainPlayerCardBegin", "chooseToMoveBegin", "chooseToPlayBeatmapBegin", "chooseToGiveBegin", "chooseToGuanxingBegin", "chooseButtonTargetBegin", "chooseNumbersBegin"]
+      },
+      forced: true,
+      priority: 100,
+      forceDie: true,
+      popup: false,
+      filter: function (event, player) {
+        if (event.autochoose && event.autochoose()) {
+          return false;
+        }
+        if (lib.filter.wuxieSwap(event)) {
+          return false;
+        }
+        if (_status.auto || !player.isUnderControl()) {
+          return false;
+        }
+        return true;
+      },
+      async content(event, trigger, player) {
+        game.swapPlayerAuto(player);
+      }
+    },
   },
   translate: {
+    "tck_xin_ruan_2": "心软",
+    "tck_xin_ruan_2_info": "获得心软角色的一张牌。",
+    "tck_xin_ruan_mark": "心软",
+    "tck_mai_meng": "卖萌",
+    "tck_mai_meng_info": "让对手心软（标记），下不下得去下还是看对手。",
+    "tck_sa_jiao": "撒娇",
+    "tck_sa_jiao_info": "让对手心软（标记），有概率让对手给你两张牌，给不给还得看对手。",
+    "tck_ji_suan_ji": "计算机",
+    "tck_ji_suan_ji_info": "可以观察对手所有手牌。",
+    "tck_shi_shen2": "式神",
+    "tck_shi_shen2_info": "舍弃2张（同花色）牌可以召唤式神橙。",
+    "tck_xin_ruan": "心软",
+    "tck_xin_ruan_info": "对于有心软（标记）的对手，伤害+1或每回合摸对手1张牌。",
+    "tck_jian_xi": "间隙",
+    "tck_jian_xi_info": "锦囊没有距离限制。",
+    "tck_shi_shen": "式神",
+    "tck_shi_shen_info": "舍弃3张同花色牌召唤式神八云蓝。",
+    "tck_jie_jie": "结界",
+    "tck_jie_jie_info": "结界内双方杀无距离限制。",
+    "tck_dong_mian": "冬眠",
+    "tck_dong_mian_info": "1回合不抽牌不出牌则可回复1点体力，4回合1次。",
     "tck_jie_feng": "解封",
     "tck_jie_feng_info": "回合开始时，你可以弃1张牌，然后你本回合伤害+1。",
     "tck_mian_bao": "面包",

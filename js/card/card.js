@@ -807,7 +807,7 @@ export const cards = {
         if (event.togain.length > 0 && player.isAlive()) {
           let res = await event.target.chooseButton(true, [0, 2], [`是否获得其中的至多2张牌？`, event.togain]).forResult()
           if (res.bool) {
-            await event.target.gain(res.links, "draw");
+            await event.target.gain(res.links, "gain");
           }
         } else {
           await game.delay(1)
@@ -2111,7 +2111,7 @@ export const cards = {
           })
           .forResult()
         const gain = result.moved[1]
-        await event.target.gain(gain, "draw2")
+        await event.target.gain(gain, "gain")
         game.washCardNoWithDiscard(result.moved[0])
         await event.target.addMark('tck_fei_ji_piao_mark')
       }
@@ -3368,11 +3368,13 @@ export const cards = {
       direct: true,
       forced: true,
       charlotte: true,
-      trigger: {
-        player: ["phaseBegin", "useCardAfter"],
-      },
+      // trigger: {
+      //   player: ["phaseBegin", "useCardAfter"],
+      // },
       async content(event, trigger, player) {
-        player.disableSkill(event.name, lib.skill.tck_land_hai_tckland_effect.getSkills(player));
+      },
+      init(player) {
+        player.disableSkill("tck_land_hai", lib.skill.tck_land_hai_tckland_effect.getSkills(player));
       },
       onremove(player, skill) {
         player.enableSkill(skill);

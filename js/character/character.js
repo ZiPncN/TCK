@@ -520,6 +520,30 @@ export const characters = {
       skills: ["tck_jie_feng", "tck_mian_bao"],
       img: "extension/TCK/imgs/charactors/tck_jiege.jpg",
     },
+    "tck_bayunzi": {
+      sex: "female",
+      group: "tck_dong",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_jian_xi", "tck_shi_shen", "tck_jie_jie", "tck_dong_mian"],
+      img: "extension/TCK/imgs/charactors/tck_bayunzi.jpg",
+    },
+    "tck_bayunlan": {
+      sex: "female",
+      group: "tck_dong",
+      hp: 2,
+      maxHp: 2,
+      skills: ["tck_ji_suan_ji", "tck_shi_shen2", "tck_xin_ruan"],
+      img: "extension/TCK/imgs/charactors/tck_bayunlan.jpg",
+    },
+    "tck_cheng": {
+      sex: "female",
+      group: "tck_dong",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_mai_meng", "tck_sa_jiao"],
+      img: "extension/TCK/imgs/charactors/tck_cheng.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -565,6 +589,9 @@ export const characters = {
 
   },
   translate: {
+    "tck_cheng": "橙",
+    "tck_bayunlan": "八云蓝",
+    "tck_bayunzi": "八雲紫",
     "tck_jiege": "杰哥",
     "tck_hzy": "胡子洋",
     "tck_weioula": "维欧拉",
@@ -633,6 +660,7 @@ export const characters = {
     "tck_yjc": "杨俊程",
     "tck_scp_173": "SCP173",
     "tck_luan_ru_pack": "乱入",
+    "tck_fu_jia_pack": "附加",
     "tck_san_guo_pack": "三国",
     "tck_r_pack": "重制版",
     "tck_hj_caozhang": "曹彰",
@@ -641,6 +669,9 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_cheng": "式神的式神",
+    "tck_bayunlan": "式神",
+    "tck_bayunzi": "神隐的主犯",
     "tck_jiege": "辱彬逊",
     "tck_hzy": "教练",
     "tck_weioula": "少女",
@@ -725,7 +756,8 @@ export const characters = {
         "tck_dongfangzhangzhu", "tck_nanmen", "tck_hunpoyaomeng",
         "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
         "tck_chaonengxiansheng", "tck_wutengyouxian",
-        "tck_weioula", "tck_hzy", "tck_jiege",
+        "tck_weioula", "tck_hzy", "tck_jiege", "tck_bayunzi",
+
       ],
 
       //三国
@@ -735,6 +767,11 @@ export const characters = {
         "tck_tongyuan", "tck_guojia", "tck_hj_zhouyu",
         "tck_lingcao", "tck_huatuo", "tck_guohuai",
         "tck_huaxiong", "tck_yuanshao",
+      ],
+
+      //附加
+      "tck_fu_jia_pack": ["tck_bayunlan", "tck_cheng",
+
       ],
 
       //重制版
