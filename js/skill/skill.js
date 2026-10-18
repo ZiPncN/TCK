@@ -3671,6 +3671,10 @@ export const skills = {
       async content(event, trigger, player) {
         await player.discard(player.getCards("h"))
         const player2 = await player.summonFriend("tck_penglairenou", true, "tck_peng_lai_ren_ou")
+        player2.storage.tck_shang_hai_ren_ou_master = player
+        if (!player.storage.tck_qi_se_ren_ou_shi) {
+          player.storage.tck_qi_se_ren_ou_shi = []
+        }
         player.storage.tck_qi_se_ren_ou_shi.push(player2)
       },
       group: ['tck_peng_lai_ren_ou_effect'],
@@ -3707,6 +3711,10 @@ export const skills = {
       async content(event, trigger, player) {
         await player.discard(player.getCards("e"))
         const player2 = await player.summonFriend("tck_shanghairenou", true, "tck_shang_hai_ren_ou")
+        player2.storage.tck_shang_hai_ren_ou_master = player
+        if (!player.storage.tck_qi_se_ren_ou_shi) {
+          player.storage.tck_qi_se_ren_ou_shi = []
+        }
         player.storage.tck_qi_se_ren_ou_shi.push(player2)
       },
       group: ['tck_shang_hai_ren_ou_effect'],
@@ -3747,7 +3755,24 @@ export const skills = {
         trigger.cancel()
       },
     },
-    "tck_cao_zong_zhe_sh": { unique: true },
+    "tck_cao_zong_zhe_sh": {
+      unique: true,
+      trigger: {
+        global: "damageBegin"
+      },
+      forced: true,
+      filter(event, player) {
+        const master = player.storage.tck_shang_hai_ren_ou_master
+        if (!master) return false
+        const target = event.player
+        if (!target) return false
+        if (target == master)
+          return true
+      },
+      async content(event, trigger, player) {
+        trigger.cancel()
+      },
+    },
     "tck_ren_ou_shi_jie": {
       trigger: {
         player: "phaseDrawBegin"
@@ -3765,7 +3790,24 @@ export const skills = {
       }
     },
     "tck_mu_yu_he_feng": { unique: true },
-    "tck_cao_zong_zhe_pl": { unique: true },
+    "tck_cao_zong_zhe_pl": {
+      unique: true,
+      trigger: {
+        global: "damageBegin"
+      },
+      forced: true,
+      filter(event, player) {
+        const master = player.storage.tck_shang_hai_ren_ou_master
+        if (!master) return false
+        const target = event.player
+        if (!target) return false
+        if (target == master || target.name == 'tck_shanghairenou' && target.storage.tck_shang_hai_ren_ou && master.storage.tck_qi_se_ren_ou_shi?.some(p => p == target))
+          return true
+      },
+      async content(event, trigger, player) {
+        trigger.cancel()
+      },
+    },
     "tck_huai_bao_xi_sheng_de_zha_dan": {
       unique: true,
       subSkill: {
