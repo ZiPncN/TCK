@@ -544,6 +544,30 @@ export const characters = {
       skills: ["tck_mai_meng", "tck_sa_jiao"],
       img: "extension/TCK/imgs/charactors/tck_cheng.jpg",
     },
+    "tck_ailisimageteluoyide": {
+      sex: "female",
+      group: "tck_dong",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_peng_lai_ren_ou", "tck_shang_hai_ren_ou", "tck_qi_se_ren_ou_shi"],
+      img: "extension/TCK/imgs/charactors/tck_ailisimageteluoyide.jpg",
+    },
+    "tck_penglairenou": {
+      sex: "female",
+      group: "tck_dong",
+      hp: 2,
+      maxHp: 2,
+      skills: ["tck_cao_zong_zhe_pl", "tck_huai_bao_xi_sheng_de_zha_dan"],
+      img: "extension/TCK/imgs/charactors/tck_penglairenou.jpg",
+    },
+    "tck_shanghairenou": {
+      sex: "female",
+      group: "tck_group_ou",
+      hp: 1,
+      maxHp: 1,
+      skills: ["tck_cao_zong_zhe_sh", "tck_ren_ou_shi_jie", "tck_mu_yu_he_feng"],
+      img: "extension/TCK/imgs/charactors/tck_shanghairenou.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -589,6 +613,9 @@ export const characters = {
 
   },
   translate: {
+    "tck_shanghairenou": "上海",
+    "tck_penglairenou": "蓬莱",
+    "tck_ailisimageteluoyide": "爱丽丝玛格特罗伊德",
     "tck_cheng": "橙",
     "tck_bayunlan": "八云蓝",
     "tck_bayunzi": "八雲紫",
@@ -669,6 +696,9 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_shanghairenou": "人偶",
+    "tck_penglairenou": "人偶",
+    "tck_ailisimageteluoyide": "七色的人偶使",
     "tck_cheng": "式神的式神",
     "tck_bayunlan": "式神",
     "tck_bayunzi": "神隐的主犯",
@@ -757,7 +787,7 @@ export const characters = {
         "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
         "tck_chaonengxiansheng", "tck_wutengyouxian",
         "tck_weioula", "tck_hzy", "tck_jiege", "tck_bayunzi",
-
+        "tck_ailisimageteluoyide",
       ],
 
       //三国
@@ -771,7 +801,7 @@ export const characters = {
 
       //附加
       "tck_fu_jia_pack": ["tck_bayunlan", "tck_cheng",
-
+        "tck_penglairenou", "tck_shanghairenou",
       ],
 
       //重制版

@@ -3486,12 +3486,7 @@ export const skills = {
         return player.countCards("he") > 2 && !game.hasPlayer(p => p.name == 'tck_bayunlan' && p.storage.tck_shi_shen)
       },
       async content(event, trigger, player) {
-        const player2 = await game.addPlayerOL(player, "tck_bayunlan", undefined, true)
-        player2.storage.tck_shi_shen = true
-        player2.identity = player.identity
-        player2.side = player.side
-        await player2.setIdentity()
-        player2.identityShown = true
+        await player.summonFriend("tck_bayunlan", true, "tck_shi_shen")
       },
       group: ['tck_shi_shen_effect'],
       subSkill: {
@@ -3562,12 +3557,7 @@ export const skills = {
         return player.countCards("he") > 1 && !game.hasPlayer(p => p.name == 'tck_cheng' && p.storage.tck_shi_shen)
       },
       async content(event, trigger, player) {
-        const player2 = await game.addPlayerOL(player, "tck_cheng", undefined, true)
-        player2.storage.tck_shi_shen = true
-        player2.identity = player.identity
-        player2.side = player.side
-        await player2.setIdentity()
-        player2.identityShown = true
+        await player.summonFriend("tck_cheng", true, "tck_shi_shen")
       },
       group: ['tck_shi_shen_effect'],
     },
@@ -3672,6 +3662,133 @@ export const skills = {
           await event.target.addSkill("tck_xin_ruan_mark")
         await event.target.chooseToGive(`是否交给${get.translation(player)}一至两张牌？`, "he", player, [1, 2])
       },
+    },
+    "tck_peng_lai_ren_ou": {
+      enable: "phaseUse",
+      filter(event, player) {
+        return player.countCards("h") > 0 && !game.hasPlayer(p => p.name == 'tck_penglairenou' && p.storage.tck_peng_lai_ren_ou)
+      },
+      async content(event, trigger, player) {
+        await player.discard(player.getCards("h"))
+        const player2 = await player.summonFriend("tck_penglairenou", true, "tck_peng_lai_ren_ou")
+        player.storage.tck_qi_se_ren_ou_shi.push(player2)
+      },
+      group: ['tck_peng_lai_ren_ou_effect'],
+      subSkill: {
+        "effect": {
+          unique: true,
+          forced: true,
+          popup: false,
+          firstDo: true,
+          trigger: {
+            global: "die"
+          },
+          filter(event, player) {
+            return event.player.storage.tck_peng_lai_ren_ou
+          },
+          async content(event, trigger, player) {
+            delete trigger.player.storage.tck_peng_lai_ren_ou
+            player.storage.tck_qi_se_ren_ou_shi.remove(trigger.player)
+            await game.removePlayerOL(trigger.player)
+            await player.popup("tck_peng_lai_ren_ou")
+            await trigger.source.loseHp(1)
+            await player.$skill(get.translation("tck_huai_bao_xi_sheng_de_zha_dan"))
+            await trigger.source.addSkill("tck_huai_bao_xi_sheng_de_zha_dan_debuff")
+            await player.awakenSkill("tck_peng_lai_ren_ou")
+          },
+        },
+      }
+    },
+    "tck_shang_hai_ren_ou": {
+      enable: "phaseUse",
+      filter(event, player) {
+        return player.countCards("e") > 0 && !game.hasPlayer(p => p.name == 'tck_shanghairenou' && p.storage.tck_shang_hai_ren_ou)
+      },
+      async content(event, trigger, player) {
+        await player.discard(player.getCards("e"))
+        const player2 = await player.summonFriend("tck_shanghairenou", true, "tck_shang_hai_ren_ou")
+        player.storage.tck_qi_se_ren_ou_shi.push(player2)
+      },
+      group: ['tck_shang_hai_ren_ou_effect'],
+      subSkill: {
+        "effect": {
+          unique: true,
+          forced: true,
+          popup: false,
+          firstDo: true,
+          trigger: {
+            global: "die"
+          },
+          filter(event, player) {
+            return event.player.storage.tck_shang_hai_ren_ou
+          },
+          async content(event, trigger, player) {
+            delete trigger.player.storage.tck_shang_hai_ren_ou
+            player.storage.tck_qi_se_ren_ou_shi.remove(trigger.player)
+            await game.removePlayerOL(trigger.player)
+            await player.popup("tck_shang_hai_ren_ou")
+            await player.draw(4)
+          },
+        },
+      }
+    },
+    "tck_qi_se_ren_ou_shi": {
+      init(player) {
+        player.storage.tck_qi_se_ren_ou_shi = []
+      },
+      trigger: {
+        player: "damageBegin"
+      },
+      forced: true,
+      filter(event, player) {
+        return game.hasPlayer(p => player.storage.tck_qi_se_ren_ou_shi.some(p1 => p1 == p))
+      },
+      async content(event, trigger, player) {
+        trigger.cancel()
+      },
+    },
+    "tck_cao_zong_zhe_sh": { unique: true },
+    "tck_ren_ou_shi_jie": {
+      trigger: {
+        player: "phaseDrawBegin"
+      },
+      async content(event, trigger, player) {
+        let color
+        let cards = []
+        while (true) {
+          const res = await player.judge().forResult()
+          if (!color) color = get.color(res)
+          if (get.color(res) != color) break
+          cards.push(res.card)
+        }
+        await player.gain(cards, 'gain2')
+      }
+    },
+    "tck_mu_yu_he_feng": { unique: true },
+    "tck_cao_zong_zhe_pl": { unique: true },
+    "tck_huai_bao_xi_sheng_de_zha_dan": {
+      unique: true,
+      subSkill: {
+        "debuff": {
+          mark: true,
+          marktext: "怀",
+          forced: true,
+          charlotte: true,
+          intro: {
+            name: "怀抱牺牲的炸弹",
+            content: "只能在濒死时治疗",
+          },
+          trigger: {
+            player: "recoverBegin"
+          },
+          filter(event, player) {
+            return !player.isDying()
+          },
+          async content(event, trigger, player) {
+            trigger.cancel()
+          },
+        }
+      }
     },
 
     //重制版
@@ -4192,6 +4309,22 @@ export const skills = {
     },
   },
   translate: {
+    "tck_huai_bao_xi_sheng_de_zha_dan": "怀抱牺牲的炸弹",
+    "tck_huai_bao_xi_sheng_de_zha_dan_info": "此卡被破坏时给予对面1点体力流失并且对手只能在濒死时治疗，随后无法再次召唤。",
+    "tck_cao_zong_zhe_pl": "操纵者",
+    "tck_cao_zong_zhe_pl_info": "此卡在场时无法攻击上海和小爱。",
+    "tck_cao_zong_zhe_sh": "操纵者",
+    "tck_cao_zong_zhe_sh_info": "此卡未破坏之前无法攻击小爱。",
+    "tck_ren_ou_shi_jie": "人偶视界",
+    "tck_ren_ou_shi_jie_info": "摸牌限1次，指定1个颜色，获得至那颜色不同之前的牌，不影响摸牌。",
+    "tck_mu_yu_he_feng": "沐浴和风",
+    "tck_mu_yu_he_feng_info": "此卡被破坏可以牌堆摸4张牌。",
+    "tck_peng_lai_ren_ou": "蓬莱人偶",
+    "tck_peng_lai_ren_ou_info": "小爱丢弃所有手牌召唤。",
+    "tck_shang_hai_ren_ou": "上海人偶",
+    "tck_shang_hai_ren_ou_info": "小爱丢弃所有装备区牌召唤。",
+    "tck_qi_se_ren_ou_shi": "七色人偶使",
+    "tck_qi_se_ren_ou_shi_info": "蓬莱和上海有着自己的回合和手牌并且蓬莱上海未被破坏无法攻击小爱。",
     "tck_xin_ruan_2": "心软",
     "tck_xin_ruan_2_info": "获得心软角色的一张牌。",
     "tck_xin_ruan_mark": "心软",

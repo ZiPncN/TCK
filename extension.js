@@ -159,6 +159,21 @@ export default function () {
                 });
                 return next;
             }
+            /**
+             * 召唤
+             * @param {*} friendName 召唤得到武将
+             * @param {*} isNext     是否是在下家
+             * @param {*} storage    storage
+             */
+            lib.element.player.summonFriend = async function (friendName, isNext, storage) {
+                const player2 = await game.addPlayerOL(this, friendName, undefined, isNext)
+                player2.storage[storage] = true
+                player2.identity = this.identity
+                player2.side = this.side
+                await player2.setIdentity()
+                player2.identityShown = true
+                return player2
+            }
             //检测当前地图
             get.land = function (name) {
                 if (name && typeof name === 'string') {
