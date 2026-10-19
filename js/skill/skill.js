@@ -3951,7 +3951,7 @@ export const skills = {
             case '②':
               const res2 = await player.chooseTarget("请选择摸3张牌的目标", 1, true).forResult()
               const draw3target2 = res2.targets[0]
-              const res2_1 = await player.chooseTarget("请选择摸6张牌的目标", 1, true).forResult()
+              const res2_1 = await player.chooseTarget("请选择摸6张牌的目标", (card, player, target) => target != draw3target2, 1, true).forResult()
               const draw6target2 = res2_1.targets[0]
               await draw3target2.draw(3)
               await draw6target2.draw(6)
