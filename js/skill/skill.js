@@ -3832,6 +3832,140 @@ export const skills = {
         }
       }
     },
+    "tck_wei_shan": {
+      enable: "phaseUse",
+      usable: 1,
+      filter(event, player) {
+        return player.countCards("h") > 0
+      },
+      filterCard: true,
+      position: "h",
+      filterTarget(card, player, target) {
+        return player != target && target.isDamaged()
+      },
+      async content(event, trigger, player) {
+        const target = event.target
+        await target.recover(1)
+        let result = await target
+          .chooseButton([
+            '请选择一项',
+            [[
+              ["①", `流失2点体力`],
+              ["②", `弃至少2张牌`]
+            ], "textbutton"]
+          ], true)
+          .forResult()
+        if (result.bool) {
+          switch (result.links[0]) {
+            case '①':
+              await target.loseHp(2)
+              break;
+            case '②':
+              if (target.countCards("he") <= 2) {
+                await target.discard(target.countCards("he"))
+              } else {
+                await target.chooseToDiscard("he", [2, Infinity], true)
+              }
+              break;
+          }
+        }
+      },
+    },
+    "tck_jiao_huan": {
+      mark: true,
+      skillAnimation: true,
+      limited: true,
+      enable: "phaseUse",
+      filter(event, player) {
+        if (player.storage.tck_jiao_huan) return false // 已使用过则不能发动
+        return true
+      },
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_jiao_huan")
+        if (player.hp > 1) {
+          await player.loseHp(player.hp - 1)
+        }
+        const res = await player.chooseTarget((card, player, target) => target != player, true).forResult()
+        const target = res.targets[0]
+        const playerInfo = {
+          maxHp: player.maxHp,
+          hp: player.hp,
+          name: player.name
+        }
+        const targetInfo = {
+          maxHp: target.maxHp,
+          hp: target.hp,
+          name: target.name
+        }
+        await player.changeCharacter([targetInfo.name])
+        await target.changeCharacter([playerInfo.name])
+        player.maxHp = targetInfo.maxHp
+        player.hp = targetInfo.hp
+        target.maxHp = playerInfo.maxHp
+        target.hp = playerInfo.hp
+        await player.update()
+        await target.update()
+        await target.awakenSkill("tck_jiao_huan")
+
+        const drawNum = targetInfo.hp - playerInfo.hp
+        await target.draw(Math.abs(drawNum))
+
+        target.storage.tck_jiao_huan = true
+        player.storage.tck_jiao_huan = true
+      },
+    },
+    "tck_xiong_yi": {
+      mark: true,
+      skillAnimation: true,
+      limited: true,
+      enable: "phaseUse",
+      filter(event, player) {
+        if (player.storage.tck_xiong_yi) return false // 已使用过则不能发动
+        return true
+      },
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_xiong_yi")
+        const options = [
+          ["②", `令一人摸3张牌，一人摸6张牌`],
+          ["③", `令一人摸9张牌`]
+        ]
+        // 场上有2人以上
+        if (game.players.length > 2) {
+          options.unshift(["①", `令三人各摸3张牌`])
+        }
+        let result = await player
+          .chooseButton([
+            get.prompt(event.name),
+            [options, "textbutton"]
+          ], true)
+          .forResult()
+        if (result.bool) {
+          switch (result.links[0]) {
+            case '①':
+              const res1 = await player.chooseTarget(3, true).forResult()
+              const targets1 = res1.targets
+              for (let target of targets1) {
+                await target.draw(3)
+              }
+              break;
+            case '②':
+              const res2 = await player.chooseTarget("请选择摸3张牌的目标", 1, true).forResult()
+              const draw3target2 = res2.targets[0]
+              const res2_1 = await player.chooseTarget("请选择摸6张牌的目标", 1, true).forResult()
+              const draw6target2 = res2_1.targets[0]
+              await draw3target2.draw(3)
+              await draw6target2.draw(6)
+              break;
+            case '③':
+              const res3 = await player.chooseTarget(true).forResult()
+              const target3 = res3.targets[0]
+              await target3.draw(9)
+              break;
+          }
+        }
+        player.storage.tck_xiong_yi = true
+      },
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -4351,6 +4485,12 @@ export const skills = {
     },
   },
   translate: {
+    "tck_xiong_yi": "雄异",
+    "tck_xiong_yi_info": "限定技，出牌阶段，你可以选择一项：<br/>①令三人各摸3张牌。<br/>②令一人摸3张牌，一人摸6张牌。<br/>③令一人摸9张牌。",
+    "tck_wei_shan": "伪善",
+    "tck_wei_shan_info": "出现阶段限一次，你可弃1张手牌，令一其他人回复一点体力，然后其选择一项：<br/>①流失2点体力。<br/>②弃至少2张牌。",
+    "tck_jiao_huan": "交换",
+    "tck_jiao_huan_info": "限定技，你可将体力扣至1，然后选择1人，你与其交换体力值，体力上限和将牌，然后其摸X张牌。（X为你与其体力值之差）",
     "tck_huai_bao_xi_sheng_de_zha_dan": "怀抱牺牲的炸弹",
     "tck_huai_bao_xi_sheng_de_zha_dan_info": "此卡被破坏时给予对面1点体力流失并且对手只能在濒死时治疗，随后无法再次召唤。",
     "tck_cao_zong_zhe_pl": "操纵者",

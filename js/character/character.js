@@ -568,6 +568,22 @@ export const characters = {
       skills: ["tck_cao_zong_zhe_sh", "tck_ren_ou_shi_jie", "tck_mu_yu_he_feng"],
       img: "extension/TCK/imgs/charactors/tck_shanghairenou.jpg",
     },
+    "tck_mn_ailian": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_wei_shan", "tck_jiao_huan"],
+      img: "extension/TCK/imgs/charactors/tck_mn_ailian.jpg",
+    },
+    "tck_mateng": {
+      sex: "male",
+      group: "qun",
+      hp: 4,
+      maxHp: 4,
+      skills: ["mashu", "tck_xiong_yi"],
+      img: "extension/TCK/imgs/charactors/tck_mateng.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -613,6 +629,8 @@ export const characters = {
 
   },
   translate: {
+    "tck_mateng": "马腾",
+    "tck_mn_ailian": "艾莲",
     "tck_shanghairenou": "上海",
     "tck_penglairenou": "蓬莱",
     "tck_ailisimageteluoyide": "爱丽丝玛格特罗伊德",
@@ -696,6 +714,8 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_mateng": "西凉雄风",
+    "tck_mn_ailian": "魔女",
     "tck_shanghairenou": "人偶",
     "tck_penglairenou": "人偶",
     "tck_ailisimageteluoyide": "七色的人偶使",
@@ -787,7 +807,7 @@ export const characters = {
         "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
         "tck_chaonengxiansheng", "tck_wutengyouxian",
         "tck_weioula", "tck_hzy", "tck_jiege", "tck_bayunzi",
-        "tck_ailisimageteluoyide",
+        "tck_ailisimageteluoyide", "tck_mn_ailian",
       ],
 
       //三国
@@ -796,7 +816,7 @@ export const characters = {
         "tck_guanyu_zhangfei", "tck_shen_jiaxu", "tck_liaohua",
         "tck_tongyuan", "tck_guojia", "tck_hj_zhouyu",
         "tck_lingcao", "tck_huatuo", "tck_guohuai",
-        "tck_huaxiong", "tck_yuanshao",
+        "tck_huaxiong", "tck_yuanshao", "tck_mateng",
       ],
 
       //附加
