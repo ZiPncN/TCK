@@ -3966,6 +3966,119 @@ export const skills = {
         player.storage.tck_xiong_yi = true
       },
     },
+    "tck_mou_tie_ji": {
+      trigger: { player: "useCardToPlayered" },
+      logTarget: "target",
+      check(event, player) {
+        return get.attitude(player, event.target) < 0;
+      },
+      filter(event, player) {
+        return player !== event.target && event.card.name === "sha" && event.target.isIn();
+      },
+      async content(event, trigger, player) {
+        const target = trigger.target
+        event.target = target
+        const res = await player.chooseToPSS(target).forResult()
+        // 排除平局
+        if (res.tie) return
+        if (res.bool) {
+          await player.draw(2)
+          trigger.directHit.add(target)
+        } else {
+          await player.gainPlayerCard("he", target, true).set("target", target)
+        }
+      }
+    },
+    "tck_ren_che_yi_ti": {
+      init(player, skill) {
+        player.storage.tck_ren_che_yi_ti = {
+          fangyu: 0,
+          jingong: 0
+        }
+        player.addExtraEquip(skill, "tck_fang_yu_ma", true, player => !player.isTempBanned("tck_ren_che_yi_ti"));
+      },
+      onremove(player, skill) {
+        if (player.storage.tck_ren_che_yi_ti?.fangyu > 0) {
+          player.expandedSlots.equip3 -= player.storage.tck_ren_che_yi_ti.fangyu
+          let fangyuNum = player.countCards("e", card => get.subtype(card) == "equip3")
+          if (player.hasEnabledSlot("equip3")) {
+            fangyuNum--
+          }
+          if (fangyuNum > player.expandedSlots.equip3) {
+            player.chooseToDiscard("e", card => get.subtype(card) == 'equip3', fangyuNum - player.expandedSlots.equip3 ?? 0, true)
+          }
+        }
+        if (player.storage.tck_ren_che_yi_ti?.jingong > 0) {
+          player.expandedSlots.equip4 -= player.storage.tck_ren_che_yi_ti.jingong
+          let jingongNum = player.countCards("e", card => get.subtype(card) == "equip4")
+          if (player.hasEnabledSlot("equip4")) {
+            jingongNum--
+          }
+          if (jingongNum > player.expandedSlots.equip4) {
+            player.chooseToDiscard("e", card => get.subtype(card) == 'equip4', jingongNum - player.expandedSlots.equip4 ?? 0, true)
+          }
+        }
+        player.removeExtraEquip(skill)
+        player.update()
+      },
+      forced: true,
+      charlotte: true,
+      popup: false,
+      trigger: {
+        player: "useCard"
+      },
+      filter(event, player) {
+        return get.type(event.card) == "equip" && (get.subtype(event.card) == "equip3" || get.subtype(event.card) == "equip4")
+      },
+      async content(event, trigger, player) {
+        const type = get.subtype(trigger.card)
+        if (!player.hasEmptySlot(type)) {
+          await player.expandEquip(type)
+          if (type == "equip3") {
+            player.storage.tck_ren_che_yi_ti.fangyu++
+          } else if (type == "equip4") {
+            player.storage.tck_ren_che_yi_ti.jingong++
+          }
+        }
+      },
+      mod: {
+        globalTo(from, to, distance) {
+          if (to.isTempBanned("tck_ren_che_yi_ti")) {
+            return;
+          }
+          return distance + 1;
+        },
+      },
+    },
+    "tck_qing_zhi_yan": {
+      trigger: { player: "useCardToPlayered" },
+      check(event, player) {
+        return get.attitude(player, event.target) < 0;
+      },
+      filter(event, player) {
+        return player !== event.target && event.card.name === "sha" && event.target.isIn();
+      },
+      async content(event, trigger, player) {
+        const target = trigger.target
+        await target.addMark('tck_qing_zhi_yan_yinji')
+        if (target.countMark('tck_qing_zhi_yan_yinji') >= 3) {
+          await target.loseHp(1)
+          await target.removeMark('tck_qing_zhi_yan_yinji', 3)
+        }
+        await target.updateMark('tck_qing_zhi_yan_yinji')
+      },
+      subSkill: {
+        "yinji": {
+          sub: true,
+          source: "tck_qing_zhi_yan",
+          marktext: "印",
+          intro: {
+            name: "印记",
+            content: "当前有#个印记"
+          },
+        },
+      },
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -4485,6 +4598,12 @@ export const skills = {
     },
   },
   translate: {
+    "tck_ren_che_yi_ti": "人车一体",
+    "tck_ren_che_yi_ti_info": "开局自带+1马，可以叠加许多马。",
+    "tck_qing_zhi_yan": "青之炎",
+    "tck_qing_zhi_yan_info": "每杀对手1次，可以叠加印记，叠3次对手扣1点体力。",
+    "tck_mou_tie_ji": "铁骑",
+    "tck_mou_tie_ji_info": "你的杀指定目标后，可选择与目标进行猜拳，若你赢，你摸2张牌且此杀不可被闪避，若你输，你获得其1张牌。",
     "tck_xiong_yi": "雄异",
     "tck_xiong_yi_info": "限定技，出牌阶段，你可以选择一项：<br/>①令三人各摸3张牌。<br/>②令一人摸3张牌，一人摸6张牌。<br/>③令一人摸9张牌。",
     "tck_wei_shan": "伪善",
