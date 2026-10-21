@@ -1,5 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js"
 export const noNatures = ['tck_kan', 'tck_zhan', 'tck_she', 'tck_fei_dao', 'stab']
+// 桃类基本牌
+export const taoList = ['tao', 'tck_ju', 'tck_li', 'tck_xiang_jiao', 'tck_card_su', 'tck_card_du_tao']
 const simShaNatures = ['tck_light', 'tck_kan', 'tck_zhan', 'tck_she', 'tck_she_fire', 'tck_she_thunder', 'tck_fei_dao', 'tck_water',
   'tck_lxy_niu', 'tck_lxy_gou', 'tck_lxy_9',]
 const natureConfig = {

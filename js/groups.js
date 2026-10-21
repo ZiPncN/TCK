@@ -27,6 +27,8 @@ const groups = [
   { id: "tck_group_?", short: "?", name: "?", config: { color: "", image: "", } },
   { id: "tck_group_you", short: "游", name: "游", config: { color: "", image: "", } },
   { id: "tck_group_ou", short: "偶", name: "偶", config: { color: "", image: "", } },
+  { id: "tck_group_fang", short: "方", name: "方", config: { color: "", image: "", } },
+  { id: "tck_group_Z", short: "Z", name: "Z", config: { color: "", image: "extension/TCK/imgs/groups/tck_group_Z.jpg", } },
 ]
 
 export default groups

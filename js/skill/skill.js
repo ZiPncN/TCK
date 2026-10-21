@@ -1,4 +1,5 @@
 import { lib, game, get, _status, ui } from "../../../../noname.js";
+import { taoList } from '../natures.js'
 import TCKUtil from "../utils.js"
 export const skills = {
   skill: {
@@ -4079,6 +4080,346 @@ export const skills = {
         },
       },
     },
+    "tck_zhi_heng": {
+      locked: false,
+      enable: "phaseUse",
+      usable: 1,
+      position: "he",
+      filterCard: true,
+      selectCard: [1, Infinity],
+      allowChooseAll: true,
+      prompt: "弃置任意张牌并摸取2倍的牌",
+      async content(event, trigger, player) {
+        await player.draw(event.cards.length * 2);
+      },
+    },
+    "tck_jiu_yuan": {
+      trigger: { target: "taoBegin" },
+      forced: true,
+      filter(event, player) {
+        if (event.player === player) {
+          return false;
+        }
+        if (event.player.group !== "wu") {
+          return false;
+        }
+        return true;
+      },
+      async content(event, trigger, player) {
+        trigger.baseDamage = player.maxHp - player.hp
+      }
+    },
+    "tck_jiao_zhu": {
+      trigger: {
+        global: "phaseZhunbei"
+      },
+      forced: true,
+      filter(event, player) {
+        return event.player != player
+      },
+      async content(event, trigger, player) {
+        let res = await trigger.player.chooseToGive("h", 1, player, `请交给${get.translation(player)}一张手牌，否则流失1点体力`).forResult()
+        if (!res.bool) {
+          //没给
+          await trigger.player.loseHp(1)
+        }
+      },
+    },
+    "tck_xiao_chou": {
+      enable: "phaseUse",
+      usable: 2,
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.suit(card) == 'diamond') return 2
+          else if (get.suit(card) == 'club') return 1
+          else if (get.suit(card) == 'spade') return -2
+          else if (get.suit(card) == 'heart') return -3
+          return -1
+        }).forResult()
+        if (get.suit(res) == 'diamond') {
+          await player.draw(2)
+        } else if (get.suit(res) == 'club') {
+          const res1 = await player.chooseTarget(1).forResult()
+          if (res1.bool) {
+            await player.discardPlayerCard(res1.targets[0], true, "hej")
+          }
+        } else if (get.suit(res) == 'spade') {
+          await player.chooseToDiscard(true, 1, "he")
+        } else if (get.suit(res) == 'heart') {
+          await player.loseHp(1)
+        }
+      },
+    },
+    "tck_tk_ku_rou": {
+      enable: "phaseUse",
+      usable: 1,
+      filterCard: lib.filter.cardDiscardable,
+      position: "he",
+      async content(event, trigger, player) {
+        await player.loseHp()
+        await player.draw(3)
+        if (player.isPhaseUsing()) {
+          player.addTempSkill(event.name + "_effect")
+          player.addMark(event.name + "_effect", 1, false)
+        }
+      },
+      subSkill: {
+        effect: {
+          mod: {
+            targetInRange(card, player, target, now) {
+              if (card.name == "sha" && get.color(card) == "red") {
+                return true;
+              }
+            },
+            cardUsable(card, player, num) {
+              if (card.name == "sha") {
+                return num + player.countMark("tck_tk_ku_rou_effect");
+              }
+            }
+          },
+          charlotte: true,
+          onremove: true,
+          trigger: { player: "useCard" },
+          sourceSkill: "tck_tk_ku_rou",
+          filter(event, player) {
+            return event.card?.name == "sha" && get.color(event.card) == "red";
+          },
+          forced: true,
+          async content(event, trigger, player) {
+            trigger.directHit.addArray(game.players);
+          },
+          intro: { content: "红杀不能闪，可多出#张杀" },
+          ai: {
+            directHit_ai: true,
+            skillTagFilter(player, tag, arg) {
+              return arg?.card?.name == "sha" && get.color(arg.card) == "red";
+            }
+          }
+        }
+      },
+    },
+    "tck_zi_gong": {
+      enable: "phaseUse",
+      async content(event, trigger, player) {
+        const du = game.createCard("du")
+        await player.gain(du, "gain2")
+        await player.discard(du)
+      },
+    },
+    "tck_Make": {
+      group: ["tck_Make_sha", "tck_Make_shan", "tck_Make_shansha", "tck_Make_jiu", "tck_Make_tao"],
+      subSkill: {
+        "sha": {
+          enable: ["chooseToUse", "chooseToRespond"],
+          filterCard: { name: "shan" },
+          viewAs: { name: "sha" },
+          viewAsFilter(player) {
+            if (!player.countCards("h", "shan")) {
+              return false;
+            }
+          },
+          position: "h",
+          prompt: "将一张闪当杀使用或打出",
+        },
+        "shan": {
+          enable: ["chooseToRespond", "chooseToUse"],
+          filterCard: { name: "sha" },
+          viewAs: { name: "shan" },
+          prompt: "将一张杀当闪使用或打出",
+          position: "h",
+          viewAsFilter(player) {
+            if (!player.countCards("h", "sha")) {
+              return false;
+            }
+          }
+        },
+        "shansha": {
+          cardSkill: true,
+          unique: true,
+          direct: true,
+          enable: ["chooseToUse", "chooseToRespond"],
+          filter(event, player) {
+            let cards = player.getCards("hs")
+            for (let i of cards) {
+              let name = get.name(i, player)
+              let nature = get.nature(i, player)
+              if (name == "shan" && nature == "tck_shan_sha") {
+                if (
+                  event.filterCard(
+                    {
+                      name: "sha",
+                      isCard: true,
+                      cards: [i],
+                    }, player, event
+                  ) ||
+                  event.filterCard(
+                    {
+                      name: "shan",
+                      isCard: true,
+                      cards: [i],
+                    }, player, event
+                  )
+                ) {
+                  return true
+                }
+              }
+            }
+            return false
+          },
+          chooseButton: {
+            dialog(event, player) {
+              let list = []
+              if (player.countCards("hs", card => get.name(card) == "shan" && get.nature(card) == "tck_shan_sha")) {
+                list.push(["基本", "", "sha"])
+                list.push(["基本", "", "shan"])
+              }
+              return ui.create.dialog("Make", [list, "vcard"], "hidden")
+            },
+            filter(button, player) {
+              let name = button.link[2]
+              let rawname = "shan"
+              let nature = "tck_shan_sha"
+              let cards = player.getCards("hs")
+              let evt = _status.event.getParent()
+              for (var i of cards) {
+                if (
+                  get.name(i, player) == rawname && get.nature(i, player) == nature &&
+                  evt.filterCard(
+                    {
+                      name: name,
+                      isCard: true,
+                      cards: [i],
+                    }, player, evt
+                  )
+                ) {
+                  return true
+                }
+              }
+              return false
+            },
+            check(button) {
+              return _status.event.player.getUseValue({ name: button.link[2], isCard: true })
+            },
+            backup(links) {
+              let name = links[0][2]
+              return {
+                popname: true,
+                viewAs: { name: name, isCard: true },
+                filterCard(card) {
+                  return get.name(card) == "shan" && get.nature(card) == "tck_shan_sha"
+                },
+                ai1: () => 1
+              }
+            },
+            prompt(links) {
+              let name = links[0][2]
+              return "将一张闪杀当做" + get.translation(name) + "使用或打出"
+            },
+          },
+          ai: {
+            order: 10,
+            result: {
+              player: 1,
+            },
+          },
+        },
+        "jiu": {
+          direct: true,
+          enable: ["chooseToUse", "chooseToRespond",],
+          filter(event, player) {
+            return player.countCards("hs", card => taoList.includes(get.name(card)))
+          },
+          chooseButton: {
+            dialog(event, player) {
+              let list = []
+              for (let name of lib.inpile) {
+                if (get.type(name) == "basic") {
+                  if (name == "jiu" && !!lib.card.jiu['tck_nature']) {
+                    list.push(["基本", "", "jiu"]);
+                    for (let j of lib.card.jiu['tck_nature']) {
+                      list.push(["基本", "", "jiu", j]);
+                    }
+                  }
+                }
+              }
+              return ui.create.dialog("Make", [list, "vcard"]);
+            },
+            filter(button, player) {
+              return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
+            },
+            backup(links, player) {
+              let name = links[0][2]
+              return {
+                filterCard(card) {
+                  return taoList.includes(get.name(card))
+                },
+                popname: true,
+                viewAs: { name: name, nature: links[0][3] },
+              }
+            },
+            prompt(links, player) {
+              let name = links[0][2]
+              return "将一张桃类基本牌当做" + get.translation(name) + "使用或打出"
+            },
+          },
+        },
+        "tao": {
+          direct: true,
+          enable: ["chooseToUse", "chooseToRespond",],
+          filter(event, player) {
+            return player.countCards("hs", card => get.name(card) == 'jiu')
+          },
+          chooseButton: {
+            dialog(event, player) {
+              let list = []
+              for (let name of lib.inpile) {
+                if (get.type(name) == "basic" && taoList.includes(name)) {
+                  list.push(["基本", "", name]);
+                }
+              }
+              return ui.create.dialog("Make", [list, "vcard"]);
+            },
+            filter(button, player) {
+              return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
+            },
+            backup(links, player) {
+              let name = links[0][2]
+              return {
+                filterCard(card) {
+                  return get.name(card) == 'jiu'
+                },
+                popname: true,
+                viewAs: { name: name, nature: links[0][3] },
+              }
+            },
+            prompt(links, player) {
+              let name = links[0][2]
+              return "将一张酒类基本牌当做" + get.translation(name) + "使用或打出"
+            },
+          },
+        },
+      },
+    },
+    "tck_ling_gan": {
+      enable: "phaseUse",
+      usable: 1,
+      async content(event, trigger, player) {
+        let cards = []
+        let suits = []
+        while (true) {
+          const res = await player.judge(card => {
+            if (suits.includes(get.suit(card))) return 1
+            return 2
+          }).forResult()
+          cards.push(res.card)
+          if (suits.includes(get.suit(res))) {
+            break
+          }
+          suits.push(get.suit(res))
+        }
+        await player.gain(cards, "gain2")
+      },
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -4598,6 +4939,22 @@ export const skills = {
     },
   },
   translate: {
+    "tck_Make": "Make",
+    "tck_Make_info": "你的杀可当闪用，你的闪可当杀用，你的闪杀可当杀或闪用，你的桃类基本牌可当酒类基本牌用，反之也可用。",
+    "tck_ling_gan": "灵感",
+    "tck_ling_gan_info": "出牌阶段限一次，你可判定，直至出现相同花色为止，你获得本次判定所有判定牌。",
+    "tck_tk_ku_rou": "苦肉",
+    "tck_tk_ku_rou_info": "扣一点体力得3张牌，红杀不能闪，可多出一张杀。（限一次一回合）",
+    "tck_zi_gong": "自功",
+    "tck_zi_gong_info": "自己产出一张毒，并喝下。",
+    "tck_jiao_zhu": "教主",
+    "tck_jiao_zhu_info": "其他玩家回合开始时需交给你1张手牌，否则流失1点体力。",
+    "tck_xiao_chou": "小丑",
+    "tck_xiao_chou_info": "出牌阶段限2次，你判定：若为♦，摸2张牌，若为♣，弃1人1张牌。若为♠，你弃1张牌，若为♥，你流失1点体力。",
+    "tck_zhi_heng": "制衡",
+    "tck_zhi_heng_info": "出牌阶段限一次，你可以弃置任意张牌，然后摸取2倍的牌。",
+    "tck_jiu_yuan": "救援",
+    "tck_jiu_yuan_info": "其他吴势力角色对你用桃时，回复至满体力。",
     "tck_ren_che_yi_ti": "人车一体",
     "tck_ren_che_yi_ti_info": "开局自带+1马，可以叠加许多马。",
     "tck_qing_zhi_yan": "青之炎",

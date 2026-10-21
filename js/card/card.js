@@ -1,5 +1,5 @@
 import { lib, game, get, _status, ui } from "../../../../noname.js";
-import { noNatures } from '../natures.js'
+import { noNatures, taoList } from '../natures.js'
 export const cards = {
   card: {
     "tck_land_r_feng_kuang_xing_qi_si": {
@@ -5426,8 +5426,5 @@ export const cards = {
     ['club', 13, 'suijiyingbian']
   ],
 }
-
-// 桃类基本牌
-const taoList = ['tao', 'tck_ju', 'tck_li', 'tck_xiang_jiao', 'tck_card_su', 'tck_card_du_tao']
 
 export default cards

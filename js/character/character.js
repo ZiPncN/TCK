@@ -600,6 +600,38 @@ export const characters = {
       skills: ["tck_ren_che_yi_ti", "tck_qing_zhi_yan"],
       img: "extension/TCK/imgs/charactors/tck_zhisenxiuyi.jpg",
     },
+    "tck_sunquan": {
+      sex: "male",
+      group: "wu",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_zhi_heng", "tck_jiu_yuan"],
+      img: "extension/TCK/imgs/charactors/tck_sunquan.jpg",
+    },
+    "tck_lanlanlu": {
+      sex: "male",
+      group: "tck_luan_ru",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_jiao_zhu", "tck_xiao_chou"],
+      img: "extension/TCK/imgs/charactors/tck_lanlanlu.jpg",
+    },
+    "tck_tongkudefangyiyang": {
+      sex: "male",
+      group: "tck_group_fang",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_tk_ku_rou", "tck_zi_gong"],
+      img: "extension/TCK/imgs/charactors/tck_tongkudefangyiyang.jpg",
+    },
+    "tck_ZiPnc": {
+      sex: "male",
+      group: "tck_group_Z",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_Make", "tck_ling_gan"],
+      img: "extension/TCK/imgs/charactors/tck_ZiPnc.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -645,6 +677,10 @@ export const characters = {
 
   },
   translate: {
+    "tck_ZiPnc": "ZiPnc",
+    "tck_tongkudefangyiyang": "痛苦的方奕洋",
+    "tck_lanlanlu": "蓝蓝路",
+    "tck_sunquan": "孫权",
     "tck_zhisenxiuyi": "栉森秀一",
     "tck_moumachao": "谋马超",
     "tck_mateng": "马腾",
@@ -732,6 +768,9 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_ZiPnc": "Maker",
+    "tck_lanlanlu": "麦当劳叔叔",
+    "tck_sunquan": "制衡连合",
     "tck_zhisenxiuyi": "青之炎",
     "tck_moumachao": "扰阵疲敌",
     "tck_mateng": "西凉雄风",
@@ -828,6 +867,7 @@ export const characters = {
         "tck_chaonengxiansheng", "tck_wutengyouxian",
         "tck_weioula", "tck_hzy", "tck_jiege", "tck_bayunzi",
         "tck_ailisimageteluoyide", "tck_mn_ailian", "tck_zhisenxiuyi",
+        "tck_lanlanlu", "tck_tongkudefangyiyang", "tck_ZiPnc",
       ],
 
       //三国
@@ -837,7 +877,7 @@ export const characters = {
         "tck_tongyuan", "tck_guojia", "tck_hj_zhouyu",
         "tck_lingcao", "tck_huatuo", "tck_guohuai",
         "tck_huaxiong", "tck_yuanshao", "tck_mateng",
-        "tck_moumachao",
+        "tck_moumachao", "tck_sunquan",
       ],
 
       //附加
