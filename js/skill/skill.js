@@ -3696,9 +3696,11 @@ export const skills = {
             player.storage.tck_qi_se_ren_ou_shi.remove(trigger.player)
             await game.removePlayerOL(trigger.player)
             await player.popup("tck_peng_lai_ren_ou")
-            await trigger.source.loseHp(1)
-            await player.$skill(get.translation("tck_huai_bao_xi_sheng_de_zha_dan"))
-            await trigger.source.addSkill("tck_huai_bao_xi_sheng_de_zha_dan_debuff")
+            if (trigger.source) {
+              await trigger.source.loseHp(1)
+              await player.$skill(get.translation("tck_huai_bao_xi_sheng_de_zha_dan"))
+              await trigger.source.addSkill("tck_huai_bao_xi_sheng_de_zha_dan_debuff")
+            }
             await player.awakenSkill("tck_peng_lai_ren_ou")
           },
         },
@@ -4153,8 +4155,6 @@ export const skills = {
     "tck_tk_ku_rou": {
       enable: "phaseUse",
       usable: 1,
-      filterCard: lib.filter.cardDiscardable,
-      position: "he",
       async content(event, trigger, player) {
         await player.loseHp()
         await player.draw(3)
@@ -4234,37 +4234,11 @@ export const skills = {
           }
         },
         "shansha": {
-          cardSkill: true,
           unique: true,
           direct: true,
           enable: ["chooseToUse", "chooseToRespond"],
           filter(event, player) {
-            let cards = player.getCards("hs")
-            for (let i of cards) {
-              let name = get.name(i, player)
-              let nature = get.nature(i, player)
-              if (name == "shan" && nature == "tck_shan_sha") {
-                if (
-                  event.filterCard(
-                    {
-                      name: "sha",
-                      isCard: true,
-                      cards: [i],
-                    }, player, event
-                  ) ||
-                  event.filterCard(
-                    {
-                      name: "shan",
-                      isCard: true,
-                      cards: [i],
-                    }, player, event
-                  )
-                ) {
-                  return true
-                }
-              }
-            }
-            return false
+            return player.countCards("hs", card => get.name(card) == "shan" && get.nature(card) == "tck_shan_sha")
           },
           chooseButton: {
             dialog(event, player) {
