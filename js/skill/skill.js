@@ -416,6 +416,7 @@ export const skills = {
         return true
       },
       async content(event, trigger, player) {
+        await player.awakenSkill("tck_gou_yan_can_chuan")
         let loseMaxHpNum = player.maxHp - 1
         await player.loseMaxHp(loseMaxHpNum)
         await player.recoverTo(player.maxHp)
@@ -4394,6 +4395,383 @@ export const skills = {
         await player.gain(cards, "gain2")
       },
     },
+    "tck_ke_nan": {
+      trigger: {
+        player: "useCardToPlayered"
+      },
+      forced: true,
+      filter(event, player) {
+        return event.target.sex == 'male'
+      },
+      async content(event, trigger, player) {
+        const target = trigger.target
+        await target.chooseToDiscard("he", 1, true)
+      },
+      group: ["tck_ke_nan_damage"],
+      subSkill: {
+        "damage": {
+          forced: true,
+          trigger: {
+            source: "damageBegin"
+          },
+          filter(event, player) {
+            return event.player.sex == 'male'
+          },
+          async content(event, trigger, player) {
+            trigger.num++
+          },
+        }
+      },
+    },
+    "tck_hu_you": {
+      trigger: {
+        player: "damageBegin"
+      },
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.color(card) == 'red') return 1
+          return -1
+        }).forResult()
+        if (get.color(res) == 'red') {
+          await trigger.cancel()
+        }
+      },
+      group: ["tck_hu_you_rejudge"],
+      subSkill: {
+        "rejudge": {
+          trigger: {
+            player: "judge"
+          },
+          check(event, player) {
+            return event.judge(player.judging[0]) < 0;
+          },
+          prompt: "是否再判定一次？",
+          async content(event, trigger, player) {
+            const card = get.cards()[0];
+            const next = game.cardsGotoOrdering(card);
+            next.relatedEvent = trigger;
+            await next;
+            player.$throw(card);
+            if (trigger.player.judging[0].clone) {
+              trigger.player.judging[0].clone.classList.remove("thrownhighlight");
+              game.broadcast((card2) => {
+                if (card2.clone) {
+                  card2.clone.classList.remove("thrownhighlight");
+                }
+              }, trigger.player.judging[0]);
+              game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+            }
+            trigger.player.judging[0] = card;
+            game.log(trigger.player, "的判定牌改为", card);
+            await game.cardsDiscard(trigger.player.judging[0]);
+            await game.delay(2);
+          }
+        }
+      }
+    },
+    "tck_shi_jie": {
+      enable: "phaseUse",
+      usable: 1,
+      filter(event, player) {
+        const evt = event.getParent(3)
+        return evt.name != "tck_shi_jie"
+      },
+      async content(event, trigger, player) {
+        await player.loseHp(1)
+        await player.addTempSkill("tck_shi_jie_effect", { player: "phaseJieshuAfter" })
+        await player.phase("tck_shi_jie")
+      },
+      subSkill: {
+        "effect": {
+          usable: 3,
+          enable: ["chooseToUse", "chooseToRespond"],
+          filterCard: true,
+          position: "h",
+          viewAs: { name: "sha", nature: "tck_fei_dao" },
+          viewAsFilter(player) {
+            if (!player.hasCards("h", card => true)) {
+              return false;
+            }
+          },
+          prompt: "将一张手牌当飞刀用",
+          check(card) {
+            return 4 - get.value(card);
+          }
+        },
+      }
+    },
+    "tck_yue_shen_zhi_zhong": {
+      trigger: { player: "useCard" },
+      forced: true,
+      filter(event, player) {
+        return get.name(event.card) == 'sha' && get.nature(event.card) == 'tck_fei_dao'
+      },
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.color(card) == 'black') return 1
+          return -1
+        }).forResult()
+        if (get.color(res) == 'black') {
+          trigger.directHit.addArray(game.players)
+        }
+      }
+    },
+    "tck_sha_ren_wan_ou": {
+      forced: true,
+      trigger: {
+        player: "shaMiss"
+      },
+      filter(event, player) {
+        return get.nature(event.card) == 'tck_fei_dao'
+      },
+      async content(event, trigger, player) {
+        for (let t of trigger.targets) {
+          await t.addMark("tck_sha_ren_wan_ou_mark")
+        }
+      },
+      group: ["tck_sha_ren_wan_ou_lose"],
+      subSkill: {
+        "mark": {
+          sub: true,
+          sourceSkill: "tck_zhong_du",
+          intro: {
+            name: "钟",
+            content: "当前有#个“钟”标记",
+          },
+          marktext: "钟"
+        },
+        "lose": {
+          prompt: "选择一名有2个“钟”标记的玩家，令其失去2个“钟”标记并失去1点体力",
+          enable: "phaseUse",
+          filter(event, player) {
+            return game.hasPlayer(p => p.countMark("tck_sha_ren_wan_ou_mark") >= 2)
+          },
+          filterTarget(card, player, target) {
+            return target.countMark("tck_sha_ren_wan_ou_mark") >= 2
+          },
+          async content(event, trigger, player) {
+            const target = event.target
+            await target.removeMark("tck_sha_ren_wan_ou_mark", 2)
+            await target.loseHp(1)
+          }
+        },
+      }
+    },
+    "tck_skill_a": {
+      trigger: { source: "damageBegin" },
+      forced: true,
+      filter(event, player) {
+        return get.name(event.card) == 'sha'
+      },
+      async content(event, trigger, player) {
+        trigger.num++
+      }
+    },
+    "tck_skill_B": {
+      trigger: { player: "useCard" },
+      forced: true,
+      filter(event, player) {
+        return get.name(event.card) == 'sha'
+      },
+      async content(event, trigger, player) {
+        trigger.directHit.addArray(game.players)
+      }
+    },
+    "tck_skill_Y": {
+      mod: {
+        cardUsable(card, player, num) {
+          if (card.name == "sha") {
+            return Infinity
+          }
+        }
+      }
+    },
+    "tck_skill_O": {
+      init(player) {
+        player.awakenSkill("tck_skill_a")
+        player.awakenSkill("tck_skill_B")
+        player.awakenSkill("tck_skill_Y")
+      },
+      enable: "phaseUse",
+      usable: 1,
+      async content(event, trigger, player) {
+        let result = await player
+          .chooseButton([
+            '你可以选择其中一个技能本回合激活',
+            [[
+              ["①", "a：杀伤害+1"],
+              ["②", "B：杀无法闪避"],
+              ["③", "Y：一回合无上限出杀"],
+            ], "textbutton"]
+          ], true)
+          .forResult()
+        if (result.bool) {
+          switch (result.links[0]) {
+            case '①':
+              await player.restoreSkill("tck_skill_a")
+              break;
+            case '②':
+              await player.restoreSkill("tck_skill_B")
+              break;
+            case '③':
+              await player.restoreSkill("tck_skill_Y")
+              break;
+          }
+        }
+      },
+      group: ["tck_skill_O_remove"],
+      subSkill: {
+        "remove": {
+          trigger: {
+            player: "phaseZhunbeiBefore"
+          },
+          popup: false,
+          forced: true,
+          charlotte: true,
+          async content(event, trigger, player) {
+            await player.awakenSkill("tck_skill_a")
+            await player.awakenSkill("tck_skill_B")
+            await player.awakenSkill("tck_skill_Y")
+          }
+        }
+      }
+    },
+    "tck_de_er_ta": {
+      enable: "phaseUse",
+      filterCard: true,
+      position: "h",
+      selectCard: -1,
+      filter(event, player) {
+        return player.countCards("h") && player.hasSkill("tck_skill_O") && !player.isTempBanned("tck_skill_O")
+      },
+      async content(event, trigger, player) {
+        await player.tempBanSkill("tck_skill_O")
+        await player.draw(2)
+      }
+    },
+    "tck_kuo_rong": {
+      mod: {
+        maxHandcardBase(player, num) {
+          return num + 2
+        }
+      }
+    },
+    "tck_xiao_yin": {
+      mod: {
+        cardUsable(card, player, num) {
+          if (card.name == "sha") {
+            return Infinity;
+          }
+        }
+      }
+    },
+    "tck_zhan_sun": {
+      trigger: { player: ["useCardEnd", "respondEnd"] },
+      forced: true,
+      charlotte: true,
+      filter(event, player) {
+        return player.countAllHistory("useCard", (evt) => get.name(evt.card) == 'sha') >= 50
+      },
+      async content(event, trigger, player) {
+        await player.die()
+      }
+    },
+    "tck_qiang_hua": {
+      trigger: { player: ["useCardEnd", "respondEnd"] },
+      forced: true,
+      charlotte: true,
+      filter(event, player) {
+        return player.countAllHistory("useCard", (evt) => get.name(evt.card) == 'sha') >= 30 && !player.hasSkill("tck_qiang_hua_effect")
+      },
+      async content(event, trigger, player) {
+        await player.addSkill("tck_qiang_hua_effect")
+      },
+      subSkill: {
+        "effect": {
+          sub: true,
+          sourceSkill: "tck_qiang_hua",
+          trigger: { source: "damageBegin" },
+          forced: true,
+          filter(event, player) {
+            return get.name(event.card) == 'sha'
+          },
+          async content(event, trigger, player) {
+            trigger.num++
+          }
+        },
+      },
+    },
+    "tck_bei_jing": {
+      mod: {
+        globalFrom(from, to, distance) {
+          return distance - 2
+        }
+      }
+    },
+    "tck_zhong_du": {
+      forced: true,
+      trigger: {
+        player: "shaHit"
+      },
+      async content(event, trigger, player) {
+        await player.addMark("tck_zhong_du_mark")
+        if (player.countMark("tck_zhong_du_mark") % 5 == 0) {
+          await player.loseHp(1)
+        }
+        // for (let t of trigger.targets) {
+        //   await t.addMark("tck_zhong_du_mark")
+        //   if (t.countMark("tck_zhong_du_mark") >= 5) {
+        //     await t.removeMark("tck_zhong_du_mark", 5)
+        //     await t.loseHp(1)
+        //   }
+        // }
+      },
+      subSkill: {
+        "mark": {
+          sub: true,
+          sourceSkill: "tck_zhong_du",
+          intro: {
+            name: "中毒",
+            content: "当前有#个标记",
+          },
+          marktext: "毒"
+        }
+      }
+    },
+    "tck_cang_dao": {
+      unique: true,
+      skillAnimation: true,
+      limited: true,
+      enable: "phaseUse",
+      filterTarget(card, player, target) {
+        return player != target
+      },
+      filter(event, player) {
+        if (player.storage.tck_cang_dao) return false
+        return true
+      },
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_cang_dao")
+        await event.target.loseHp()
+        player.storage.tck_cang_dao = true
+      },
+    },
+    "tck_kuai_su": {
+      direct: true,
+      trigger: {
+        global: ["phaseUseBegin", "phaseUseEnd"]
+      },
+      filter(event, player) {
+        return event.player != player && player.hasCards("h", "sha")
+      },
+      async content(event, trigger, player) {
+        while (true) {
+          if (!player.hasCards("h", "sha")) return
+          const res = await player.chooseToUse("是否使用一张杀", (card) => get.name(card) == "sha").forResult()
+          if (!res.bool) return
+        }
+      },
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -4913,6 +5291,42 @@ export const skills = {
     },
   },
   translate: {
+    "tck_kuo_rong": "扩容",
+    "tck_kuo_rong_info": "增加两张手牌上线。",
+    "tck_xiao_yin": "消音",
+    "tck_xiao_yin_info": "无声无息出杀，无限使用。",
+    "tck_zhan_sun": "战损",
+    "tck_zhan_sun_info": "出过50张杀爆废。（直接死亡）",
+    "tck_qiang_hua": "强化",
+    "tck_qiang_hua_info": "出过30张杀，杀伤害+1。",
+    "tck_bei_jing": "倍镜",
+    "tck_bei_jing_info": "拥有4倍镜，与敌人距离-2。",
+    "tck_zhong_du": "中毒",
+    "tck_zhong_du_info": "每张杀命中得标记，5个标记失去1点体力。",
+    "tck_cang_dao": "藏刀",
+    "tck_cang_dao_info": "对敌方一笑，捅一刀，扣他一点体力。[限]",
+    "tck_kuai_su": "快速",
+    "tck_kuai_su_info": "回合外出杀。",
+    "tck_skill_a": "a",
+    "tck_skill_a_info": "杀伤害+1。",
+    "tck_skill_B": "B",
+    "tck_skill_B_info": "杀无法闪避。",
+    "tck_skill_Y": "Y",
+    "tck_skill_Y_info": "一回合无上限出杀。",
+    "tck_skill_O": "O",
+    "tck_skill_O_info": "一回合只能在【a】【B】【Y】中选1个技能。",
+    "tck_de_er_ta": "德尔塔",
+    "tck_de_er_ta_info": "丢弃所有手牌，在1回合内失去【O】，然后摸2张牌。",
+    "tck_shi_jie": "世界",
+    "tck_shi_jie_info": "限1次，扣1点体力额外获得1个回合，期间可以把所有手牌当为飞刀。（只能用3次）",
+    "tck_yue_shen_zhi_zhong": "月神之钟",
+    "tck_yue_shen_zhi_zhong_info": "飞刀进行判定，为黑则不能闪避。",
+    "tck_sha_ren_wan_ou": "杀人玩偶",
+    "tck_sha_ren_wan_ou_info": "飞刀被闪则对手获得1个“危”标记，2个“危”可以使对手扣1点体力。",
+    "tck_ke_nan": "克男",
+    "tck_ke_nan_info": "你对男性用牌其需弃1张牌，你对男性造成伤害+1。",
+    "tck_hu_you": "护佑",
+    "tck_hu_you_info": "受到伤害判定，若为红色，取消之，你可以判定2次。",
     "tck_Make": "Make",
     "tck_Make_info": "你的杀可当闪用，你的闪可当杀用，你的闪杀可当杀或闪用，你的桃类基本牌可当酒类基本牌用，反之也可用。",
     "tck_ling_gan": "灵感",
