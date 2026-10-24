@@ -627,7 +627,7 @@ export const cards = {
         let res = await player.chooseCard("h", true, discardNum).set('prompt', `请弃置${discardNum}张手牌`).forResult()
         await player.discard(res.cards)
         let targetCards = await event.target.getCards("h")
-        await event.target.discard(targetCards)
+        await event.target.discard(player, targetCards)
       }
     },
     "tck_fang_yu_ma": {
@@ -2065,12 +2065,12 @@ export const cards = {
       type: "basic",
       global: ["tck_card_piao_skill"]
     },
-    "tck_fei_ji": {
-      image: "ext:TCK/imgs/cards/tck_fei_ji.png",
+    "tck_card_fei_ji": {
+      image: "ext:TCK/imgs/cards/tck_card_fei_ji.png",
       fullskin: true,
       type: "equip",
       subtype: "equip5",
-      skills: ["tck_fei_ji_skill"],
+      skills: ["tck_card_fei_ji_skill"],
       global: "tck_zou_wei_shang_ji_effect"
     },
     "tck_lan_se_xiu_gai_qi": {
@@ -2113,7 +2113,7 @@ export const cards = {
         const gain = result.moved[1]
         await event.target.gain(gain, "gain")
         game.washCardNoWithDiscard(result.moved[0])
-        await event.target.addMark('tck_fei_ji_piao_mark')
+        await event.target.addMark('tck_card_fei_ji_piao_mark')
       }
     },
     "tck_shan_mang": {
@@ -2577,14 +2577,14 @@ export const cards = {
         }
       }
     },
-    "tck_fei_ji_skill": {
+    "tck_card_fei_ji_skill": {
       equipSkill: true,
       enable: "phaseUse",
       filter(event, player) {
-        return player.hasMark("tck_fei_ji_piao_mark")
+        return player.hasMark("tck_card_fei_ji_piao_mark")
       },
       async content(event, trigger, player) {
-        await player.removeMark("tck_fei_ji_piao_mark", 1)
+        await player.removeMark("tck_card_fei_ji_piao_mark", 1)
         player.storage.tck_zou_wei_shang_ji = player.hp
         await player.rest()
       }
@@ -2635,11 +2635,11 @@ export const cards = {
           await next.forResult()
 
           await player.discard(piao)
-          await player.addMark('tck_fei_ji_piao_mark', 1)
+          await player.addMark('tck_card_fei_ji_piao_mark', 1)
         }
       }
     },
-    "tck_fei_ji_piao_mark": {
+    "tck_card_fei_ji_piao_mark": {
       ruleSkill: true,
       intro: {
         content: "当前有#张飞机票"
@@ -4656,11 +4656,11 @@ export const cards = {
     "tck_shan_mang_info": "此牌可需拟两种自定义闪牌。（用2次后弃置之）",
     "tck_lan_se_xiu_gai_qi": "蓝色修改器",
     "tck_lan_se_xiu_gai_qi_info": "来一发（票）<br/>丢弃1张手牌，可以从牌堆顶选4取2，选完对卡组进行洗切并获得一张飞机票。",
-    "tck_fei_ji": "飞机",
-    "tck_fei_ji_info": "逃出游戏一回合，需1张飞机票。",
-    "tck_fei_ji_skill": "飞机",
-    "tck_fei_ji_skill_info": "逃出游戏一回合，需1张飞机票。",
-    "tck_fei_ji_piao_mark": "飞机票",
+    "tck_card_fei_ji": "飞机",
+    "tck_card_fei_ji_info": "逃出游戏一回合，需1张飞机票。",
+    "tck_card_fei_ji_skill": "飞机",
+    "tck_card_fei_ji_skill_info": "逃出游戏一回合，需1张飞机票。",
+    "tck_card_fei_ji_piao_mark": "飞机票",
     "tck_card_piao": "票",
     "tck_card_piao_info": "抽到弃2张牌，得一张飞机票。",
     "tck_card_piao_skill": "票",
@@ -5041,7 +5041,7 @@ export const cards = {
     ['club', 8, 'wuxie', 'tck_kanpo_yang'],
     ['club', 12, 'wuxie', 'tck_kanpo_yang'],
     ["club", 9, 'tck_lan_se_xiu_gai_qi'],
-    ["club", 13, 'tck_fei_ji'],
+    ["club", 13, 'tck_card_fei_ji'],
     ["spade", 6, 'tck_card_piao'],
     ["club", 7, 'tck_card_piao'],
     ["diamond", 8, 'tck_card_piao'],

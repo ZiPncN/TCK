@@ -30,6 +30,9 @@ const groups = [
   { id: "tck_group_ou", short: "偶", name: "偶", config: { color: "", image: "", } },
   { id: "tck_group_fang", short: "方", name: "方", config: { color: "", image: "", } },
   { id: "tck_group_Z", short: "Z", name: "Z", config: { color: "", image: "extension/TCK/imgs/groups/tck_group_Z.jpg", } },
+  { id: "tck_group_ling", short: "灵", name: "灵", config: { color: "", image: "", } },
+  { id: "tck_group_shui", short: "水", name: "水", config: { color: "", image: "", } },
+  { id: "tck_group_mo", short: "魔", name: "魔", config: { color: "", image: "", } },
 ]
 
 export default groups

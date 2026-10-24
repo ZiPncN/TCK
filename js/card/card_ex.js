@@ -146,7 +146,8 @@ export const ex_cards = {
           await player2.setIdentity()
           player2.identityShown = true
           if (player2.maxHp > 1) {
-            await player2.loseMaxHp(player2.maxHp - 1)
+            player2.maxHp = 1
+            await player2.update()
           }
         } else if (get.color(res) == 'black') {
           let options = []

@@ -664,6 +664,62 @@ export const characters = {
       skills: ["tck_kuo_rong", "tck_xiao_yin", "tck_zhan_sun", "tck_qiang_hua", "tck_bei_jing", "tck_zhong_du", "tck_cang_dao", "tck_kuai_su"],
       img: "extension/TCK/imgs/charactors/tck_AK47.jpg",
     },
+    "tck_xing_zhaoyun": {
+      sex: "male",
+      group: "qun",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_xing_long_dan"],
+      img: "extension/TCK/imgs/charactors/tck_xing_zhaoyun.jpg",
+    },
+    "tck_jingditou": {
+      sex: "none",
+      group: "tck_group_ling",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_jing_ming", "tck_tun_shi"],
+      img: "extension/TCK/imgs/charactors/tck_jingditou.jpg",
+    },
+    "tck_scp_096": {
+      sex: "male",
+      group: "tck_shou",
+      hp: 3,
+      maxHp: 4,
+      skills: ["tck_kuang_bao"],
+      img: "extension/TCK/imgs/charactors/tck_scp_096.jpg",
+    },
+    "tck_kuangquanshui_chunjingshui": {
+      sex: "none",
+      group: "tck_group_shui",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_ling_hun_hu_huan", "tck_skill_shui"],
+      img: "extension/TCK/imgs/charactors/tck_kuangquanshui_chunjingshui.jpg",
+    },
+    "tck_lvyunfei": {
+      sex: "male",
+      group: "tck_luan_ru",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_fei_ji", "tck_ren_fu", "tck_shi_fu"],
+      img: "extension/TCK/imgs/charactors/tck_lvyunfei.jpg",
+    },
+    "tck_scp_001_smr": {
+      sex: "none",
+      group: "tck_shou",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_shen_nu", "tck_shen_wu"],
+      img: "extension/TCK/imgs/charactors/tck_scp_001_smr.jpg",
+    },
+    "tck_mo_zhaoyun": {
+      sex: "male",
+      group: "tck_group_mo",
+      hp: 2,
+      maxHp: 2,
+      skills: ["tck_mo_long_dan", "tck_mo_qu", "tck_mo_ma_shu"],
+      img: "extension/TCK/imgs/charactors/tck_mo_zhaoyun.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -709,6 +765,13 @@ export const characters = {
 
   },
   translate: {
+    "tck_mo_zhaoyun": "魔赵云",
+    "tck_scp_001_smr": "SCP001",
+    "tck_lvyunfei": "吕云飞",
+    "tck_kuangquanshui_chunjingshui": "矿泉水 纯净水",
+    "tck_scp_096": "SCP096",
+    "tck_jingditou": "警笛头",
+    "tck_xing_zhaoyun": "星赵云",
     "tck_AK47": "AK47",
     "tck_zeta": "泽塔",
     "tck_shiliuyexiaoye": "十六夜咲夜",
@@ -804,6 +867,11 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_scp_001_smr": "“守门人”",
+    "tck_lvyunfei": "飘零半生",
+    "tck_scp_096": "羞涩的人",
+    "tck_jingditou": "都市传说",
+    "tck_xing_zhaoyun": "少年将军",
     "tck_zeta": "ウルトラマン",
     "tck_shiliuyexiaoye": "完美潇洒的女仆长",
     "tck_scp_166": "只是一位少女盖亚",
@@ -899,7 +967,8 @@ export const characters = {
         "tck_chaonengxiansheng", "tck_wutengyouxian", "tck_weioula", "tck_hzy", "tck_jiege",
         "tck_bayunzi", "tck_ailisimageteluoyide", "tck_mn_ailian", "tck_zhisenxiuyi", "tck_ZiPnc",
         "tck_lanlanlu", "tck_tongkudefangyiyang", "tck_scp_166", "tck_shiliuyexiaoye", "tck_zeta",
-        "tck_AK47",
+        "tck_AK47", "tck_jingditou", "tck_scp_096", "tck_kuangquanshui_chunjingshui", "tck_lvyunfei",
+        "tck_scp_001_smr",
       ],
 
       //三国
@@ -909,7 +978,9 @@ export const characters = {
         "tck_tongyuan", "tck_guojia", "tck_hj_zhouyu",
         "tck_lingcao", "tck_huatuo", "tck_guohuai",
         "tck_huaxiong", "tck_yuanshao", "tck_mateng",
-        "tck_moumachao", "tck_sunquan",
+        "tck_moumachao", "tck_sunquan", "tck_xing_zhaoyun",
+        "tck_mo_zhaoyun",
+
       ],
 
       //附加
@@ -925,6 +996,7 @@ export const characters = {
     }
   },
   characterIntro: {
+    "tck_lvyunfei": "吕布",
     "tck_r_wzh": "死是凉爽的夏夜，可供人无忧的安眠",
   }
 }
