@@ -720,6 +720,22 @@ export const characters = {
       skills: ["tck_mo_long_dan", "tck_mo_qu", "tck_mo_ma_shu"],
       img: "extension/TCK/imgs/charactors/tck_mo_zhaoyun.jpg",
     },
+    "tck_jie_scp_173": {
+      sex: "none",
+      group: "tck_shou",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_jie_zha_yan"],
+      img: "extension/TCK/imgs/charactors/tck_jie_scp_173.jpg",
+    },
+    "tck_xuyu": {
+      sex: "male",
+      group: "wei",
+      hp: 4,
+      maxHp: 4,
+      skills: ["reyingzi", "tck_xy_luo_yi"],
+      img: "extension/TCK/imgs/charactors/tck_xuyu.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -765,6 +781,9 @@ export const characters = {
 
   },
   translate: {
+    "tck_xuyu": "许瑜",
+    "tck_jie_scp_173": "界SCP173",
+    "tck_jie_scp_173_prefix": "界",
     "tck_mo_zhaoyun": "魔赵云",
     "tck_scp_001_smr": "SCP001",
     "tck_lvyunfei": "吕云飞",
@@ -867,6 +886,8 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_xuyu": "虎痴大都督",
+    "tck_jie_scp_173": "雕像",
     "tck_scp_001_smr": "“守门人”",
     "tck_lvyunfei": "飘零半生",
     "tck_scp_096": "羞涩的人",
@@ -968,7 +989,7 @@ export const characters = {
         "tck_bayunzi", "tck_ailisimageteluoyide", "tck_mn_ailian", "tck_zhisenxiuyi", "tck_ZiPnc",
         "tck_lanlanlu", "tck_tongkudefangyiyang", "tck_scp_166", "tck_shiliuyexiaoye", "tck_zeta",
         "tck_AK47", "tck_jingditou", "tck_scp_096", "tck_kuangquanshui_chunjingshui", "tck_lvyunfei",
-        "tck_scp_001_smr",
+        "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu",
       ],
 
       //三国

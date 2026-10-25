@@ -145,6 +145,7 @@ export const ex_cards = {
           // if (player2.identity == 'zhu') player2.identity = 'zhong'
           await player2.setIdentity()
           player2.identityShown = true
+          player2.changeTckTrueMe(player, player2)
           if (player2.maxHp > 1) {
             player2.maxHp = 1
             await player2.update()

@@ -202,7 +202,7 @@ export const skills = {
         return get.name(event.card) == 'shan' && event.player != player && event.player.countMark("tck_zhu_shi") >= 4
       },
       async content(event, trigger, player) {
-        await trigger.player.loseHp(trigger.player.hp);
+        await trigger.player.loseHp(trigger.player.hp)
         await trigger.player.clearMark("tck_zhu_shi")
       }
     },
@@ -3259,7 +3259,7 @@ export const skills = {
     },
     "tck_rkshs_xin_shan": {
       trigger: {
-        source: "damageBefore"
+        source: "damageBegin"
       },
       forced: true,
       filter(event, player) {
@@ -3272,7 +3272,7 @@ export const skills = {
       subSkill: {
         "1": {
           trigger: {
-            player: "damageBefore"
+            player: "damageBegin"
           },
           forced: true,
           filter(event, player) {
@@ -4915,10 +4915,11 @@ export const skills = {
       },
       forced: true,
       filter(event, player) {
+        console.log(event)
         if (event.name == 'damage' && (!event.source || event.source == player)) {
           return false
         }
-        if (event.name == '"useCardToTarget"' && (!event.player || event.player == player)) {
+        if (event.name == 'useCardToTarget' && (!event.player || event.player == player)) {
           return false
         }
         return !player.hasSkill("tck_kuang_bao_effect1") || !player.hasSkill("tck_kuang_bao_effect2")
@@ -5186,7 +5187,6 @@ export const skills = {
         },
       },
     },
-
     "tck_mo_long_dan": {
       group: ["tck_mo_long_dan_sha", "tck_mo_long_dan_shan"],
       subSkill: {
@@ -5322,6 +5322,99 @@ export const skills = {
         },
         globalFrom(from, to, distance) {
           return distance - 1;
+        }
+      }
+    },
+    "tck_jie_zha_yan": {
+      trigger: {
+        global: "phaseZhunbei"
+      },
+      filter(event, player) {
+        return event.player != player
+      },
+      async content(event, trigger, player) {
+        const target = trigger.player
+        const res = await player.judge(card => {
+          if (get.suit(card) == 'club') return 1
+          return -1
+        }).forResult()
+        if (get.suit(res) == 'club') {
+          if (player.distanceTo(target) > 1) {
+            const res1 = await player.chooseControl(["上家", "下家"], true).set('prompt', '请选择移动的位置').forResult()
+            if (res1.control == '上家') {
+              game.broadcastAll(
+                function (target1, target2) {
+                  game.swapSeat(target1, target2, false, true)
+                },
+                player,
+                target
+              )
+            } else if (res1.control == '下家') {
+              game.broadcastAll(
+                function (target1, target2) {
+                  game.swapSeat(target1, target2, false, true)
+                },
+                player,
+                target.getNext()
+              )
+            }
+          } else if (player.distanceTo(target) <= 1) {
+            await target.loseHp(target.hp);
+          }
+        }
+      },
+    },
+    "tck_xy_luo_yi": {
+      trigger: {
+        player: "phaseDrawBegin2"
+      },
+      filter(event, player) {
+        return !event.numFixed;
+      },
+      direct: true,
+      async content(event, trigger, player) {
+        const list = ["多摸1张牌", "少摸1张牌", "取消"];
+        const result = await player.chooseControl(list).set("prompt", get.prompt2("tck_xy_luo_yi")).forResult();
+        if (result.control == "多摸1张牌") {
+          trigger.num++
+          await player.addTempSkill("tck_xy_luo_yi_1", { player: "phaseJieshuAfter" });
+        } else if (result.control == "少摸1张牌") {
+          trigger.num--
+          await player.addTempSkill("tck_xy_luo_yi_2", { player: "phaseJieshuAfter" });
+        }
+      },
+      subSkill: {
+        "1": {
+          mark: true,
+          intro: {
+            content: "造成的伤害-1"
+          },
+          sub: true,
+          sourceSkill: "tck_xy_luo_yi",
+          charlotte: true,
+          forced: true,
+          trigger: {
+            source: "damageBegin"
+          },
+          async content(event, trigger, player) {
+            trigger.num--
+          },
+        },
+        "2": {
+          mark: true,
+          intro: {
+            content: "造成的伤害+1"
+          },
+          sub: true,
+          sourceSkill: "tck_xy_luo_yi",
+          charlotte: true,
+          forced: true,
+          trigger: {
+            source: "damageBegin"
+          },
+          async content(event, trigger, player) {
+            trigger.num++
+          },
         }
       }
     },
@@ -5816,7 +5909,7 @@ export const skills = {
         player.markSkill(event.name)
       }
     },
-    // todo 交换控制权（随从由玩家自己操作）
+    // 交换控制权（随从由玩家自己操作）
     "tck_swap_control": {
       firstDo: true,
       trigger: {
@@ -5830,10 +5923,10 @@ export const skills = {
         if (event.autochoose && event.autochoose()) {
           return false;
         }
-        if (lib.filter.wuxieSwap(event)) {
+        if (lib.filter.tckWuxieSwap(event)) {
           return false;
         }
-        if (_status.auto || !player.isUnderControl()) {
+        if (_status.auto || !player.isTckUnderControl()) {
           return false;
         }
         return true;
@@ -5842,8 +5935,78 @@ export const skills = {
         game.swapPlayerAuto(player);
       }
     },
+    "tck_control_die": {
+      trigger: {
+        player: "dieBegin"
+      },
+      lastDo: true,
+      charlotte: true,
+      forceDie: true,
+      forced: true,
+      silent: true,
+      popup: false,
+      filter(event, player) {
+        return !!player._tckTrueMe && player != player._tckTrueMe[0]
+      },
+      async content(event, trigger, player) {
+        player.removeSkill(event.name);
+      },
+      onremove(player) {
+        var arr = player._tckTrueMe;
+        delete player._tckTrueMe;          // 先清，避免重入
+
+        if (!Array.isArray(arr)) return;   // 统一处理 undefined，后面不再判
+
+        // 从其他角色的真身列表里移除 player
+        for (const p of arr) {
+          if (p === player) continue;
+          if (!Array.isArray(p._tckTrueMe)) continue;   // p._tckTrueMe 可能 undefined，必要
+          const index = p._tckTrueMe.indexOf(player);
+          if (index !== -1) p._tckTrueMe.splice(index, 1);
+        }
+
+        if (player !== game.me || !arr.length) return;
+
+        var master = arr[0];
+        var target;
+
+        if (!master.isDead()) {
+          // 规则1：主人活着 → 选主人
+          target = master;
+        } else {
+          // 规则2：主人死了 → 从其他人里随机挑一个活着的
+          var alive = [];
+          for (var i = 0; i < arr.length; i++) {
+            var q = arr[i];
+            if (q === player) continue;
+            if (q.isDead()) continue;
+            alive.push(q);
+          }
+          if (alive.length) {
+            target = alive[Math.floor(Math.random() * alive.length)];
+          } else {
+            // 规则3：全都死了 → 仍然选主人
+            target = master;
+          }
+        }
+
+        if (!target || target === player) return;
+        if (!game.notMe) {
+          game.swapPlayerAuto(target);
+        } else {
+          delete game.notMe;
+        }
+        if (_status.auto) {
+          ui.click.auto();
+        }
+      }
+    },
   },
   translate: {
+    "tck_xy_luo_yi": "裸衣",
+    "tck_xy_luo_yi_info": "你可以选择1项：①多摸1张牌，本回合造成伤害-1.<br/>②少摸1张牌，本回合造成伤害+1。",
+    "tck_jie_zha_yan": "眨眼",
+    "tck_jie_zha_yan_info": "每名角色回合开始时需判定，若结果为梅花，则：<br/>①若其与你距离为1，则你令其濒死。<br/>②若其与你距离不为1，则你移动至其上家或下家。",
     "tck_mo_long_dan": "龙胆",
     "tck_mo_long_dan_info": "你任意一张牌都可光杀或闪。",
     "tck_mo_qu": "渠",

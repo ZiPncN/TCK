@@ -171,8 +171,126 @@ export default function () {
                 player2.identity = this.identity
                 player2.side = this.side
                 await player2.setIdentity()
+                player2.changeTckTrueMe(this, player2)
                 player2.identityShown = true
                 return player2
+            }
+            /**
+             * 切换操控权
+             * @tip 数组第一位的永远是主人
+             * @param {*} source  召唤者
+             * @param {*} player  新召唤的玩家
+             */
+            lib.element.player.changeTckTrueMe = function (source, player) {
+                // 保证 source 有数组；source 自己是根时，它就是主人
+                if (!Array.isArray(source._tckTrueMe)) source._tckTrueMe = [source];
+
+                // 主人 = 数组第 0 位
+                const master = source._tckTrueMe[0];
+
+                // 快照，避免遍历时被修改
+                const members = source._tckTrueMe.slice();
+
+                // 把 player 加入 source 的列表（去重）
+                if (!source._tckTrueMe.includes(player)) {
+                    source._tckTrueMe.push(player);
+                }
+
+                // 初始化 player 的数组（主人是 master），必须在任何使用之前
+                if (!Array.isArray(player._tckTrueMe)) player._tckTrueMe = [source];
+                // 确保 player 的数组里也有主人（幂等）
+                if (!player._tckTrueMe.includes(master)) player._tckTrueMe.unshift(master);
+
+                // 让所有成员和 player 互相加入对方列表（跳过 player 自己）
+                for (const p of members) {
+                    if (p === player) continue;              // 别把自己加进自己
+
+                    if (!Array.isArray(p._tckTrueMe)) p._tckTrueMe = [master];
+                    if (!p._tckTrueMe.includes(player)) p._tckTrueMe.push(player);
+
+                    if (!player._tckTrueMe.includes(p)) player._tckTrueMe.push(p);
+                }
+            }
+            lib.element.player.isTckUnderControl = function (self, me) {
+                me = me || game.me;
+
+                // 真身列表（数组）；没有就退化成 [this]
+                var trues = (Array.isArray(this._tckTrueMe) && this._tckTrueMe.length)
+                    ? this._tckTrueMe
+                    : [this];
+
+                // 任意一个真身 isMad → 不算受控
+                if (trues.some(function (t) { return t && t.isMad(); }) || game.notMe) {
+                    return false;
+                }
+
+                if (this === me) {
+                    if (self) {
+                        return true;
+                    }
+                    return false;
+                }
+
+                // 核心：me 是否在这个真身数组里
+                if (trues.includes(me)) {
+                    return true;
+                }
+
+                if (_status.connectMode) {
+                    return false;
+                }
+
+                if (lib.config.mode == "versus") {
+                    if (_status.mode == "three") {
+                        return this.side == me.side;
+                    }
+                    if (_status.mode == "standard") {
+                        return lib.storage.single_control && this.side == me.side;
+                    }
+                    if (_status.mode == "four") {
+                        return get.config("four_phaseswap") && this.side == me.side;
+                    }
+                    if (_status.mode == "two") {
+                        return get.config("two_phaseswap") && this.side == me.side;
+                    }
+                    return false;
+                } else if (lib.config.mode == "boss") {
+                    if (me.side) {
+                        return false;
+                    }
+                    return this.side == me.side && get.config("single_control");
+                } else if (game.chess) {
+                    if (lib.config.mode == "chess") {
+                        if (_status.mode == "combat" && !get.config("single_control")) {
+                            return false;
+                        }
+                    }
+                    return this.side == me.side;
+                }
+                return false;
+            }
+            lib.filter.tckWuxieSwap = function (event) {
+                if (event.type !== "wuxie") {
+                    return false;
+                }
+                if (ui.wuxie?.classList.contains("glow")) {
+                    return true;
+                }
+                if (ui.tempnowuxie?.classList.contains("glow") && event.state > 0) {
+                    const triggerEvent = event.getTrigger();
+                    if (triggerEvent) {
+                        if (ui.tempnowuxie._origin === triggerEvent.parent.id) {
+                            return true;
+                        }
+                    } else if (ui.tempnowuxie._origin === _status.event.id2) {
+                        return true;
+                    }
+                }
+                if (!lib.config.wuxie_self) {
+                    return false;
+                }
+                const infoMap = event.info_map;
+                return Boolean(infoMap.player && infoMap.player.isTckUnderControl(true) && !infoMap.player.hasSkillTag("noautowuxie") && (!infoMap.targets || infoMap.targets.length <= 1) && !infoMap.noai);
             }
             //检测当前地图
             get.land = function (name) {
@@ -333,8 +451,6 @@ export default function () {
             // 添加JOCKER : Number.MAX_VALUE
             lib.numstrList.set(Number.MAX_VALUE, "JOCKER")
 
-            // 添加语音
-            game.addGlobalSkill("tck_send_skill_voice")
             // 添加全局技能
             globalSkills.forEach(skill => game.addGlobalSkill(skill))
         },
@@ -460,11 +576,14 @@ export default function () {
         // 扩展选项
         config: {},
         package: {
-            intro: "代码：ZPN",
+            intro: [
+                '代码：ZPN',
+                '<a href="https://github.com/ZiPncN/TCK">点击前往TCKGithub仓库</a>',
+            ].join('<br/>'),
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.3",
+            version: "1.4",
         },
         files: {},
         connect: true
