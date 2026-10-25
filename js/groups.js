@@ -33,6 +33,7 @@ const groups = [
   { id: "tck_group_ling", short: "灵", name: "灵", config: { color: "", image: "", } },
   { id: "tck_group_shui", short: "水", name: "水", config: { color: "", image: "", } },
   { id: "tck_group_mo", short: "魔", name: "魔", config: { color: "", image: "", } },
+  { id: "tck_group_yao", short: "妖", name: "妖", config: { color: "", image: "", } },
 ]
 
 export default groups

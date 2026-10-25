@@ -5418,6 +5418,134 @@ export const skills = {
         }
       }
     },
+    "tck_feng_zhu": {
+      enable: "phaseUse",
+      usable: 1,
+      filterTarget(card, player, target) {
+        return player != target
+      },
+      filterCard: true,
+      selectCard: -1,
+      filter(event, player) {
+        return player.hasCards("h")
+      },
+      async content(event, trigger, player) {
+        await event.target.loseMaxHp(1)
+      },
+    },
+    "tck_ji_feng": {
+      enable: "phaseUse",
+      filterTarget(card, player, target) {
+        return player != target
+      },
+      filter(event, player) {
+        if (
+          !player.hasCards("he", card => get.suit(card) == "diamond") ||
+          !player.hasCards("he", card => get.suit(card) == "heart") ||
+          !player.hasCards("he", card => get.suit(card) == "spade") ||
+          !player.hasCards("he", card => get.suit(card) == "club")
+        ) {
+          return false
+        }
+        return true
+      },
+      filterCard(card, player) {
+        return !ui.selected.cards.some((cardx) => get.suit(cardx, player) == get.suit(card, player));
+      },
+      selectCard: 4,
+      complexCard: true,
+      complexSelect: true,
+      async content(event, trigger, player) {
+        await event.target.loseMaxHp(1)
+      },
+    },
+    "tck_bei_shen_ming_juan_gu_zhi_ren": {
+      forced: true,
+      trigger: {
+        source: "damageBegin"
+      },
+      filter(event, player) {
+        return get.name(event.card) == 'sha' && event.player.maxHp <= player.maxHp
+      },
+      async content(event, trigger, player) {
+        trigger.num++
+      },
+    },
+    "tck_jie_bei_ge": {
+      trigger: { global: "damageEnd" },
+      filter(event, player) {
+        return event.source && event.player.classList.contains("dead") == false && player.countCards("he");
+      },
+      direct: true,
+      async content(event, trigger, player) {
+        let result;
+        const next = player.chooseToDiscard("he", get.prompt2("tck_jie_bei_ge", trigger.player));
+        const check = lib.skill.beige.checkx(trigger, player);
+        next.set("ai", function (card) {
+          if (_status.event.goon) {
+            return 8 - get.value(card);
+          }
+          return 0;
+        });
+        next.set("logSkill", "tck_jie_bei_ge");
+        next.set("goon", check);
+        result = await next.forResult();
+        if (result.bool) {
+          result = await trigger.player.judge().forResult();
+        } else {
+          return;
+        }
+        switch (result.suit) {
+          case "heart":
+            trigger.player.recover(trigger.num);
+            break;
+          case "diamond":
+            trigger.player.draw(3);
+            break;
+          case "club":
+            await trigger.source.chooseToDiscard("he", 2, true);
+            break;
+          case "spade":
+            trigger.source.turnOver();
+            break;
+        }
+      },
+    },
+    "tck_jie_duan_chang": {
+      trigger: { player: "die" },
+      forced: true,
+      forceDie: true,
+      skillAnimation: true,
+      filter(event) {
+        return event.source && event.source.isIn();
+      },
+      async content(event, trigger, player) {
+        trigger.source.clearSkills(true)
+      },
+      logTarget: "source",
+      ai: {
+        maixie_defend: true,
+        threaten(player, target) {
+          if (target.hp == 1) {
+            return 0.2;
+          }
+          return 1.5;
+        },
+        effect: {
+          target(card, player, target, current) {
+            if (!target.hasFriend()) {
+              return;
+            }
+            if (target.hp <= 1 && get.tag(card, "damage")) {
+              if (player.hasSkillTag("jueqing", false, target)) {
+                return 3;
+              }
+              return [1, 0, 0, -3 * get.threaten(player)];
+            }
+          }
+        }
+      }
+    },
 
     //重制版
     "tck_r_ji_rou": {
@@ -6003,6 +6131,16 @@ export const skills = {
     },
   },
   translate: {
+    "tck_jie_bei_ge": "悲歌",
+    "tck_jie_bei_ge_info": "对受伤者，弃一张牌判定，♥回复伤害量，♦摸3张（自己），♣弃二张（来源），♥（翻面对方）。",
+    "tck_jie_duan_chang": "断肠",
+    "tck_jie_duan_chang_info": "你死，对手没技能。",
+    "tck_feng_zhu": "风祝",
+    "tck_feng_zhu_info": "丢弃所有手牌，对敌方生命上限造成1点伤害。[限1次]",
+    "tck_ji_feng": "祭风",
+    "tck_ji_feng_info": "丢弃4个相同花色，对敌方生命上限造成1点伤害。",
+    "tck_bei_shen_ming_juan_gu_zhi_ren": "被神明眷顾之人",
+    "tck_bei_shen_ming_juan_gu_zhi_ren_info": "敌方生命上限若小于等于自己，杀伤害+1。",
     "tck_xy_luo_yi": "裸衣",
     "tck_xy_luo_yi_info": "你可以选择1项：①多摸1张牌，本回合造成伤害-1.<br/>②少摸1张牌，本回合造成伤害+1。",
     "tck_jie_zha_yan": "眨眼",

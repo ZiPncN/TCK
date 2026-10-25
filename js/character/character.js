@@ -736,6 +736,22 @@ export const characters = {
       skills: ["reyingzi", "tck_xy_luo_yi"],
       img: "extension/TCK/imgs/charactors/tck_xuyu.jpg",
     },
+    "tck_dongfengguzaomiao": {
+      sex: "female",
+      group: "tck_group_yao",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_feng_zhu", "tck_ji_feng", "tck_bei_shen_ming_juan_gu_zhi_ren"],
+      img: "extension/TCK/imgs/charactors/tck_dongfengguzaomiao.jpg",
+    },
+    "tck_jie_caiwenji": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_jie_bei_ge", "tck_jie_duan_chang"],
+      img: "extension/TCK/imgs/charactors/tck_jie_caiwenji.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -781,6 +797,9 @@ export const characters = {
 
   },
   translate: {
+    "tck_jie_caiwenji": "界蔡文姬",
+    "tck_jie_caiwenji_prefix": "界",
+    "tck_dongfengguzaomiao": "东风谷早苗",
     "tck_xuyu": "许瑜",
     "tck_jie_scp_173": "界SCP173",
     "tck_jie_scp_173_prefix": "界",
@@ -886,6 +905,7 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_dongfengguzaomiao": "祭祀风之人",
     "tck_xuyu": "虎痴大都督",
     "tck_jie_scp_173": "雕像",
     "tck_scp_001_smr": "“守门人”",
@@ -989,7 +1009,7 @@ export const characters = {
         "tck_bayunzi", "tck_ailisimageteluoyide", "tck_mn_ailian", "tck_zhisenxiuyi", "tck_ZiPnc",
         "tck_lanlanlu", "tck_tongkudefangyiyang", "tck_scp_166", "tck_shiliuyexiaoye", "tck_zeta",
         "tck_AK47", "tck_jingditou", "tck_scp_096", "tck_kuangquanshui_chunjingshui", "tck_lvyunfei",
-        "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu",
+        "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu", "tck_dongfengguzaomiao",
       ],
 
       //三国
@@ -1000,7 +1020,7 @@ export const characters = {
         "tck_lingcao", "tck_huatuo", "tck_guohuai",
         "tck_huaxiong", "tck_yuanshao", "tck_mateng",
         "tck_moumachao", "tck_sunquan", "tck_xing_zhaoyun",
-        "tck_mo_zhaoyun",
+        "tck_mo_zhaoyun", "tck_jie_caiwenji",
 
       ],
 
@@ -1017,6 +1037,7 @@ export const characters = {
     }
   },
   characterIntro: {
+    "tck_dongfengguzaomiao": "PS.所有生命上限损伤无法回复",
     "tck_lvyunfei": "吕布",
     "tck_r_wzh": "死是凉爽的夏夜，可供人无忧的安眠",
   }
