@@ -6411,7 +6411,7 @@ export const skills = {
     },
 
     //============================================全局技能============================================
-    // 添加语音
+    /* // 添加语音
     "tck_send_skill_voice": {
       ruleSkill: true,
       charlotte: true,
@@ -6455,7 +6455,7 @@ export const skills = {
         }
         player.markSkill(event.name)
       }
-    },
+    }, */
     // 交换控制权（随从由玩家自己操作）
     "tck_swap_control": {
       firstDo: true,

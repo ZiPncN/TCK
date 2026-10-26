@@ -58,6 +58,82 @@ export default function () {
                     }
                 });
             }
+            /** 快捷播放技能语音 */
+            ui.skillVoiceButton = ui.create.system(
+                "技能语音",
+                null,
+                true
+            )
+            ui.click.skillVoice = () => {
+                var player = game.me;
+                if (!player) {
+                    return
+                }
+                const skills = player.getSkills(false, false)
+                let allVoiceList = []
+                // 构建所有的技能：台词
+                skills.forEach(skill => {
+                    const voiceMap = get.Audio.skill({ skill, player: player.name }).audioList
+                    allVoiceList.push(...voiceMap)
+                })
+                if (allVoiceList.length == 0) return
+                let options = allVoiceList.map(voice => voice.text)
+                ui.system1.classList.add("shown");
+                ui.system2.classList.add("shown");
+                var uiintro = ui.create.dialog("hidden");
+                uiintro.listen(function (e) {
+                    e.stopPropagation();
+                });
+                var list3 = ui.create.div(".caption");
+                if (get.is.phoneLayout()) {
+                    list3.style.height = "60px";
+                } else {
+                    list3.style.height = "100px";
+                }
+                list3.style.overflow = "scroll";
+                lib.setScroll(list3);
+                uiintro.add(list3);
+                uiintro.style.height = uiintro.content.scrollHeight + "px";
+
+                for (var i = 0; i < options.length; i++) {
+                    var node = ui.create.div(".text.chat", function () {
+                        var str = this.innerHTML;
+                        const skill = allVoiceList.find(voice => voice.text == str)
+                        if (!player) {
+                            if (game.connectPlayers) {
+                                if (game.online) {
+                                    for (var i2 = 0; i2 < game.connectPlayers.length; i2++) {
+                                        if (game.connectPlayers[i2].playerid == game.onlineID) {
+                                            player = game.connectPlayers[i2];
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    player = game.connectPlayers[0];
+                                }
+                            }
+                        }
+                        if (!player) {
+                            return;
+                        }
+                        if (!skill.text) {
+                            return;
+                        }
+                        if (game.online) {
+                            game.send("chat", game.onlineID, skill.text);
+                        } else {
+                            player.chat(skill.text);
+                        }
+                        game.broadcastAll(file => game.playAudio(file), skill.file)
+                    });
+                    node.innerHTML = options[i];
+                    list3.appendChild(node);
+                }
+                list3.scrollTop = list3.scrollHeight;
+                uiintro._heightfixed = true;
+                return uiintro;
+            }
+            lib.setPopped(ui.skillVoiceButton, ui.click.skillVoice, 200);
         },
         /* 游戏数据加载后、界面加载前
          * config为本扩展选项、pack为本扩展包
