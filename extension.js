@@ -269,6 +269,22 @@ export default function () {
                 }
                 return false;
             }
+            /**
+             * 获取玩家花色数
+             * @param {*} position 区域 
+             * @returns 
+             */
+            lib.element.player.getSuitNum = function (position) {
+                const cards = this.getCards(position)
+                const suits = []
+                for (let i = 0; i < cards.length; i++) {
+                    const suit = get.suit(cards[i])
+                    if (!suits.includes(suit)) {
+                        suits.push(suit)
+                    }
+                }
+                return suits.length
+            }
             lib.filter.tckWuxieSwap = function (event) {
                 if (event.type !== "wuxie") {
                     return false;

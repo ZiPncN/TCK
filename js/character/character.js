@@ -752,6 +752,70 @@ export const characters = {
       skills: ["tck_jie_bei_ge", "tck_jie_duan_chang"],
       img: "extension/TCK/imgs/charactors/tck_jie_caiwenji.jpg",
     },
+    "tck_jiubenyamei": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_lie_qi", "tck_xi_nao"],
+      img: "extension/TCK/imgs/charactors/tck_jiubenyamei.jpg",
+    },
+    "tck_jushou": {
+      sex: "male",
+      group: "qun",
+      hp: 4,
+      maxHp: 4,
+      skills: ["jianying", "tck_shi_bei"],
+      img: "extension/TCK/imgs/charactors/tck_jushou.jpg",
+    },
+    "tck_liuzan": {
+      sex: "male",
+      group: "wu",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_fen_yin"],
+      img: "extension/TCK/imgs/charactors/tck_liuzan.jpg",
+    },
+    "tck_weiyan": {
+      sex: "male",
+      group: "shu",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_kuang_gu", "tck_qi_mou"],
+      img: "extension/TCK/imgs/charactors/tck_weiyan.jpg",
+    },
+    "tck_jinkela": {
+      sex: "none",
+      group: "tck_luan_ru",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_mu_chan", "tck_chan_liang"],
+      img: "extension/TCK/imgs/charactors/tck_jinkela.jpg",
+    },
+    "tck_ZiPncdejiaxiangrenwu": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_si_shen", "tck_yu_yan"],
+      img: "extension/TCK/imgs/charactors/tck_ZiPncdejiaxiangrenwu.jpg",
+    },
+    "tck_kuangfu": {
+      sex: "male",
+      group: "tck_luan_ru",
+      hp: 5,
+      maxHp: 5,
+      skills: ["tck_shou_shu"],
+      img: "extension/TCK/imgs/charactors/tck_kuangfu.jpg",
+    },
+    "tck_guiqie": {
+      sex: "male",
+      group: "tck_group_wang",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_yi_dao", "tck_wan_jian", "tck_jian_xin"],
+      img: "extension/TCK/imgs/charactors/tck_guiqie.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -797,6 +861,14 @@ export const characters = {
 
   },
   translate: {
+    "tck_kuangfu": "狂父",
+    "tck_ZiPncdejiaxiangrenwu": "ZiPnc的假想人物",
+    "tck_jinkela": "金坷拉",
+    "tck_weiyan": "魏延",
+    "tck_liuzan": "留赞",
+    "tck_jushou": "沮授",
+    "tck_jiubenyamei": "久本雅美",
+    "tck_guiqie": "鬼切",
     "tck_jie_caiwenji": "界蔡文姬",
     "tck_jie_caiwenji_prefix": "界",
     "tck_dongfengguzaomiao": "东风谷早苗",
@@ -905,6 +977,14 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_kuangfu": "mad father",
+    "tck_ZiPncdejiaxiangrenwu": "奇思妙想",
+    "tck_jinkela": "小麦亩产一千八",
+    "tck_weiyan": "饮血啖肉",
+    "tck_liuzan": "东吴歌王",
+    "tck_jushou": "矢志于北",
+    "tck_jiubenyamei": "创价副会长",
+    "tck_guiqie": "天韧剑",
     "tck_dongfengguzaomiao": "祭祀风之人",
     "tck_xuyu": "虎痴大都督",
     "tck_jie_scp_173": "雕像",
@@ -1009,7 +1089,8 @@ export const characters = {
         "tck_bayunzi", "tck_ailisimageteluoyide", "tck_mn_ailian", "tck_zhisenxiuyi", "tck_ZiPnc",
         "tck_lanlanlu", "tck_tongkudefangyiyang", "tck_scp_166", "tck_shiliuyexiaoye", "tck_zeta",
         "tck_AK47", "tck_jingditou", "tck_scp_096", "tck_kuangquanshui_chunjingshui", "tck_lvyunfei",
-        "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu", "tck_dongfengguzaomiao",
+        "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu", "tck_dongfengguzaomiao", "tck_guiqie",
+        "tck_jiubenyamei", "tck_jinkela", "tck_ZiPncdejiaxiangrenwu", "tck_kuangfu",
       ],
 
       //三国
@@ -1020,7 +1101,8 @@ export const characters = {
         "tck_lingcao", "tck_huatuo", "tck_guohuai",
         "tck_huaxiong", "tck_yuanshao", "tck_mateng",
         "tck_moumachao", "tck_sunquan", "tck_xing_zhaoyun",
-        "tck_mo_zhaoyun", "tck_jie_caiwenji",
+        "tck_mo_zhaoyun", "tck_jie_caiwenji", "tck_jushou",
+        "tck_liuzan", "tck_weiyan",
 
       ],
 
@@ -1037,7 +1119,6 @@ export const characters = {
     }
   },
   characterIntro: {
-    "tck_dongfengguzaomiao": "PS.所有生命上限损伤无法回复",
     "tck_lvyunfei": "吕布",
     "tck_r_wzh": "死是凉爽的夏夜，可供人无忧的安眠",
   }

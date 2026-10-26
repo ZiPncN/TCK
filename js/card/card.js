@@ -113,7 +113,7 @@ export const cards = {
       image: "ext:TCK/imgs/cards/tck_lei_yin_ce_dian.png",
       fullskin: true,
       type: "equip",               // 装备牌
-      subtype: "equip2",           // 武器
+      subtype: "equip2",
       skills: ["tck_lei_yin_ce_dian_skill1", "tck_lei_yin_ce_dian_skill2"],  // 装备技能
     },
     "tck_hu_tao": {
@@ -2910,7 +2910,7 @@ export const cards = {
       filter: function (event, player) {
         if (event.player != player) return false
         if (!lib.filter.targetEnabled({ name: 'tck_card_liang' }, player, event.player)) return false
-        return player.hasUsableCard('tck_card_liang')
+        return player.hasUsableCard('tck_card_liang') || player.hasSkll("tck_chan_liang") || player.hasSkll("tck_chan_liang_liang")
       },
       content: function () {
         event.tck_card_liang = {
@@ -4578,6 +4578,16 @@ export const cards = {
         player: "damageBegin",
       },
       filter(event, player) {
+        if (player.hasSkillTag("unequip2")) {
+          return false;
+        }
+        if (event.source && event.source.hasSkillTag("unequip", false, {
+          name: event.card ? event.card.name : null,
+          target: player,
+          card: event.card
+        })) {
+          return false;
+        }
         return event.nature == "thunder"
       },
       async content(event, trigger, player) {
