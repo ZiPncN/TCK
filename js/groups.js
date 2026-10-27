@@ -35,6 +35,10 @@ const groups = [
   { id: "tck_group_mo", short: "魔", name: "魔", config: { color: "", image: "", } },
   { id: "tck_group_yao", short: "妖", name: "妖", config: { color: "", image: "", } },
   { id: "tck_group_wang", short: "王", name: "王", config: { color: "", image: "", } },
+  { id: "tck_group_dong", short: "懂", name: "懂", config: { color: "", image: "", } },
+  { id: "tck_group_tang", short: "汤", name: "汤", config: { color: "", image: "", } },
+  { id: "tck_group_hu", short: "壶", name: "壶", config: { color: "", image: "", } },
+  { id: "tck_group_yin", short: "阴", name: "阴", config: { color: "", image: "", } },
 ]
 
 export default groups
