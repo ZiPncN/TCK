@@ -872,6 +872,38 @@ export const characters = {
       skills: ["tck_yin_zhi_li", "tck_yang_zhi_li", "tck_lv_cha_zhi_li"],
       img: "extension/TCK/imgs/charactors/tck_zlh.jpg",
     },
+    "tck_faniwaluntai": {
+      sex: "male",
+      group: "tck_jo",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_D4C", "tck_ai_zhi_lie_che"],
+      img: "extension/TCK/imgs/charactors/tck_faniwaluntai.jpg",
+    },
+    "tck_tuixiong": {
+      sex: "female",
+      group: "tck_group_zhuan",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_shui_jiao", "tck_liao_tian"],
+      img: "extension/TCK/imgs/charactors/tck_tuixiong.jpg",
+    },
+    "tck_old_hcl": {
+      sex: "male",
+      group: "tck_jiang",
+      hp: 7,
+      maxHp: 7,
+      skills: ["tck_?", "tck_old_zhong_jian_shang", "tck_tao_zhai"],
+      img: "extension/TCK/imgs/charactors/tck_old_hcl.jpg",
+    },
+    "tck_hsth_ailian": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_wei_zhuang", "tck_jue_qing"],
+      img: "extension/TCK/imgs/charactors/tck_hsth_ailian.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -917,6 +949,10 @@ export const characters = {
 
   },
   translate: {
+    "tck_hsth_ailian": "艾莲",
+    "tck_old_hcl": "胡晨亮",
+    "tck_tuixiong": "退雄",
+    "tck_faniwaluntai": "法尼·瓦伦泰",
     "tck_zlh": "曾龙浩",
     "tck_ljy": "卢晋毅",
     "tck_lcy": "赖城钖",
@@ -1040,6 +1076,10 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_hsth_ailian": "换身体后",
+    "tck_old_hcl": "可恶的中间商",
+    "tck_tuixiong": "性转",
+    "tck_faniwaluntai": "大肿桶",
     "tck_zlh": "☯人",
     "tck_ljy": "超加速",
     "tck_lcy": "黄毛",
@@ -1161,7 +1201,8 @@ export const characters = {
         "tck_AK47", "tck_jingditou", "tck_scp_096", "tck_kuangquanshui_chunjingshui", "tck_lvyunfei",
         "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu", "tck_dongfengguzaomiao", "tck_guiqie",
         "tck_jiubenyamei", "tck_jinkela", "tck_ZiPncdejiaxiangrenwu", "tck_kuangfu", "tck_rkshs_aya",
-        "tck_zlm", "tck_hwj", "tck_txhd_hwj", "tck_lcy", "tck_ljy", "tck_zlh",
+        "tck_zlm", "tck_hwj", "tck_txhd_hwj", "tck_lcy", "tck_ljy", "tck_zlh", "tck_faniwaluntai",
+        "tck_tuixiong", "tck_old_hcl", "tck_hsth_ailian",
       ],
 
       //三国

@@ -6030,6 +6030,10 @@ export const skills = {
         return get.type2(event.card) == "trick"
       },
       async content(event, trigger, player) {
+        if (!game.hasPlayer(p => p != player && p.hasCards("h"))) {
+          await player.draw(1)
+          return
+        }
         const res = await player.chooseTarget("是否从对手卡中摸一张？点取消则从卡堆中摸一张。", (card, player, target) => player != target).forResult()
         if (res.bool) {
           const target = res.targets[0]
@@ -6120,8 +6124,8 @@ export const skills = {
         const res = await player.chooseToCompare(trigger.player).forResult();
         if (res.bool) {
           // 拼点赢
-          trigger.player.storage.tck_txhd_fu_ru_p = player
-          await player.addTempSkill("tck_txhd_fu_ru_effect1", { global: "phaseJieshuAfter" })
+          await trigger.player.markAuto("tck_txhd_fu_ru_p", [player])
+          await trigger.player.addTempSkill("tck_txhd_fu_ru_effect1", { global: "phaseJieshuAfter" })
         } else {
           // 拼点没赢
           const hCards = await player.getCards("h")
@@ -6133,14 +6137,21 @@ export const skills = {
       },
       subSkill: {
         "effect1": {
+          mark: true,
+          intro: {
+            content(storage, player) {
+              const ps = player.getStorage("tck_txhd_fu_ru_p").map(p => get.translation(p))
+              return `无法对${ps.join('、')}使用锦囊`
+            }
+          },
           sub: true,
           sourceSkill: "tck_txhd_fu_ru",
           onremove(player) {
-            game.players(p => delete player.storage.tck_txhd_fu_ru_p)
+            player.unmarkAuto("tck_txhd_fu_ru_p", player.getStorage("tck_txhd_fu_ru_p"))
           },
           mod: {
-            targetEnabled: function (card, player, target) {
-              if (player.storage.tck_txhd_fu_ru_p == target && get.type2(card) == 'trick') {
+            playerEnabled(card, player, target) {
+              if (get.type2(card) == 'trick' && player.getStorage("tck_txhd_fu_ru_p").includes(target)) {
                 return false
               }
             }
@@ -6290,6 +6301,184 @@ export const skills = {
       async content(event, trigger, player) {
         const card = game.createCard('tck_land_lv_cha')
         await player.useCard(card)
+      }
+    },
+    "tck_D4C": {
+      trigger: {
+        player: "damageBegin",
+      },
+      filter(event, player) {
+        return event.num >= player.hp
+      },
+      async content(event, trigger, player) {
+        let loseNum = Math.floor(player.maxHp / 2)
+        if (loseNum == 0) {
+          loseNum = 1
+        }
+        await player.loseMaxHp(loseNum)
+        await trigger.cancel()
+      }
+    },
+    "tck_ai_zhi_lie_che": {
+      trigger: {
+        player: "damageBegin",
+      },
+      filter(event, player) {
+        return player.hasCards("he", card => get.color(card) == 'red') && game.hasPlayer(p => p != player && p != event.source)
+      },
+      async cost(event, trigger, player) {
+        event.result = await player.chooseCardTarget({
+          filterCard(card, player2) {
+            return get.color(card) == "red" && lib.filter.cardDiscardable(card, player2)
+          },
+          position: "he",
+          filterTarget(card, player, target) {
+            return player != target && trigger.source != target
+          },
+          prompt: get.prompt2(event.skill)
+        }).forResult()
+      },
+      async content(event, trigger, player) {
+        trigger.player = event.targets[0]
+        await player.discard(event.cards[0])
+      },
+    },
+    "tck_shui_jiao": {
+      trigger: {
+        player: "phaseUseBegin"
+      },
+      filter(event, player) {
+        return player.isDamaged()
+      },
+      async content(event, trigger, player) {
+        await trigger.cancel()
+        await player.recoverTo(player.maxHp)
+      }
+    },
+    "tck_liao_tian": {
+      trigger: {
+        global: "phaseZhunbei"
+      },
+      filter(event, player) {
+        return event.player != player && event.player.hasCards("he")
+      },
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.suit(card) == 'heart') return 3
+          return -1
+        }).forResult()
+        if (get.suit(res) == 'heart') {
+          await player.gainPlayerCard(trigger.player.countCards("he"), trigger.player, true, "he")
+        }
+      }
+    },
+    "tck_?": {},
+    "tck_old_zhong_jian_shang": {
+      trigger: {
+        player: "drawEnd"
+      },
+      filter(event, player) {
+        const firstCard = event.result?.cards[0]
+        if (!firstCard) return false
+        return get.type(firstCard) == 'basic'
+      },
+      direct: true,
+      async content(event, trigger, player) {
+        const meCard = trigger.result.cards[0]
+        const res1 = await player.chooseTarget(`是否选择一名玩家购买你当前的基本牌（${get.translation(meCard)}）？`, 1, (card, player, target) => player != target).forResult()
+        if (!res1.bool) return
+        const target = res1.targets[0]
+        const res2 = await target.chooseCard(`是否用一张锦囊牌购买${get.translation(player)}的基本牌（${get.translation(meCard)}）？`, 1, "h", (card) => get.type2(card) == 'trick').forResult()
+        if (!res2.bool) {
+          await target.markAuto("tck_tao_zhai", [player])
+          await target.addSkill("tck_tao_zhai_deeffect")
+        } else {
+          if (target.hasSkill("tck_tao_zhai_deeffect")) {
+            await target.removeSkill("tck_tao_zhai_deeffect")
+          }
+          const itCard = res2.cards[0]
+          await player.gain(itCard, "gain2")
+          await target.gain(meCard, "gain2")
+        }
+      }
+    },
+    "tck_tao_zhai": {
+      subSkill: {
+        "deeffect": {
+          sub: true,
+          sourceSkill: "tck_tao_zhai",
+          mark: true,
+          intro: {
+            content(storage, player) {
+              const ps = player.getStorage("tck_tao_zhai").map(p => get.translation(p))
+              return `无法对${ps.join('、')}使用基本牌`
+            }
+          },
+          onremove(player) {
+            player.unmarkAuto("tck_tao_zhai", player.getStorage("tck_tao_zhai"))
+          },
+          mod: {
+            playerEnabled(card, player, target) {
+              if (get.type(card) == 'basic' && player.getStorage("tck_tao_zhai").includes(target)) {
+                return false
+              }
+            }
+          },
+        },
+      }
+    },
+    "tck_wei_zhuang": {
+      enable: "phaseUse",
+      usable: 1,
+      async content(event, trigger, player) {
+        const options = [
+          ["①", "令一个人回复一点体力"],
+          ["②", "令一个人流失一点体力并弃1张牌"]
+        ]
+        if (player.countCards("he") >= 2) {
+          options.push(["③", "弃2张牌，依次执行①，②项"])
+        }
+        const result = await player
+          .chooseButton([
+            "请选择一项",
+            [options, "textbutton",]
+          ], true)
+          .forResult()
+        if (result.bool) {
+          switch (result.links[0]) {
+            case "①":
+              const res1 = await player.chooseTarget("请选择回复一点体力的目标", true).forResult()
+              await res1.targets[0].recover(1)
+              break
+            case "②":
+              const res2 = await player.chooseTarget("请选择流失一点体力并弃1张牌的目标", true).forResult()
+              await res2.targets[0].loseHp(1)
+              await res2.targets[0].chooseToDiscard("he", 1, true)
+              break
+            case "③":
+              const res3 = await player.chooseToDiscard(2, true, "he").forResult()
+              if (res3.bool) {
+                const res31 = await player.chooseTarget("请选择回复一点体力的目标", true).forResult()
+                await res31.targets[0].recover(1)
+                const res32 = await player.chooseTarget("请选择流失一点体力并弃1张牌的目标", true).forResult()
+                await res32.targets[0].loseHp(1)
+                await res32.targets[0].chooseToDiscard("he", 1, true)
+              }
+              break
+          }
+        }
+      }
+    },
+    "tck_jue_qing": {
+      forced: true,
+      trigger: {
+        global: "dying"
+      },
+      filter(event, player) {
+        return event.source == player
+      },
+      async content(event, trigger, player) {
+        await trigger.player.discard(trigger.player.getCards("hej"))
       }
     },
 
@@ -6878,6 +7067,24 @@ export const skills = {
     },
   },
   translate: {
+    "tck_wei_zhuang": "伪装",
+    "tck_wei_zhuang_info": "出牌阶段限一次，你可以选择一项：<br/>①令一个人回复一点体力。<br/>②令一个人流失一点体力并弃1张牌。<br/>③弃2张牌，依次执行①，②项。",
+    "tck_jue_qing": "绝情",
+    "tck_jue_qing_info": "因你进入濒死的人立即弃置其区域所有牌。",
+    "tck_?": "?",
+    "tck_?_info": "这么多血还不满足？",
+    "tck_old_zhong_jian_shang": "中间商",
+    "tck_old_zhong_jian_shang_info": "摸牌顶第1张牌，若是基本牌，则让对手用锦囊购买。若没有锦囊，则获得【讨债】。",
+    "tck_tao_zhai": "讨债",
+    "tck_tao_zhai_info": "对手购买前，无法对你用基本。",
+    "tck_shui_jiao": "睡觉",
+    "tck_shui_jiao_info": "跳过出牌阶段，回复至体力上限。",
+    "tck_liao_tian": "聊天",
+    "tck_liao_tian_info": "对手回合发动，可以用语言色诱，进行断定，红桃则可以得到对手所有牌。",
+    "tck_D4C": "D4C",
+    "tck_D4C_info": "受到致命伤害可以把生命上限变为原生命一半，直到失去所有。（向下取整）",
+    "tck_ai_zhi_lie_che": "爱之列车",
+    "tck_ai_zhi_lie_che_info": "受到伤害可以丢弃一张红色，把伤害给其他人。（自身和出牌人外）",
     "tck_yin_zhi_li": "阴之力",
     "tck_yin_zhi_li_info": "无视万箭齐发。",
     "tck_yang_zhi_li": "阳之力",
