@@ -6397,8 +6397,12 @@ export const skills = {
             await target.removeSkill("tck_tao_zhai_deeffect")
           }
           const itCard = res2.cards[0]
-          await player.gain(itCard, "gain2")
-          await target.gain(meCard, "gain2")
+          await player.gain(itCard, target)
+          await target.gain(meCard, player)
+          await player.$giveAuto(meCard, target)
+          await target.$giveAuto(itCard, player)
+          game.log(target, '从', player, '购买了一张牌')
+
         }
       }
     },
@@ -6481,6 +6485,109 @@ export const skills = {
         await trigger.player.discard(trigger.player.getCards("hej"))
       }
     },
+    "tck_kou_ji": {
+      enable: ["chooseToUse", "chooseToRespond"],
+      direct: true,
+      filter(event, player) {
+        if (!player.hasCards("h")) {
+          return false
+        }
+        if (!player.hasSkill("tck_yao_she")) {
+          return true
+        }
+        return player.hasMark("tck_kou_ji")
+      },
+      chooseButton: {
+        dialog(event, player) {
+          let list = [];
+          for (let name of lib.inpile) {
+            if (get.type2(name) == "trick") {
+              list.push([get.translation(get.type(name)), "", name])
+              if (name == "wuxie" && !!lib.card.wuxie['tck_nature']) {
+                for (let j of lib.card.wuxie['tck_nature']) {
+                  list.push(["锦囊", "", "wuxie", j]);
+                }
+              }
+            }
+          }
+          return ui.create.dialog("口技", [list, "vcard"]);
+        },
+        filter(button, player) {
+          return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
+        },
+        backup(links, player) {
+          return {
+            filterCard: true,
+            position: "he",
+            popname: true,
+            viewAs: { name: links[0][2], nature: links[0][3] },
+            onuse() {
+              if (player.hasMark("tck_kou_ji")) {
+                player.removeMark("tck_kou_ji", 1)
+              }
+            },
+            onrespond() {
+              if (player.hasMark("tck_kou_ji")) {
+                player.removeMark("tck_kou_ji", 1)
+              }
+            }
+          }
+        },
+        prompt(links, player) {
+          return "将一张牌当做" + get.translation(links[0][2]) + "使用或打出"
+        },
+      },
+    },
+    "tck_yao_she": {
+      enable: "phaseUse",
+      usable: 2,
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.suit(card) == 'club') return -1
+          return 1
+        }).forResult()
+        if (get.suit(res) == 'club') return
+        await player.addMark('tck_kou_ji')
+      },
+      group: ["tck_yao_she_1"],
+      subSkill: {
+        "1": {
+          forced: true,
+          usable: 2,
+          filter(event, player) {
+            console.log('我执行')
+            if (_status.currentPhase == player) {
+              return false
+            }
+            console.log('我执行2')
+            return true
+          },
+          trigger: {
+            player: ["chooseToRespondBefore", "chooseToUseBefore"],
+          },
+          async content(event, trigger, player) {
+            const res = await player.judge(card => {
+              if (get.suit(card) == 'club') return -1
+              return 1
+            }).forResult()
+            if (get.suit(res) == 'club') return
+            await player.addMark('tck_kou_ji')
+          },
+        },
+        "remove": {
+          trigger: {
+            global: "phaseJieshuAfter"
+          },
+          filter(event, player) {
+            return player.hasMark('tck_kou_ji')
+          },
+          async content(event, trigger, player) {
+            await player.clearMark('tck_kou_ji')
+          },
+        },
+      },
+    },
+
 
     //重制版
     "tck_r_ji_rou": {
@@ -7067,6 +7174,10 @@ export const skills = {
     },
   },
   translate: {
+    "tck_kou_ji": "口技",
+    "tck_kou_ji_info": "可以进行1回合2次口胡，任何卡都可以变为指定锦囊牌。",
+    "tck_yao_she": "咬舌",
+    "tck_yao_she_info": "使用技能有概率咬到舌头，用技能前进行判定，若为梅花，则无法使用【口技】。",
     "tck_wei_zhuang": "伪装",
     "tck_wei_zhuang_info": "出牌阶段限一次，你可以选择一项：<br/>①令一个人回复一点体力。<br/>②令一个人流失一点体力并弃1张牌。<br/>③弃2张牌，依次执行①，②项。",
     "tck_jue_qing": "绝情",

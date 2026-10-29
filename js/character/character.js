@@ -904,6 +904,14 @@ export const characters = {
       skills: ["tck_wei_zhuang", "tck_jue_qing"],
       img: "extension/TCK/imgs/charactors/tck_hsth_ailian.jpg",
     },
+    "tck_xjx": {
+      sex: "male",
+      group: "tck_group_lan",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_kou_ji", "tck_yao_she"],
+      img: "extension/TCK/imgs/charactors/tck_xjx.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -949,6 +957,7 @@ export const characters = {
 
   },
   translate: {
+    "tck_xjx": "徐进雄",
     "tck_hsth_ailian": "艾莲",
     "tck_old_hcl": "胡晨亮",
     "tck_tuixiong": "退雄",
@@ -1076,6 +1085,7 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_xjx": "口技之王",
     "tck_hsth_ailian": "换身体后",
     "tck_old_hcl": "可恶的中间商",
     "tck_tuixiong": "性转",
@@ -1202,7 +1212,7 @@ export const characters = {
         "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu", "tck_dongfengguzaomiao", "tck_guiqie",
         "tck_jiubenyamei", "tck_jinkela", "tck_ZiPncdejiaxiangrenwu", "tck_kuangfu", "tck_rkshs_aya",
         "tck_zlm", "tck_hwj", "tck_txhd_hwj", "tck_lcy", "tck_ljy", "tck_zlh", "tck_faniwaluntai",
-        "tck_tuixiong", "tck_old_hcl", "tck_hsth_ailian",
+        "tck_tuixiong", "tck_old_hcl", "tck_hsth_ailian", "tck_xjx",
       ],
 
       //三国
