@@ -6372,7 +6372,7 @@ export const skills = {
         }
       }
     },
-    "tck_?": {},
+    "tck_?": { unique: true },
     "tck_old_zhong_jian_shang": {
       trigger: {
         player: "drawEnd"
@@ -6485,106 +6485,222 @@ export const skills = {
         await trigger.player.discard(trigger.player.getCards("hej"))
       }
     },
-    "tck_kou_ji": {
-      enable: ["chooseToUse", "chooseToRespond"],
-      direct: true,
-      filter(event, player) {
-        if (!player.hasCards("h")) {
-          return false
-        }
-        if (!player.hasSkill("tck_yao_she")) {
-          return true
-        }
-        return player.hasMark("tck_kou_ji")
+    "tck_skill_shan": {
+      init(player) {
+        player.storage.tck_skill_shan = [{ name: "shan", nature: undefined }]
       },
-      chooseButton: {
-        dialog(event, player) {
-          let list = [];
-          for (let name of lib.inpile) {
-            if (get.type2(name) == "trick") {
-              list.push([get.translation(get.type(name)), "", name])
-              if (name == "wuxie" && !!lib.card.wuxie['tck_nature']) {
-                for (let j of lib.card.wuxie['tck_nature']) {
-                  list.push(["锦囊", "", "wuxie", j]);
-                }
-              }
-            }
+      trigger: { player: ["chooseToRespondBegin", "chooseToUseBegin"] },
+      filter(event, player) {
+        if (event.responded) {
+          return false;
+        }
+        if (!event.filterCard || !event.filterCard({ name: "shan" }, player, event)) {
+          return false;
+        }
+        if (event.name === "chooseToRespond" && !lib.filter.cardRespondable({ name: "shan" }, player, event)) {
+          return false;
+        }
+        return player.hasCards("he")
+      },
+      direct: true,
+      async content(event, trigger, player) {
+        const res = await player.chooseToDiscard(get.prompt("tck_skill_shan"), 1, "he").forResult()
+        if (res.bool) {
+          let list = []
+          for (let card of player.storage.tck_skill_shan) {
+            list.push(["基本", "", card.name, card.nature])
           }
-          return ui.create.dialog("口技", [list, "vcard"]);
-        },
-        filter(button, player) {
-          return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
-        },
-        backup(links, player) {
-          return {
-            filterCard: true,
-            position: "he",
-            popname: true,
-            viewAs: { name: links[0][2], nature: links[0][3] },
-            onuse() {
-              if (player.hasMark("tck_kou_ji")) {
-                player.removeMark("tck_kou_ji", 1)
-              }
-            },
-            onrespond() {
-              if (player.hasMark("tck_kou_ji")) {
-                player.removeMark("tck_kou_ji", 1)
-              }
-            }
+          const dialog = ui.create.dialog("闪", [list, "vcard"])
+          const res1 = await player.chooseButton(dialog, true)
+            .set('filterButton', (button, player) => {
+              return trigger.filterCard({ name: button.link[2] }, player, trigger)
+            })
+            .forResult()
+          if (res1.bool) {
+            const shan = game.createCard({ name: res1.links[0][2], nature: res1.links[0][3] })
+            trigger.untrigger()
+            trigger.set("responded", true)
+            trigger.result = { bool: true, card: shan }
           }
-        },
-        prompt(links, player) {
-          return "将一张牌当做" + get.translation(links[0][2]) + "使用或打出"
+        }
+      },
+      subSkill: {
+        "1": {
+          sub: true,
+          sourceSkill: "tck_skill_shan",
+          enable: "phaseUse",
+          prompt: "你可弃一张牌视为使用一张藏。",
+          filter(event, player) {
+            return !player.hasSkill("tck_card_cang_effect") && player.hasCards("he") && player.storage.tck_skill_shan.some(s => s.name == "tck_card_cang")
+          },
+          filterCard: true,
+          position: "he",
+          async content(event, trigger, player) {
+            const card = await game.createCard("tck_card_cang")
+            await player.chooseUseTarget(card, true)
+          }
         },
       },
     },
-    "tck_yao_she": {
-      enable: "phaseUse",
-      usable: 2,
-      async content(event, trigger, player) {
-        const res = await player.judge(card => {
-          if (get.suit(card) == 'club') return -1
-          return 1
-        }).forResult()
-        if (get.suit(res) == 'club') return
-        await player.addMark('tck_kou_ji')
+    "tck_shan_sheng_ji": {
+      init(player) {
+        player.storage.tck_shan_sheng_ji = 0
       },
-      group: ["tck_yao_she_1"],
+      trigger: {
+        player: "damageEnd"
+      },
+      forced: true,
+      async content(eventr, trigger, player) {
+        player.storage.tck_shan_sheng_ji++
+        switch (player.storage.tck_shan_sheng_ji) {
+          case 1:
+            player.storage.tck_skill_shan.push({ name: "shan", nature: "tck_duo" })
+            break
+          case 2:
+            player.storage.tck_skill_shan.push({ name: "shan", nature: "tck_bi" })
+            break
+          case 3:
+            player.storage.tck_skill_shan.push({ name: "tck_card_cang", nature: undefined })
+            await player.addSkill("tck_skill_shan_1")
+            break
+          case 4:
+            await player.draw(2)
+            await player.removeSkill("tck_shan_sheng_ji")
+            break
+          default:
+            await player.removeSkill("tck_shan_sheng_ji")
+            break
+        }
+      }
+    },
+    "tck_skill_zi": {
+      onremove(player) {
+        game.players.filter(p => p != player).forEach(p => {
+          p.unmarkAuto("tck_skill_zi_mark", [player])
+          if (p.storage.tck_skill_zi_mark.length == 0) {
+            p.removeSkill("tck_skill_zi_mark")
+          }
+        })
+      },
+      trigger: {
+        global: ["gameStart", "enterGame"]
+      },
+      forced: true,
+      async content(event, trigger, player) {
+        game.players.filter(p => p != player).forEach(p => {
+          p.markAuto("tck_skill_zi_mark", [player])
+          p.addSkill("tck_skill_zi_mark")
+        })
+      },
       subSkill: {
-        "1": {
-          forced: true,
-          usable: 2,
-          filter(event, player) {
-            console.log('我执行')
-            if (_status.currentPhase == player) {
-              return false
+        "mark": {
+          mark: true,
+          intro: {
+            content(storage, player) {
+              return `${storage.map(p => get.translation(p)).join('、')}是你的儿子`
             }
-            console.log('我执行2')
-            return true
+          }
+        },
+      },
+    },
+    "tck_zi_fu_yu_zi": { unique: true },
+    "tck_skill_fu": {
+      enable: "phaseUse",
+      filterTarget(card, player, target) {
+        return player != target
+      },
+      async content(event, trigger, player) {
+        const res = await event.target.chooseControl(["叫", "不叫"], true)
+          .set('prompt', `是否叫${get.translation(player)}爸爸？`).forResult()
+        if (res?.control) {
+          if (res.control == "叫") {
+            await event.target.chat(`${get.translation(player)}爸爸`)
+          } else if (res.control == "不叫") {
+            await event.target.loseHp(1)
+          }
+        }
+      }
+    },
+    "tck_fu_fu_yu_zi": {
+      onremove(player) {
+        const zis = game.players.filter(p => p.name == 'tck_character_zi')
+        for (let zi of zis) {
+          zi.removeSkill(["tck_fu_fu_yu_zi_ziEffect", "tck_fu_fu_yu_zi_kill"])
+        }
+        player.removeSkill(["tck_fu_fu_yu_zi_ziEffect", "tck_fu_fu_yu_zi_kill"])
+      },
+      forced: true,
+      trigger: {
+        global: ["gameStart", "enterGame"]
+      },
+      filter(event, player) {
+        return player.name == "tck_character_fu" && game.hasPlayer(p => p.name == 'tck_character_zi')
+      },
+      async content(event, trigger, player) {
+        const zis = game.players.filter(p => p.name == 'tck_character_zi')
+        for (let zi of zis) {
+          zi.identity = player.identity
+          zi.side = player.side
+          await zi.setIdentity()
+          await zi.addSkill(["tck_fu_fu_yu_zi_ziEffect", "tck_fu_fu_yu_zi_kill"])
+        }
+        await player.addSkill(["tck_fu_fu_yu_zi_fuEffect", "tck_fu_fu_yu_zi_kill"])
+      },
+      subSkill: {
+        "fuEffect": {
+          sub: true,
+          sourceSkill: "tck_fu_fu_yu_zi",
+          mark: true,
+          intro: {
+            content: "只能先攻击子"
           },
+          mod: {
+            playerEnabled(card, player, target) {
+              if (get.is.damageCard(card)) {
+                if (game.players.filter(p => p.name == "tck_character_zi").some(p => p == target)) {
+                  return true
+                }
+                return false
+              }
+            }
+          }
+        },
+        "ziEffect": {
+          sub: true,
+          sourceSkill: "tck_fu_fu_yu_zi",
+          mark: true,
+          intro: {
+            content: "只能先攻击父"
+          },
+          mod: {
+            playerEnabled(card, player, target) {
+              if (get.is.damageCard(card)) {
+                if (game.players.filter(p => p.name == "tck_character_fu").some(p => p == target)) {
+                  return true
+                }
+                return false
+              }
+            }
+          }
+        },
+        "kill": {
+          sub: true,
+          sourceSkill: "tck_fu_fu_yu_zi",
+          popup: false,
+          charlotte: true,
+          forced: true,
           trigger: {
-            player: ["chooseToRespondBefore", "chooseToUseBefore"],
+            global: "dieAfter"
           },
           async content(event, trigger, player) {
-            const res = await player.judge(card => {
-              if (get.suit(card) == 'club') return -1
-              return 1
-            }).forResult()
-            if (get.suit(res) == 'club') return
-            await player.addMark('tck_kou_ji')
-          },
-        },
-        "remove": {
-          trigger: {
-            global: "phaseJieshuAfter"
-          },
-          filter(event, player) {
-            return player.hasMark('tck_kou_ji')
-          },
-          async content(event, trigger, player) {
-            await player.clearMark('tck_kou_ji')
-          },
-        },
+            if (!game.hasPlayer(p => p.name == 'tck_character_fu')) {
+              await player.removeSkill(["tck_fu_fu_yu_zi_ziEffect", "tck_fu_fu_yu_zi_kill"])
+            }
+            if (!game.hasPlayer(p => p.name == 'tck_character_zi')) {
+              await player.removeSkill(["tck_fu_fu_yu_zi_fuEffect", "tck_fu_fu_yu_zi_kill"])
+            }
+          }
+        }
       },
     },
 
@@ -7174,10 +7290,18 @@ export const skills = {
     },
   },
   translate: {
-    "tck_kou_ji": "口技",
-    "tck_kou_ji_info": "可以进行1回合2次口胡，任何卡都可以变为指定锦囊牌。",
-    "tck_yao_she": "咬舌",
-    "tck_yao_she_info": "使用技能有概率咬到舌头，用技能前进行判定，若为梅花，则无法使用【口技】。",
+    "tck_skill_fu": "父",
+    "tck_skill_fu_info": "强制让对手叫你爸爸，否则对手扣1点体力。",
+    "tck_fu_fu_yu_zi": "父与子",
+    "tck_fu_fu_yu_zi_info": "若场上同时出现父与子，则自动与他结为一队，并且只能先攻击子。",
+    "tck_skill_zi": "子",
+    "tck_skill_zi_info": "成为场上所有人的儿子。",
+    "tck_zi_fu_yu_zi": "父与子",
+    "tck_zi_fu_yu_zi_info": "若场上同时出现父与子，则自动与他结为一队，并且只能先攻击父。",
+    "tck_skill_shan": "闪",
+    "tck_skill_shan_info": "当你需要使用闪时，你可弃一张牌视为使用一张闪。",
+    "tck_shan_sheng_ji": "升级",
+    "tck_shan_sheng_ji_info": "你受伤升级技能“闪”，一次：增加避。二次：增加躲，三次：增加藏。四次：摸2张牌并失去本技能。",
     "tck_wei_zhuang": "伪装",
     "tck_wei_zhuang_info": "出牌阶段限一次，你可以选择一项：<br/>①令一个人回复一点体力。<br/>②令一个人流失一点体力并弃1张牌。<br/>③弃2张牌，依次执行①，②项。",
     "tck_jue_qing": "绝情",

@@ -535,6 +535,8 @@ export const characters = {
       maxHp: 2,
       skills: ["tck_ji_suan_ji", "tck_shi_shen2", "tck_xin_ruan"],
       img: "extension/TCK/imgs/charactors/tck_bayunlan.jpg",
+      isHiddenBoss: true,
+      isBossAllowed: false,
     },
     "tck_cheng": {
       sex: "female",
@@ -543,6 +545,8 @@ export const characters = {
       maxHp: 4,
       skills: ["tck_mai_meng", "tck_sa_jiao"],
       img: "extension/TCK/imgs/charactors/tck_cheng.jpg",
+      isHiddenBoss: true,
+      isBossAllowed: false,
     },
     "tck_ailisimageteluoyide": {
       sex: "female",
@@ -559,6 +563,8 @@ export const characters = {
       maxHp: 2,
       skills: ["tck_cao_zong_zhe_pl", "tck_huai_bao_xi_sheng_de_zha_dan"],
       img: "extension/TCK/imgs/charactors/tck_penglairenou.jpg",
+      isHiddenBoss: true,
+      isBossAllowed: false,
     },
     "tck_shanghairenou": {
       sex: "female",
@@ -567,6 +573,8 @@ export const characters = {
       maxHp: 1,
       skills: ["tck_cao_zong_zhe_sh", "tck_ren_ou_shi_jie", "tck_mu_yu_he_feng"],
       img: "extension/TCK/imgs/charactors/tck_shanghairenou.jpg",
+      isHiddenBoss: true,
+      isBossAllowed: false,
     },
     "tck_mn_ailian": {
       sex: "female",
@@ -904,13 +912,30 @@ export const characters = {
       skills: ["tck_wei_zhuang", "tck_jue_qing"],
       img: "extension/TCK/imgs/charactors/tck_hsth_ailian.jpg",
     },
-    "tck_xjx": {
+    "tck_character_shan": {
+      sex: "none",
+      group: "tck_luan_ru",
+      doubleGroup: ["tck_luan_ru", "tck_group_ji"],
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_skill_shan", "tck_shan_sheng_ji"],
+      img: "extension/TCK/imgs/charactors/tck_character_shan.jpg",
+    },
+    "tck_character_zi": {
       sex: "male",
-      group: "tck_group_lan",
+      group: "tck_group_man",
       hp: 3,
       maxHp: 3,
-      skills: ["tck_kou_ji", "tck_yao_she"],
-      img: "extension/TCK/imgs/charactors/tck_xjx.jpg",
+      skills: ["tck_skill_zi", "tck_zi_fu_yu_zi"],
+      img: "extension/TCK/imgs/charactors/tck_character_zi.jpg",
+    },
+    "tck_character_fu": {
+      sex: "male",
+      group: "tck_group_man",
+      hp: 7,
+      maxHp: 7,
+      skills: ["tck_skill_fu", "tck_fu_fu_yu_zi"],
+      img: "extension/TCK/imgs/charactors/tck_character_fu.jpg",
     },
 
     //重制版
@@ -957,7 +982,9 @@ export const characters = {
 
   },
   translate: {
-    "tck_xjx": "徐进雄",
+    "tck_character_fu": "父",
+    "tck_character_zi": "子",
+    "tck_character_shan": "闪",
     "tck_hsth_ailian": "艾莲",
     "tck_old_hcl": "胡晨亮",
     "tck_tuixiong": "退雄",
@@ -1085,7 +1112,9 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
-    "tck_xjx": "口技之王",
+    "tck_character_fu": "父与子",
+    "tck_character_zi": "父与子",
+    "tck_character_shan": "牌堆成精",
     "tck_hsth_ailian": "换身体后",
     "tck_old_hcl": "可恶的中间商",
     "tck_tuixiong": "性转",
@@ -1212,7 +1241,8 @@ export const characters = {
         "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu", "tck_dongfengguzaomiao", "tck_guiqie",
         "tck_jiubenyamei", "tck_jinkela", "tck_ZiPncdejiaxiangrenwu", "tck_kuangfu", "tck_rkshs_aya",
         "tck_zlm", "tck_hwj", "tck_txhd_hwj", "tck_lcy", "tck_ljy", "tck_zlh", "tck_faniwaluntai",
-        "tck_tuixiong", "tck_old_hcl", "tck_hsth_ailian", "tck_xjx",
+        "tck_tuixiong", "tck_old_hcl", "tck_hsth_ailian", "tck_character_shan", "tck_character_zi",
+        "tck_character_fu",
       ],
 
       //三国

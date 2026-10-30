@@ -98,6 +98,7 @@ export const ex_cards = {
       enable: true,   //可以用
       selectTarget: -1,
       toSelf: true,    //是否自己使用
+      noname: true,
       //只能对自己用
       filterTarget(card, player, target) {
         return target == player
