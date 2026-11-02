@@ -62,6 +62,17 @@ const TCKUtil = {
     if (!Array.isArray(arr) || arr.length <= 1) return true;
     const first = arr[0];
     return arr.every(item => TCKUtil.isDeepEqual(item, first));
+  },
+  /**
+   * 剔除两个数组的交集，返回对称差集
+   */
+  differenceArray(arr1, arr2) {
+    const set1 = new Set(arr1)
+    const set2 = new Set(arr2)
+    return [
+      ...arr1.filter(item => !set2.has(item)),
+      ...arr2.filter(item => !set1.has(item))
+    ]
   }
 };
 

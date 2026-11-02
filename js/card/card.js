@@ -1457,6 +1457,9 @@ export const cards = {
             list.push(charList.splice(j, 1)[0])
           }
         }
+        if (["tck_character_fu", "tck_character_zi"].includes(target.name)) {
+          list.unshift("tck_character_fu_yu_zi")
+        }
         if (!list.length) {
           return
         }

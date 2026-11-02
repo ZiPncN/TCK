@@ -937,6 +937,56 @@ export const characters = {
       skills: ["tck_skill_fu", "tck_fu_fu_yu_zi"],
       img: "extension/TCK/imgs/charactors/tck_character_fu.jpg",
     },
+    "tck_zpy": {
+      sex: "male",
+      group: "tck_group_han2",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_zpy_ben_zhi", "tck_tk_ku_rou", "guicai", "chengxiang", "tck_zpy_mo_ni", "tck_zpy_kuang_bao", "tck_zpy_zhui_yi", "tck_zpy_si_kao"],
+      img: "extension/TCK/imgs/charactors/tck_zpy.jpg",
+    },
+    "tck_character_fu_yu_zi": {
+      sex: "male",
+      group: "tck_group_man",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_zi_fu_yu_zi", "tck_qin_zi_ai", "tck_tu_hao"],
+      img: "extension/TCK/imgs/charactors/tck_character_fu_yu_zi.jpg",
+      isHiddenBoss: true,
+      isBossAllowed: false,
+    },
+    "tck_wuhushangjiang": {
+      sex: "male",
+      group: "shu",
+      hp: 5,
+      maxHp: 5,
+      skills: ["tck_wu_hu"],
+      img: "extension/TCK/imgs/charactors/tck_wuhushangjiang.jpg",
+    },
+    "tck_huangyueying": {
+      sex: "female",
+      group: "shu",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_ji_zhi", "tck_qi_cai"],
+      img: "extension/TCK/imgs/charactors/tck_huangyueying.jpg",
+    },
+    "tck_lingtong": {
+      sex: "male",
+      group: "wu",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_xuan_feng", "tck_li_chan"],
+      img: "extension/TCK/imgs/charactors/tck_lingtong.jpg",
+    },
+    "tck_mo_sunquan": {
+      sex: "male",
+      group: "wu",
+      hp: 2,
+      maxHp: 2,
+      skills: ["tck_mo_zhi_heng", "tck_mo_fu_hun", "tck_mo_fu_hun_die"],
+      img: "extension/TCK/imgs/charactors/tck_mo_sunquan.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -982,6 +1032,12 @@ export const characters = {
 
   },
   translate: {
+    "tck_mo_sunquan": "魔孙权",
+    "tck_lingtong": "凌统",
+    "tck_huangyueying": "黄月英",
+    "tck_wuhushangjiang": "五虎上将",
+    "tck_character_fu_yu_zi": "父子",
+    "tck_zpy": "章鹏远",
     "tck_character_fu": "父",
     "tck_character_zi": "子",
     "tck_character_shan": "闪",
@@ -1112,6 +1168,10 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_lingtong": "阴曹地府",
+    "tck_huangyueying": "奇才之女",
+    "tck_wuhushangjiang": "蜀汉忠义",
+    "tck_character_fu_yu_zi": "父与子",
     "tck_character_fu": "父与子",
     "tck_character_zi": "父与子",
     "tck_character_shan": "牌堆成精",
@@ -1242,7 +1302,7 @@ export const characters = {
         "tck_jiubenyamei", "tck_jinkela", "tck_ZiPncdejiaxiangrenwu", "tck_kuangfu", "tck_rkshs_aya",
         "tck_zlm", "tck_hwj", "tck_txhd_hwj", "tck_lcy", "tck_ljy", "tck_zlh", "tck_faniwaluntai",
         "tck_tuixiong", "tck_old_hcl", "tck_hsth_ailian", "tck_character_shan", "tck_character_zi",
-        "tck_character_fu",
+        "tck_character_fu", "tck_zpy",
       ],
 
       //三国
@@ -1254,13 +1314,14 @@ export const characters = {
         "tck_huaxiong", "tck_yuanshao", "tck_mateng",
         "tck_moumachao", "tck_sunquan", "tck_xing_zhaoyun",
         "tck_mo_zhaoyun", "tck_jie_caiwenji", "tck_jushou",
-        "tck_liuzan", "tck_weiyan",
+        "tck_liuzan", "tck_weiyan", "tck_wuhushangjiang",
+        "tck_huangyueying", "tck_lingtong", "tck_mo_sunquan",
 
       ],
 
       //附加
       "tck_fu_jia_pack": ["tck_bayunlan", "tck_cheng",
-        "tck_penglairenou", "tck_shanghairenou",
+        "tck_penglairenou", "tck_shanghairenou", "tck_character_fu_yu_zi",
       ],
 
       //重制版
