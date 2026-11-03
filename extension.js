@@ -361,6 +361,25 @@ export default function () {
                 }
                 return suits.length
             }
+            /**
+             * 判断玩家是否有某数量的花色
+             * @param {*} event 
+             * @returns 
+             */
+            lib.element.player.hasNumSuit = function (position, num) {
+                const cards = this.getCards(position)
+                const suitsNum = {}
+                for (let i = 0; i < cards.length; i++) {
+                    const suit = get.suit(cards[i])
+                    if (!suitsNum[suit]) {
+                        suitsNum[suit] = 1
+                    } else {
+                        suitsNum[suit]++
+                    }
+                    if (suitsNum[suit] == num) return true
+                }
+                return false
+            }
             lib.filter.tckWuxieSwap = function (event) {
                 if (event.type !== "wuxie") {
                     return false;

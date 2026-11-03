@@ -987,6 +987,46 @@ export const characters = {
       skills: ["tck_mo_zhi_heng", "tck_mo_fu_hun", "tck_mo_fu_hun_die"],
       img: "extension/TCK/imgs/charactors/tck_mo_sunquan.jpg",
     },
+    "tck_drxd_xjx": {
+      sex: "male",
+      group: "tck_group_gou",
+      hp: 5,
+      maxHp: 5,
+      skills: ["tck_qian_da", "tck_wang_ba", "tck_zi_jiu", "tck_feng_cun"],
+      img: "extension/TCK/imgs/charactors/tck_drxd_xjx.jpg",
+    },
+    "tck_weiaola_ailian": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_zhi_yu", "tck_li_qiang"],
+      img: "extension/TCK/imgs/charactors/tck_weiaola_ailian.jpg",
+    },
+    "tck_jianqiming": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 5,
+      maxHp: 5,
+      skills: ["tck_ren_ou_yan", "tck_gao_ji", "tck_lei_ruo"],
+      img: "extension/TCK/imgs/charactors/tck_jianqiming.jpg",
+    },
+    "tck_jiyou": {
+      sex: "none",
+      group: "tck_group_gou",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_shan_guang", "tck_skill_shan2", "tck_tong_ku", "tck_kuai_si"],
+      img: "extension/TCK/imgs/charactors/tck_jiyou.jpg",
+    },
+    "tck_gou": {
+      sex: "none",
+      group: "tck_group_wang",
+      hp: 6,
+      maxHp: 6,
+      skills: ["tck_bu_si", "tck_deng_si"],
+      img: "extension/TCK/imgs/charactors/tck_gou.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -1032,6 +1072,11 @@ export const characters = {
 
   },
   translate: {
+    "tck_gou": "狗",
+    "tck_jiyou": "机油",
+    "tck_jianqiming": "见崎鸣",
+    "tck_weiaola_ailian": "薇奥拉 艾莲",
+    "tck_drxd_xjx": "徐进雄",
     "tck_mo_sunquan": "魔孙权",
     "tck_lingtong": "凌统",
     "tck_huangyueying": "黄月英",
@@ -1168,6 +1213,10 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_gou": "王蛋也",
+    "tck_jianqiming": "Misaki",
+    "tck_weiaola_ailian": "魔女之家",
+    "tck_drxd_xjx": "欠打之王",
     "tck_lingtong": "阴曹地府",
     "tck_huangyueying": "奇才之女",
     "tck_wuhushangjiang": "蜀汉忠义",
@@ -1302,7 +1351,8 @@ export const characters = {
         "tck_jiubenyamei", "tck_jinkela", "tck_ZiPncdejiaxiangrenwu", "tck_kuangfu", "tck_rkshs_aya",
         "tck_zlm", "tck_hwj", "tck_txhd_hwj", "tck_lcy", "tck_ljy", "tck_zlh", "tck_faniwaluntai",
         "tck_tuixiong", "tck_old_hcl", "tck_hsth_ailian", "tck_character_shan", "tck_character_zi",
-        "tck_character_fu", "tck_zpy",
+        "tck_character_fu", "tck_zpy", "tck_drxd_xjx", "tck_weiaola_ailian", "tck_jianqiming",
+        "tck_jiyou", "tck_gou",
       ],
 
       //三国
