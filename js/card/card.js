@@ -793,14 +793,14 @@ export const cards = {
           let current = ui.discardPile.childNodes[i];
           event.togain.push(current);
         }
-        if (event.togain.length > 0 && player.isAlive()) {
+        if (event.togain.length > 0 && event.target.isAlive()) {
           let res = await event.target.chooseButton(true, [0, 2], [`是否获得其中的至多2张牌？`, event.togain]).forResult()
           if (res.bool) {
             await event.target.gain(res.links, "gain");
           }
         } else {
           await game.delay(1)
-          await player.chat(`弃牌堆中没有牌`)
+          await event.target.chat(`弃牌堆中没有牌`)
           await game.delay(2)
         }
       }
@@ -2244,6 +2244,8 @@ export const cards = {
       },
     },
     "tck_card_mian_bao": {
+      image: "ext:TCK/imgs/cards/tck_card_mian_bao.png",
+      fullskin: true,
       toself: true,
       enable(card, player) {
         return player.isDamaged()
@@ -2345,6 +2347,16 @@ export const cards = {
         game.cardsGotoSpecial(event.card.cards, "toTckLand")
       }
     },
+    "tck_yu_mao_qiu_pai": {
+      image: "ext:TCK/imgs/cards/tck_yu_mao_qiu_pai.png",
+      fullskin: true,
+      type: "equip",
+      subtype: "equip1",
+      skills: ["tck_yu_mao_qiu_pai_skill1", "tck_yu_mao_qiu_pai_skill2"],
+      distance: {
+        attackFrom: -2,
+      },
+    },
     "tck_card_hcl": {
       image: "ext:TCK/imgs/cards/tck_card_hcl.png",
       fullskin: true,
@@ -2395,6 +2407,45 @@ export const cards = {
         })
         if (cards.length > 0) {
           await player.discard(cards)
+        }
+      },
+    },
+    "tck_yu_mao_qiu_pai_skill1": {
+      equipSkill: true,
+      enable: "chooseToUse",
+      filterCard(card) {
+        return get.color(card) === "black";
+      },
+      position: "h",
+      viewAs: { name: "tck_dou" },
+      viewAsFilter(player) {
+        if (!player.hasCards("h", { color: "black" })) {
+          return false;
+        }
+      },
+      prompt: "将一张黑色手牌当斗使用"
+    },
+    "tck_yu_mao_qiu_pai_skill2": {
+      equipSkill: true,
+      trigger: {
+        player: "compare",
+        target: "compare"
+      },
+      forced: true,
+      popup: false,
+      charlotte: true,
+      filter(event2, player2, name) {
+        if (event2.player == player2 && event2.iwhile > 0) {
+          return false;
+        }
+        return (player2 == event2.player ? event2.num1 : event2.num2) < 13;
+      },
+      async content(event2, trigger, player2) {
+        game.log(player2, "的拼点牌点数+3");
+        if (player2 == trigger.player) {
+          trigger.num1 = Math.min(13, trigger.num1 + 3);
+        } else {
+          trigger.num2 = Math.min(13, trigger.num2 + 3);
         }
       },
     },
@@ -4611,6 +4662,10 @@ export const cards = {
     },
   },
   translate: {
+    "tck_yu_mao_qiu_pai": "羽毛球拍",
+    "tck_yu_mao_qiu_pai_info": "你的黑色手牌可当“斗”使用，你拼点点数+3。",
+    "tck_yu_mao_qiu_pai_skill1": "羽毛球拍",
+    "tck_yu_mao_qiu_pai_skill2": "羽毛球拍",
     "tck_land_lv_cha": "绿茶",
     "tck_land_lv_cha_info": "场地效果：每回合多摸2张牌，结束时多弃2张牌或扣1格生命不扣血。",
     "tck_land_lv_cha_tckland_skill": "绿茶",

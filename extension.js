@@ -694,7 +694,7 @@ export default function () {
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.4",
+            version: "1.5",
         },
         files: {},
         connect: true

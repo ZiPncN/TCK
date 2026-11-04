@@ -8,7 +8,7 @@ export const du_cards = {
       filterTarget: true,
       global: 'g_tck_card_du_tao',
       async content(event, trigger, player) {
-        await event.target.loseHp(1)
+        await event.target.loseHp(1).set("type", "du")
       },
     },
     "tck_card_du_ju": {
@@ -18,13 +18,13 @@ export const du_cards = {
       filterTarget: true,
       global: 'g_tck_card_du_ju',
       async content(event, trigger, player) {
-        await event.target.loseHp(1)
+        await event.target.loseHp(1).set("type", "du")
         const res = await event.target.judge(card => {
           if (get.suit(card) == "heart") return -1
           return 1
         }).forResult()
         if (get.suit(res) == "heart") {
-          await event.target.damage(1, event.target, 'fire')
+          await event.target.damage(1, event.target, 'fire').set("type", "du")
         }
       },
       ai: {

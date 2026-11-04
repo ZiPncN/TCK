@@ -7551,7 +7551,7 @@ export const skills = {
         await player.addTempSkill("tck_skill_shan2_deeffect", { player: "phaseDrawAfter" })
         trigger.untrigger()
         trigger.set("responded", true)
-        trigger.result = { bool: true, card: { name: "shan", isCard: true } }
+        trigger.result = { bool: true, card: { name: "shan" } }
       },
       subSkill: {
         "deeffect": {
@@ -7680,6 +7680,389 @@ export const skills = {
           if (colors.includes(res.color)) break
           await event.target.damage(1, player)
           colors.push(res.color)
+        }
+      }
+    },
+    "tck_??_????": {
+      trigger: {
+        target: "useCardToTarget"
+      },
+      filter(event, player) {
+        return get.type2(event.card) == 'trick'
+      },
+      forced: true,
+      async content(event, trigge, player) {
+        await trigger.excluded.add(player)
+      },
+      mod: {
+        targetEnabled(card, player, target) {
+          if (get.type(card) == "equip") {
+            return false;
+          }
+        }
+      },
+    },
+    "tck_??_???": {
+      trigger: {
+        player: "phaseDrawBegin1"
+      },
+      filter(event, player) {
+        return !event.numFixed
+      },
+      async content(event, trigger, player) {
+        trigger.changeToZero()
+        event.togain = []
+        for (var i = 0; i < ui.discardPile.childNodes.length; i++) {
+          let current = ui.discardPile.childNodes[i]
+          event.togain.push(current)
+        }
+        if (event.togain.length > 0) {
+          let res = await player.chooseButton(true, 1, [`自选获得弃牌堆的1张牌`, event.togain]).forResult()
+          if (res.bool) {
+            await player.gain(res.links, "gain");
+          }
+        } else {
+          await game.delay(1)
+          await player.chat(`弃牌堆中没有牌`)
+          await game.delay(2)
+        }
+      },
+    },
+    "tck_??_??": {
+      unique: true,
+      skillAnimation: true,
+      limited: true,
+      trigger: {
+        player: "dying"
+      },
+      filter(event, player) {
+        if (player.storage['tck_??_??']) return false;
+        return true
+      },
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_??_??")
+        while (true) {
+          const res = await player.judge().forResult()
+          const card = res.card
+          await player.gain(card, 'gain2')
+          if (taoList.includes(get.name(card))) break
+        }
+        player.storage['tck_??_??'] = true
+      },
+    },
+    "tck_??_?": { unique: true },
+    "tck_pu_huo": {
+      trigger: {
+        global: "roundStart"
+      },
+      forced: true,
+      async content(event, trigger, player) {
+        game.players.forEach(p => p.damage(player, 1, 'fire').set("tck_pu_huo", true))
+      },
+      group: ["tck_pu_huo_1"],
+      subSkill: {
+        "1": {
+          trigger: {
+            global: "dying"
+          },
+          prompt(event, player) {
+            return `是否对${get.translation(event.player)}追加六张需拟火杀`
+          },
+          filter(event, player) {
+            const evt = event.getParent()
+            return evt.tck_pu_huo
+          },
+          async content(event, trigger, player) {
+            for (let i = 0; i < 6; i++) {
+              await player.useCard(trigger.player, { name: 'sha', nature: 'fire' })
+            }
+          }
+        },
+      },
+    },
+    "tck_wan_sha": {
+      global: "tck_wan_sha",
+      mod: {
+        cardSavable(card, player, target) {
+          if (taoList.includes(get.name(card)) && player != target) {
+            return false
+          }
+        },
+        cardEnabled(card, player, event) {
+          if (taoList.includes(get.name(card)) && player != event.player) {
+            return false
+          }
+        }
+      }
+    },
+    "tck_zhuang": {
+      usable: 1,
+      trigger: {
+        player: "damageEnd"
+      },
+      filter(event, player) {
+        return event.card && event.source != player
+      },
+      async content(event, trigger, player) {
+        await trigger.source.damage(trigger.num, trigger.source)
+      }
+    },
+    "tck_pao": {
+      usable: 1,
+      trigger: { player: ["chooseToRespondBegin", "chooseToUseBegin"] },
+      filter(event, player) {
+        if (event.responded) {
+          return false;
+        }
+        if (event.tck_pao) {
+          return false;
+        }
+        if (!event.filterCard || !event.filterCard({ name: "shan" }, player, event)) {
+          return false;
+        }
+        if (event.name === "chooseToRespond" && !lib.filter.cardRespondable({ name: "shan" }, player, event)) {
+          return false;
+        }
+        return true
+      },
+      async content(event, trigger, player) {
+        trigger.tck_pao = true
+        trigger.untrigger()
+        trigger.set("responded", true)
+        trigger.result = { bool: true, card: { name: "shan", nature: "tck_duo" } }
+      },
+    },
+    "tck_bai_du_bu_qin": {
+      trigger: {
+        player: "loseHpBegin",
+      },
+      forced: true,
+      filter(event, player) {
+        return event.type == "du"
+      },
+      async content(event, trigger, player) {
+        trigger.cancel()
+      },
+    },
+    "tck_bian_xing": {
+      unique: true,
+      skillAnimation: true,
+      limited: true,
+      trigger: {
+        player: "dieBegin"
+      },
+      filter(event, player) {
+        if (player.storage.tck_bian_xing) return false;
+        return true
+      },
+      forceDie: true,
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_bian_xing")
+        await trigger.cancel()
+        await player.reinitCharacter("tck_falali", "tck_qingtianzhu")
+        player.maxHp = get.character("tck_qingtianzhu").maxHp
+        await player.update()
+        await player.recoverTo(player.maxHp)
+        await player.draw(4)
+        player.storage.tck_bian_xing = true
+      }
+    },
+    "tck_chun_jing": {
+      mod: {
+        targetEnabled(card) {
+          if (get.type2(card) == 'trick') {
+            return false;
+          }
+        }
+      },
+    },
+    "tck_shui_zai": {
+      group: ["tck_shui_zai_enter", "tck_shui_zai_phase"],
+      subSkill: {
+        "enter": {
+          trigger: {
+            player: "enterGame",
+            global: "gameDrawAfter"
+          },
+          direct: true,
+          async content(event, trigger, player) {
+            const res = await player.chooseUseTarget("tck_shui_yan_qi_jun", get.prompt("tck_shui_zai"), "视为使用一张【水淹七军】").forResult()
+            if (res.bool) {
+              player.storage.tck_shui_zai_phase_roundcount = 0
+              await player.updateMark("tck_shui_zai_phase_roundcount")
+            }
+          }
+        },
+        "phase": {
+          enable: "phaseUse",
+          round: 2,
+          prompt: "发动一次水淹七军",
+          async content(event, trigger, player) {
+            await player.chooseUseTarget("tck_shui_yan_qi_jun", true, "视为使用一张【水淹七军】")
+          }
+        }
+      }
+    },
+    "tck_sheng_ming_zhi_yuan": {
+      trigger: {
+        global: "phaseJieshu"
+      },
+      filter(event, player) {
+        return player.getHp() > 0
+      },
+      async content(event, trigger, player) {
+        const result = await player
+          .chooseNumbers(get.prompt(event.name), [{ prompt: "请选择你要失去的体力值", min: 1, max: player.getHp() }], true)
+          .forResult()
+        const number = result.numbers[0]
+        await player.loseHp(number)
+        await trigger.player.draw(2 * number)
+      }
+    },
+    "tck_du_shui": {
+      round: 1,
+      enable: "phaseUse",
+      async content(event, trigger, player) {
+        let du = ui.create.card(ui.special)
+        du.storage.vanish = true
+        du.init(['', 0, "du", null, ["gifts"]])
+        const res = await player.chooseTarget("请选择赠予的目标", true, (card, player, target) => player != target).forResult()
+        await player.give(du, res.targets[0], "gain2")
+      }
+    },
+    "tck_zhong_chu": {
+      enable: "phaseUse",
+      filterTarget(card, player, target) {
+        return player != target && target.hasSex("female")
+      },
+      filter(event, player) {
+        return game.hasPlayer(p => player != p && p.hasSex("female"))
+      },
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.suit(card) == "heart" && get.number(card) >= 1 && get.number(card) <= 13) return 999
+          return -999
+        }).forResult()
+        if (get.suit(res) == "heart" && get.number(res) >= 1 && get.number(res) <= 13) {
+          await event.target.$damagepop(-999, "none")
+          await event.target.$damagepop(-999, "thunder")
+          await event.target.$damagepop(-999, "fire")
+          await event.target.$damagepop(-999, "ice")
+          await event.target.$damagepop(-999, "kami")
+          await game.delay(5.5)
+          await event.target.$skill(`${get.translation(event.target)}七窍流血暴体而亡`)
+          await game.delay(3)
+          await event.target.die()
+        }
+      }
+    },
+    "tck_zi_gong2": {
+      enable: "phaseUse",
+      filterTarget(card, player, target) {
+        return player != target && target.hasSex("male")
+      },
+      filter(event, player) {
+        return game.hasPlayer(p => player != p && p.hasSex("male"))
+      },
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          if (get.suit(card) == "spade" && get.number(card) >= 1 && get.number(card) <= 13) return 999
+          return -999
+        }).forResult()
+        if (get.suit(res) == "spade" && get.number(res) >= 1 && get.number(res) <= 13) {
+          await event.target.$damagepop(-999, "none")
+          await event.target.$damagepop(-999, "thunder")
+          await event.target.$damagepop(-999, "fire")
+          await event.target.$damagepop(-999, "ice")
+          await event.target.$damagepop(-999, "kami")
+          await game.delay(5.5)
+          await event.target.$skill(`${get.translation(event.target)}七窍流血暴体而亡`)
+          await game.delay(3)
+          await event.target.die()
+        }
+      }
+    },
+    "tck_xu_ruo": {
+      forced: true,
+      trigger: {
+        player: "useSkillAfter"
+      },
+      async content(event, trigger, player) {
+        await player.loseHp(player.getHp())
+      }
+    },
+    "tck_qiu_pai": {
+      trigger: {
+        global: "phaseBefore",
+        player: "enterGame"
+      },
+      forced: true,
+      filter(event, player) {
+        return (event.name !== "phase" || game.phaseNumber === 0) && !lib.inpile.includes("tck_yu_mao_qiu_pai");
+      },
+      async content(event, trigger, player) {
+        const card = game.createCard2("tck_yu_mao_qiu_pai", "club", 8)
+        game.broadcastAll(() => void lib.inpile.add("tck_yu_mao_qiu_pai"))
+        game.cardsGotoPile(card, () => ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)])
+      },
+      group: ["tck_qiu_pai_1"],
+      subSkill: {
+        "1": {
+          trigger: {
+            player: "useCard"
+          },
+          forced: true,
+          filter(event, player) {
+            return player.hasCards("e", card => get.subtype(event.card) == get.subtype(card) && get.name(card) != "tck_yu_mao_qiu_pai")
+          },
+          async content(event, trigger, player) {
+            const cards = await player.getCards("e", card => get.subtype(trigger.card) == get.subtype(card) && get.name(card) != "tck_yu_mao_qiu_pai")
+            await player.gain(cards, "gain2")
+          }
+        },
+      },
+    },
+    "tck_kou_sha": {
+      trigger: {
+        global: ["chooseToPSSAfter", "chooseToCompareAfter", "compareMultipleAfter"]
+      },
+      forced: true,
+      filter(event, player, name) {
+        if (name == "chooseToPSSAfter") {
+          const evt = event.getParent()
+          if (get.name(evt.name) != "tck_dou") return false
+          if (event.player == player && event.result.bool) return true
+          if (event.target == player && !event.result.bool && !event.recult.tie) return true
+          return false
+        } else if (["chooseToCompareAfter", "compareMultipleAfter"].includes(name)) {
+          return event.result.winner == player
+        }
+        return false
+      },
+      async content(event, trigger, player) {
+        let target
+        if (trigger.player == player) {
+          target = trigger.target
+        } else if (trigger.target == player) {
+          target = trigger.player
+        }
+        if (!target) return
+        await player.gainPlayerCard(target, "he", 1, true)
+      },
+      group: ["tck_kou_sha_1"],
+      subSkill: {
+        "1": {
+          enable: "phaseUse",
+          usable: 1,
+          filter(event, player) {
+            return game.hasPlayer(p => player.canCompare(p))
+          },
+          prompt: "出牌阶段限一次，你可摸一张牌，然后与一人拼点。",
+          async content(event, trigger, player) {
+            await player.draw(1)
+            const res = await player.chooseTarget("请选择拼点的目标", (card, player, target) => player.canCompare(target), true).forResult()
+            await player.chooseToCompare(res.targets[0])
+          },
         }
       }
     },
@@ -8269,6 +8652,44 @@ export const skills = {
     },
   },
   translate: {
+    "tck_qiu_pai": "球拍",
+    "tck_qiu_pai_info": "游戏开始时，你将球拍加入游戏，除球拍外，你不会因替换装备而弃置被替换装备。",
+    "tck_kou_sha": "扣杀",
+    "tck_kou_sha_info": "你的斗赢或你拼点赢了，你获得对方一张牌，出牌阶段限一次，你可摸一张牌，然后与一人拼点。",
+    "tck_zhong_chu": "中出",
+    "tck_zhong_chu_info": "直接输入很多能量进入身体并对对方输出，♥1-K则输出成功，对方直接七窍流血，暴体而亡。（限女性）",
+    "tck_zi_gong2": "自宫",
+    "tck_zi_gong2_info": "同理（限男性），黑桃1-K成功。",
+    "tck_xu_ruo": "虚弱",
+    "tck_xu_ruo_info": "使用任意技能因透支失去全部体力。",
+    "tck_chun_jing": "纯净",
+    "tck_chun_jing_info": "无法被锦选中。",
+    "tck_shui_zai": "水灾",
+    "tck_shui_zai_info": "出场发动一次水淹七军，后每两回合一次。",
+    "tck_sheng_ming_zhi_yuan": "生命之源",
+    "tck_sheng_ming_zhi_yuan_info": "一名角色回合结束可以扣一滴血给它摸两张。（无限）",
+    "tck_du_shui": "毒水",
+    "tck_du_shui_info": "可产生一张可以赠的毒。（出牌每轮限一次）",
+    "tck_zhuang": "撞",
+    "tck_zhuang_info": "有玩家用一张牌对你造成一点伤害，其自己也需扣血。（一回合一次）",
+    "tck_pao": "跑",
+    "tck_pao_info": "拥有一次额外出躲的机会。（一回合一次）",
+    "tck_bai_du_bu_qin": "百毒不侵",
+    "tck_bai_du_bu_qin_info": "毒等对我无效。",
+    "tck_bian_xing": "变形",
+    "tck_bian_xing_info": "死亡后变身成为擎天柱，回复满血量，摸4张牌。",
+    "tck_pu_huo": "铺火",
+    "tck_pu_huo_info": "每回合开始对全体造成1滴火焰伤害，如濒死一人，对其在追加六张需拟火杀。",
+    "tck_wan_sha": "完杀",
+    "tck_wan_sha_info": "死亡只得自己救。",
+    "tck_??_????": "????",
+    "tck_??_????_info": "免疫锦囊，不能有装备。（自己）",
+    "tck_??_???": "???",
+    "tck_??_???_info": "回合开始前可不从牌堆抽卡改为从弃牌堆抽1张牌。（自选）",
+    "tck_??_??": "??",
+    "tck_??_??_info": "濒死状态可以使用，从牌堆抽卡一直抽到桃为止。（每场游戏限1次）",
+    "tck_??_?": "?",
+    "tck_??_?_info": "朗读一段只有方奕洋大人才懂的文字。",
     "tck_bu_si": "不死",
     "tck_bu_si_info": "第6滴血只能黑杀<br/>2滴红杀<br/>3滴普通杀。",
     "tck_deng_si": "等死",

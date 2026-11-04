@@ -624,13 +624,13 @@ export const characters = {
       skills: ["tck_jiao_zhu", "tck_xiao_chou"],
       img: "extension/TCK/imgs/charactors/tck_lanlanlu.jpg",
     },
-    "tck_tongkudefangyiyang": {
+    "tck_tongkudefyy": {
       sex: "male",
       group: "tck_group_fang",
       hp: 3,
       maxHp: 3,
       skills: ["tck_tk_ku_rou", "tck_zi_gong"],
-      img: "extension/TCK/imgs/charactors/tck_tongkudefangyiyang.jpg",
+      img: "extension/TCK/imgs/charactors/tck_tongkudefyy.jpg",
     },
     "tck_ZiPnc": {
       sex: "male",
@@ -1027,6 +1027,64 @@ export const characters = {
       skills: ["tck_bu_si", "tck_deng_si"],
       img: "extension/TCK/imgs/charactors/tck_gou.jpg",
     },
+    "tck_character_??": {
+      sex: "none",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_??_????", "tck_??_???", "tck_??_??", "tck_??_?"],
+      img: "extension/TCK/imgs/charactors/tck_character_wenhaowenhao.jpg",
+    },
+    "tck_yuzaoqian": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_pu_huo", "tck_wan_sha"],
+      img: "extension/TCK/imgs/charactors/tck_yuzaoqian.jpg",
+    },
+    "tck_falali": {
+      sex: "none",
+      group: "tck_group_ma",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_zhuang", "tck_pao", "tck_bai_du_bu_qin", "tck_bian_xing"],
+      img: "extension/TCK/imgs/charactors/tck_falali.jpg",
+    },
+    "tck_qingtianzhu": {
+      sex: "none",
+      group: "tck_group_ma",
+      hp: 4,
+      maxHp: 4,
+      skills: [],
+      img: "extension/TCK/imgs/charactors/tck_qingtianzhu.jpg",
+      isHiddenBoss: true,
+      isBossAllowed: false,
+    },
+    "tck_jinmailang": {
+      sex: "none",
+      group: "tck_group_shui",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_chun_jing", "tck_shui_zai", "tck_sheng_ming_zhi_yuan", "tck_du_shui"],
+      img: "extension/TCK/imgs/charactors/tck_jinmailang.jpg",
+    },
+    "tck_fyydarenwangzhewudi": {
+      sex: "male",
+      group: "tck_group_jin",
+      hp: 18,
+      maxHp: 18,
+      skills: ["tck_zhong_chu", "tck_zi_gong2", "tck_xu_ruo"],
+      img: "extension/TCK/imgs/charactors/tck_fyydarenwangzhewudi.jpg",
+    },
+    "tck_yzx": {
+      sex: "male",
+      group: "tck_qi",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_qiu_pai", "tck_kou_sha"],
+      img: "extension/TCK/imgs/charactors/tck_yzx.jpg",
+    },
 
     //重制版
     "tck_r_zpn": {
@@ -1072,6 +1130,13 @@ export const characters = {
 
   },
   translate: {
+    "tck_yzx": "余子轩",
+    "tck_fyydarenwangzhewudi": "方奕洋大人王者无敌",
+    "tck_jinmailang": "今麦朗",
+    "tck_qingtianzhu": "擎天柱",
+    "tck_falali": "法拉力",
+    "tck_yuzaoqian": "玉藻钱",
+    "tck_character_??": "??",
     "tck_gou": "狗",
     "tck_jiyou": "机油",
     "tck_jianqiming": "见崎鸣",
@@ -1123,7 +1188,7 @@ export const characters = {
     "tck_shiliuyexiaoye": "十六夜咲夜",
     "tck_scp_166": "SCP166",
     "tck_ZiPnc": "ZiPnc",
-    "tck_tongkudefangyiyang": "痛苦的方奕洋",
+    "tck_tongkudefyy": "痛苦的方奕洋",
     "tck_lanlanlu": "蓝蓝路",
     "tck_sunquan": "孫权",
     "tck_zhisenxiuyi": "栉森秀一",
@@ -1213,6 +1278,9 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_yzx": "子龙",
+    "tck_fyydarenwangzhewudi": "十八岁的红眼杀人魔鬼",
+    "tck_character_??": "???",
     "tck_gou": "王蛋也",
     "tck_jianqiming": "Misaki",
     "tck_weiaola_ailian": "魔女之家",
@@ -1345,14 +1413,15 @@ export const characters = {
         "tck_nanmen", "tck_hunpoyaomeng", "tck_taowajiangpai", "tck_????", "tck_tiannanmen",
         "tck_chaonengxiansheng", "tck_wutengyouxian", "tck_weioula", "tck_hzy", "tck_jiege",
         "tck_bayunzi", "tck_ailisimageteluoyide", "tck_mn_ailian", "tck_zhisenxiuyi", "tck_ZiPnc",
-        "tck_lanlanlu", "tck_tongkudefangyiyang", "tck_scp_166", "tck_shiliuyexiaoye", "tck_zeta",
+        "tck_lanlanlu", "tck_tongkudefyy", "tck_scp_166", "tck_shiliuyexiaoye", "tck_zeta",
         "tck_AK47", "tck_jingditou", "tck_scp_096", "tck_kuangquanshui_chunjingshui", "tck_lvyunfei",
         "tck_scp_001_smr", "tck_jie_scp_173", "tck_xuyu", "tck_dongfengguzaomiao", "tck_guiqie",
         "tck_jiubenyamei", "tck_jinkela", "tck_ZiPncdejiaxiangrenwu", "tck_kuangfu", "tck_rkshs_aya",
         "tck_zlm", "tck_hwj", "tck_txhd_hwj", "tck_lcy", "tck_ljy", "tck_zlh", "tck_faniwaluntai",
         "tck_tuixiong", "tck_old_hcl", "tck_hsth_ailian", "tck_character_shan", "tck_character_zi",
         "tck_character_fu", "tck_zpy", "tck_drxd_xjx", "tck_weiaola_ailian", "tck_jianqiming",
-        "tck_jiyou", "tck_gou",
+        "tck_jiyou", "tck_gou", "tck_character_??", "tck_yuzaoqian", "tck_falali", "tck_jinmailang",
+        "tck_fyydarenwangzhewudi", "tck_yzx",
       ],
 
       //三国
@@ -1370,8 +1439,9 @@ export const characters = {
       ],
 
       //附加
-      "tck_fu_jia_pack": ["tck_bayunlan", "tck_cheng",
+      "tck_fu_jia_pack": ["tck_bayunlan", "tck_cheng", "tck_qingtianzhu",
         "tck_penglairenou", "tck_shanghairenou", "tck_character_fu_yu_zi",
+
       ],
 
       //重制版
