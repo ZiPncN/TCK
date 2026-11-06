@@ -796,7 +796,7 @@ export const cards = {
         if (event.togain.length > 0 && event.target.isAlive()) {
           let res = await event.target.chooseButton(true, [0, 2], [`是否获得其中的至多2张牌？`, event.togain]).forResult()
           if (res.bool) {
-            await event.target.gain(res.links, "gain");
+            await event.target.gain(res.links, "gain2");
           }
         } else {
           await game.delay(1)
@@ -892,7 +892,7 @@ export const cards = {
       fullskin: true,
       type: "delay",               // 判定牌
       filterTarget(card, player, target) {
-        return !target.hasJudge('tck_ba_la_la_mo_xian_bang');  // 判断目标是否已有同名判定牌
+        return !target.hasJudge('tck_wen_yi');  // 判断目标是否已有同名判定牌
       },
       judge(card) {    // 判定函数
         if (get.suit(card) != 'heart') return -1;
@@ -2092,7 +2092,7 @@ export const cards = {
           })
           .forResult()
         const gain = result.moved[1]
-        await event.target.gain(gain, "gain")
+        await event.target.gain(gain, "draw2")
         game.washCardNoWithDiscard(result.moved[0])
         await event.target.addMark('tck_card_fei_ji_piao_mark')
       }

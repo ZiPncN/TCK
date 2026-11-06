@@ -7691,7 +7691,7 @@ export const skills = {
         return get.type2(event.card) == 'trick'
       },
       forced: true,
-      async content(event, trigge, player) {
+      async content(event, trigger, player) {
         await trigger.excluded.add(player)
       },
       mod: {
@@ -7785,11 +7785,6 @@ export const skills = {
       mod: {
         cardSavable(card, player, target) {
           if (taoList.includes(get.name(card)) && player != target) {
-            return false
-          }
-        },
-        cardEnabled(card, player, event) {
-          if (taoList.includes(get.name(card)) && player != event.player) {
             return false
           }
         }
