@@ -1086,48 +1086,6 @@ export const characters = {
       img: "extension/TCK/imgs/charactors/tck_yzx.jpg",
     },
 
-    //重制版
-    "tck_r_zpn": {
-      sex: "male",
-      group: "tck_luan_ru",
-      hp: 4,
-      maxHp: 4,
-      skills: ["tck_r_ji_rou", "tck_r_you_huo"],
-      img: "extension/TCK/imgs/charactors/tck_r_zpn.jpg",
-    },
-    "tck_r_momo": {
-      sex: "female",
-      group: "tck_luan_ru",
-      hp: 5,
-      maxHp: 5,
-      skills: ["tck_r_fu_xin", "tck_r_hua_tian"],
-      img: "extension/TCK/imgs/charactors/tck_r_momo.jpg",
-    },
-    "tck_r_wzh": {
-      sex: "male",
-      group: "tck_niu",
-      hp: 3,
-      maxHp: 3,
-      skills: ["tck_r_liang_shuang", "tck_r_xia_ye", "tck_r_wu_you", "tck_r_an_mian"],
-      img: "extension/TCK/imgs/charactors/tck_r_wzh.jpg",
-    },
-    "tck_r_wzh_fhz_yc": {
-      sex: "male",
-      group: "tck_group_wu",
-      hp: 4,
-      maxHp: 4,
-      skills: ["tck_r_niu_lai", "tck_r_lin_mo", "tck_r_yin_cang", "tck_r_feng_kuang"],
-      img: "extension/TCK/imgs/charactors/tck_r_wzh_fhz_yc.jpg",
-    },
-    "tck_r_mmhf_wzh": {
-      sex: "male",
-      group: "tck_group_han",
-      hp: 5,
-      maxHp: 5,
-      skills: ["tck_r_meng_mian"],
-      img: "extension/TCK/imgs/charactors/tck_r_mmhf_wzh.jpg",
-    },
-
   },
   translate: {
     "tck_yzx": "余子轩",
@@ -1213,9 +1171,6 @@ export const characters = {
     "tck_tiannanmen": "天南门",
     "tck_????": "????",
     "tck_taowajiangpai": "套娃武将",
-    "tck_r_mmhf_wzh": "王子含",
-    "tck_r_wzh_fhz_yc": "王子含 傅还政 隐藏角色",
-    "tck_r_wzh": "王子含",
     "tck_hunpoyaomeng": "魂魄妖梦",
     "tck_nanmen": "南门",
     "tck_dongfangzhangzhu": "东方仗助",
@@ -1242,7 +1197,6 @@ export const characters = {
     "tck_tongyuan": "童渊",
     "tck_liaohua": "廖化",
     "tck_shen_jiaxu": "贾诩",
-    "tck_r_momo": "漠漠",
     "tck_scp_999": "SCP999",
     "tck_jiutuntongzi": "酒吞童子",
     "tck_fengfeisha": "风飞沙",
@@ -1252,7 +1206,6 @@ export const characters = {
     "tck_wuyumolisha": "雾雨魔理沙",
     "tck_rkshs_fuchuangzi": "附窗子",
     "tck_ban": "班",
-    "tck_r_zpn": "朱沛宁",
     "tck_spc_173": "SPC173",
     "tck_scp_035": "SCP035",
     "tck_sp_sunshangxiang": "SP孙尚香",
@@ -1344,9 +1297,6 @@ export const characters = {
     "tck_guohuai": "方策精响",
     "tck_chaonengxiansheng": "超人总动员",
     "tck_????": "??",
-    "tck_r_mmhf_wzh": "蒙面悍匪",
-    "tck_r_wzh_fhz_yc": "婺城双杰",
-    "tck_r_wzh": "老黄牛肉面馆",
     "tck_hunpoyaomeng": "半人半灵的庭师",
     "tck_dongfangzhangzhu": "东方仗助",
     "tck_moduoluoyinqinai": "摸多了硬起来",
@@ -1371,7 +1321,6 @@ export const characters = {
     "tck_tongyuan": "百鸟朝凤",
     "tck_liaohua": "蜀汉忠义",
     "tck_shen_jiaxu": "文和乱武",
-    "tck_r_momo": "小猫咪",
     "tck_scp_999": "痒痒怪",
     "tck_jiutuntongzi": "鬼王",
     "tck_scp_001_wjlt": "无尽楼梯",
@@ -1379,7 +1328,6 @@ export const characters = {
     "tck_fhz": "画家",
     "tck_wuyumolisha": "普通的魔法使",
     "tck_ban": "老师",
-    "tck_r_zpn": "肌肉",
     "tck_spc_173": "爱学习的鲨鱼",
     "tck_scp_035": "丢失的数字",
     "tck_marry": "画中人",
@@ -1442,13 +1390,7 @@ export const characters = {
       "tck_fu_jia_pack": ["tck_bayunlan", "tck_cheng", "tck_qingtianzhu",
         "tck_penglairenou", "tck_shanghairenou", "tck_character_fu_yu_zi",
 
-      ],
-
-      //重制版
-      "tck_r_pack": ["tck_r_zpn", "tck_r_momo", "tck_r_wzh",
-        "tck_r_wzh_fhz_yc", "tck_r_mmhf_wzh",
       ]
-
     }
   },
   characterIntro: {

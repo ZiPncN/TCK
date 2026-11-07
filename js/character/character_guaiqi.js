@@ -11,11 +11,19 @@ export const guaiqi_characters = {
   },
   translate: {
     "TCK_GUAIQI": "TCK 怪奇",
+    "tck_guai_qi_pack": "怪奇物语",
     "tck_bachidaren": "八尺大人",
   },
   characterTitle: {
     "tck_bachidaren": "都市传说",
   },
+  characterSort: {
+    "TCK_GUAIQI": {
+      "tck_guai_qi_pack": [
+        "tck_bachidaren"
+      ],
+    }
+  }
 }
 
 export default guaiqi_characters
