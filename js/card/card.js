@@ -2092,7 +2092,7 @@ export const cards = {
           })
           .forResult()
         const gain = result.moved[1]
-        await event.target.gain(gain, "draw2")
+        await event.target.gain(gain)
         game.washCardNoWithDiscard(result.moved[0])
         await event.target.addMark('tck_card_fei_ji_piao_mark')
       }
