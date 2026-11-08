@@ -113,7 +113,7 @@ export default function () {
                                 } else {
                                     player = game.connectPlayers[0];
                                 }
-                            }
+                            } game.ws.send
                         }
                         if (!player) {
                             return;
@@ -123,10 +123,11 @@ export default function () {
                         }
                         if (game.online) {
                             game.send("chat", game.onlineID, skill.text);
+                            game.broadcast(file => game.playAudio(file), skill.file)
                         } else {
                             player.chat(skill.text);
                         }
-                        game.broadcastAll(file => game.playAudio(file), skill.file)
+                        game.playAudio(skill.file)
                     });
                     node.innerHTML = options[i];
                     list3.appendChild(node);
@@ -431,9 +432,6 @@ export default function () {
                     const audio = name.split(":");
                     let path = lib.assetURL + `extension/${ext ? ext + "/audio" : "TCK"}/bgm/` + `${audio[0]}.${audio[1] || "mp3"}`;
                     ui.backgroundMusic.src = path;
-
-                    console.log(ui.backgroundMusic)
-
                     ui.backgroundMusic.addEventListener("ended", () => {
                         ui.backgroundMusic.src = path;
                     });
