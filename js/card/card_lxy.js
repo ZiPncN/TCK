@@ -93,6 +93,10 @@ export const lxy_cards = {
         player: "phaseZhunbeiBegin"
       },
       forced: true,
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
+      },
       async content(event, trigger, player) {
         let res = await player.judge((card) => {
           if (2 <= get.number(card) && get.number(card) <= 9) {

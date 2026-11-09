@@ -1158,7 +1158,7 @@ export const cards = {
       notarget: true,
       async content(event, trigger, player) {
         await player.changeTckLand("tck_land_hai")
-        for (let p of game.players) {
+        for (let p of game.players.filter(p => !p.hasSkill("tck_tang_ping"))) {
           await p.addSkill("tck_land_hai_tckland_effect")
           await p.disableSkill('tck_land_hai_tckland_effect', lib.skill.tck_land_hai_tckland_effect.getSkills(player))
         }
@@ -2456,6 +2456,7 @@ export const cards = {
         player: "phaseDrawBegin2"
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return !event.numFixed;
       },
       async content(event, trigger, player) {
@@ -2467,6 +2468,10 @@ export const cards = {
       forced: true,
       trigger: {
         player: "phaseDiscardBegin"
+      },
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
       },
       async content(event, trigger, player) {
         const list = ["多弃2张牌", "扣1格生命不扣血"]
@@ -3266,6 +3271,7 @@ export const cards = {
         return `本牌上还有${(_status.tck_scp_330 || []).length}张牌`
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return (_status.tck_scp_330 || []).length > 0
       },
       async content(event, trigger, player) {
@@ -3332,6 +3338,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return get.name(event.card) == "nanman"
       },
       async content(event, trigger, player) {
@@ -3346,6 +3353,7 @@ export const cards = {
         player: "useCard",
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return get.name(event.card) == "guohe" || get.name(event.card) == "shunshou"
       },
       async content(event, trigger, player) {
@@ -3364,6 +3372,7 @@ export const cards = {
           filterCard: { name: "shan" },
           viewAs: { name: "sha" },
           viewAsFilter(player) {
+            if (player.hasSkill("tck_tang_ping")) return false
             if (!player.countCards("h", "shan")) {
               return false;
             }
@@ -3379,6 +3388,7 @@ export const cards = {
           prompt: "将一张杀当闪使用或打出",
           position: "h",
           viewAsFilter(player) {
+            if (player.hasSkill("tck_tang_ping")) return false
             if (!player.countCards("h", "sha")) {
               return false;
             }
@@ -3393,6 +3403,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return get.name(event.card) == "nanman"
       },
       async content(event, trigger, player) {
@@ -3524,10 +3535,12 @@ export const cards = {
       async content(event, trigger, player) {
       },
       init(player) {
-        player.disableSkill("tck_land_hai", lib.skill.tck_land_hai_tckland_effect.getSkills(player));
+        if (!player.hasSkill("tck_tang_ping"))
+          player.disableSkill("tck_land_hai", lib.skill.tck_land_hai_tckland_effect.getSkills(player));
       },
       onremove(player, skill) {
-        player.enableSkill(skill);
+        if (!player.hasSkill("tck_tang_ping"))
+          player.enableSkill(skill);
       },
       mark: true,
       marktext: "※",
@@ -3536,12 +3549,14 @@ export const cards = {
       },
       mod: {
         attackRangeBase(player, num) {
+          if (player.hasSkill("tck_tang_ping")) return
           if (player != _status.currentPhase) {
             return;
           }
           return 1;
         },
         globalFrom(from, to, distance) {
+          if (from.hasSkill("tck_tang_ping")) return
           if (from != _status.currentPhase) {
             return;
           }
@@ -3558,6 +3573,7 @@ export const cards = {
           return distance - num;
         },
         globalTo(from, to, distance) {
+          if (to.hasSkill("tck_tang_ping")) return
           if (to != _status.currentPhase) {
             return;
           }
@@ -3737,6 +3753,10 @@ export const cards = {
       forced: true,
       trigger: {
         player: "phaseZhunbeiBegin"
+      },
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
       },
       async content(event, trigger, player) {
         let res = await player.judge(
@@ -3996,6 +4016,10 @@ export const cards = {
       trigger: {
         player: "phaseZhunbeiBegin"
       },
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
+      },
       async content(event, trigger, player) {
         let res = await player.judge(
           card => {
@@ -4029,6 +4053,10 @@ export const cards = {
       trigger: {
         player: "phaseDrawBegin1",
       },
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
+      },
       async content(event, trigger, player) {
         trigger.changeToZero()
         while (true) {
@@ -4049,6 +4077,10 @@ export const cards = {
         player: "phaseZhunbeiBegin"
       },
       forced: true,
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
+      },
       async content(event, trigger, player) {
         let res = await player.judge((card) => {
           if (get.suit(card) == 'spade') return -1
@@ -4117,6 +4149,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return get.name(event.card) == "sha" && (get.nature(event.card) == "fire" || get.nature(event.card) == "thunder");
       },
       async content(event, trigger, player) {
@@ -4130,6 +4163,10 @@ export const cards = {
         player: "phaseJieshu"
       },
       forced: true,
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
+      },
       async content(event, trigger, player) {
         let cards = await player.getCards("e", (card) => {
           return get.name(card) == "tck_qian_shui_fu"
@@ -4252,6 +4289,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         let card = event.card;
         return get.name(card) == "sha" ||
           get.subtype(card) == "equip1" ||
@@ -4331,6 +4369,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return get.name(event.card) == "wuxie" || get.name(event.card) == "wanjian";
       },
       async content(event, trigger, player) {
@@ -4343,6 +4382,10 @@ export const cards = {
       forced: true,
       trigger: {
         player: "phaseZhunbeiBegin"
+      },
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
       },
       async content(event, trigger, player) {
         let res = await player.judge((card) => {
@@ -4372,6 +4415,7 @@ export const cards = {
         source: "damageBegin"
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return get.name(event.card) == "sha" && game.hasNature(event.card) && !noNatures.includes(get.nature(event.card))
       },
       async content(event, trigger, player) {
@@ -4474,6 +4518,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return player.isDamaged()
       },
       async content(event, trigger, player) {
@@ -4486,6 +4531,10 @@ export const cards = {
         player: "phaseJieshu"
       },
       forced: true,
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
+      },
       async content(event, trigger, player) {
         let cards = await player.getCards("e", (card) => {
           return get.name(card) == "tck_yu_hang_fu"
@@ -4500,6 +4549,10 @@ export const cards = {
         player: "phaseZhunbeiBegin"
       },
       forced: true,
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        return true
+      },
       async content(event, trigger, player) {
         await player.loseHp(1)
       }
@@ -4511,6 +4564,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return get.name(event.card) == "sha" && get.nature(event.card) == "fire"
       },
       async content(event, trigger, player) {
@@ -4524,6 +4578,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
         return get.name(event.card) == "sha" && (get.nature(event.card) == "fire" || get.nature(event.card) == "thunder");
       },
       async content(event, trigger, player) {

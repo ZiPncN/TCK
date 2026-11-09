@@ -1125,9 +1125,27 @@ export const characters = {
       skills: ["tck_chen_mo", "tck_niang", "tck_fen_fang", "tck_kai_xin", "tck_chi", "tck_zheng_E", "tck_se", "tck_ren_ge_hu_huan"],
       img: "extension/TCK/imgs/charactors/tck_jinxiong.jpg",
     },
+    "tck_shengxi": {
+      sex: "none",
+      group: "tck_group_han2",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_nan_xue", "tck_gua"],
+      img: "extension/TCK/imgs/charactors/tck_shengxi.jpg",
+    },
+    "tck_wangjue": {
+      sex: "none",
+      group: "tck_group_jue",
+      hp: 2,
+      maxHp: 2,
+      skills: ["tck_jue_sha", "", "bifa", "tck_yan_huo", "tck_shen_fa"],
+      img: "extension/TCK/imgs/charactors/tck_wangjue.jpg",
+    },
 
   },
   translate: {
+    "tck_wangjue": "王绝",
+    "tck_shengxi": "生息",
     "tck_jinxiong": "进雄",
     "tck_pyjie": "鹏远姐",
     "tck_pyge": "鹏远哥",
@@ -1420,7 +1438,7 @@ export const characters = {
         "tck_character_fu", "tck_zpy", "tck_drxd_xjx", "tck_weiaola_ailian", "tck_jianqiming",
         "tck_jiyou", "tck_gou", "tck_character_??", "tck_yuzaoqian", "tck_falali", "tck_jinmailang",
         "tck_fyydarenwangzhewudi", "tck_yzx", "tck_leisai", "tck_yangbalu", "tck_pyge", "tck_pyjie",
-        "tck_jinxiong",
+        "tck_jinxiong", "tck_shengxi", "tck_wangjue",
       ],
 
       //三国

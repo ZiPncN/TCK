@@ -8150,6 +8150,7 @@ export const skills = {
       subSkill: {
         "effect": {
           forced: true,
+          popup: false,
           trigger: {
             player: "gainEnd"
           },
@@ -8282,7 +8283,7 @@ export const skills = {
     "tck_ou_pai": {
       trigger: { player: "damageBegin3" },
       filter(event, player) {
-        return get.name(event.card) == "sha" && !game.hasNature(event.card)
+        return event.card && get.name(event.card) == "sha" && !game.hasNature(event.card)
       },
       async content(event, trigger, player) {
         if (game.hasPlayer(p => p != player && p != trigger.source)) {
@@ -8505,6 +8506,138 @@ export const skills = {
         }
       }
     },
+    "tck_nan_xue": {
+      enable: "phaseUse",
+      async content(event, trigger, player) {
+        await player.draw(3)
+        const res = await player.chooseTarget((card, player, target) => player != target, true).forResult()
+        if (res.bool) {
+          await player.chooseToGive(res.targets[0], 3, true)
+        }
+        await player.loseHp(2)
+      }
+    },
+    "tck_gua": {
+      unique: true,
+      skillAnimation: true,
+      limited: true,
+      derivation: ["tck_niao_yu"],
+      trigger: { player: "dieBegin" },
+      forceDie: true,
+      filter(event, player) {
+        if (player.storage.tck_gua) return false
+        return true
+      },
+      async content(event, trigger, player) {
+        await player.awakenSkill(["tck_nan_xue", "tck_gua"])
+        await trigger.cancel()
+        await player.recoverTo(player.maxHp)
+        await player.addSkills(["tck_niao_yu"])
+        player.storage.tck_gua = true
+      },
+    },
+    "tck_niao_yu": {
+      trigger: {
+        player: ["gainAfter"],
+      },
+      forced: true,
+      filter(event, player) {
+        return event.cards.some(card => get.type(card) == "equip")
+      },
+      async content(event, trigger, player) {
+        await player.draw(2)
+      }
+    },
+
+    "tck_jue_sha": {
+      unique: true,
+      skillAnimation: true,
+      limited: true,
+      enable: "phaseUse",
+      filter(event, player) {
+        if (player.storage.tck_jue_sha) return false;
+        return true
+      },
+      filterTarget: true,
+      forceDie: true,
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_jue_sha")
+        const target = event.target
+
+        if (target.countCards("h") > target.hp) {
+          await target.chooseToDiscard(2, "h", true)
+        } else {
+          await target.draw(2)
+        }
+
+        player.storage.tck_jue_sha = true
+      }
+    },
+    "tck_tang_ping": {},
+    "tck_yan_huo": {
+      unique: true,
+      skillAnimation: true,
+      limited: true,
+      enable: "phaseUse",
+      filter(event, player) {
+        if (player.storage.tck_yan_huo) return false
+        return true
+      },
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_yan_huo")
+        let discardNum = 1
+        for (let p of game.players) {
+          const res = await p.chooseToDiscard(discardNum, "he").forResult()
+          if (res.bool) {
+            discardNum++
+          } else {
+            p.damage(player, 2)
+          }
+        }
+        player.storage.tck_yan_huo = true
+      },
+    },
+    "tck_shen_fa": {
+      unique: true,
+      skillAnimation: true,
+      limited: true,
+      enable: "phaseUse",
+      filter(event, player) {
+        if (player.storage.tck_shen_fa) return false
+        return player.countCards("he") >= 3
+      },
+      filterTarget(card, player, target) {
+        return player != target
+      },
+      filterCard: true,
+      position: "he",
+      selectCard: 3,
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_shen_fa")
+        await event.target.addTempSkill("tck_shen_fa_effect")
+        event.target.storage.tck_shen_fa_effect = player
+        await event.target.damage(3, player)
+        await event.target.removeSkill("tck_shen_fa_effect")
+        player.storage.tck_shen_fa = true
+      },
+      subSkill: {
+        "effect": {
+          onremove(player) {
+            delete player.storage.tck_shen_fa_effect
+          },
+          forced: true,
+          charlotte: true,
+          popup: false,
+          trigger: {
+            player: "dying"
+          },
+          async content(event, trigger, player) {
+            const source = player.storage.tck_shen_fa_effect
+            await source.damage(3, source)
+          }
+        },
+      },
+    },
 
     //============================================全局技能============================================
     /* // 添加语音
@@ -8646,6 +8779,20 @@ export const skills = {
     },
   },
   translate: {
+    "tck_jue_sha": "绝杀",
+    "tck_jue_sha_info": "[限定]选择一个人排大于体力则弃两张，反之摸。",
+    "tck_tang_ping": "躺平",
+    "tck_tang_ping_info": "无视场。",
+    "tck_yan_huo": "焰火",
+    "tck_yan_huo_info": "[限]每个人需弃（X+1）张，X为弃过牌加一不然扣二滴。",
+    "tck_shen_fa": "神罚",
+    "tck_shen_fa_info": "[限]弃三张牌扣一个人三滴血，如濒死，你也扣三滴。",
+    "tck_nan_xue": "南血",
+    "tck_nan_xue_info": "摸3给3，扣2滴未死人。",
+    "tck_gua": "挂",
+    "tck_gua_info": "死了复活一次，并获得以辅为主，废南血得鸟语。",
+    "tck_niao_yu": "鸟语",
+    "tck_niao_yu_info": "得装备牌摸2。",
     "tck_chen_mo": "沉默",
     "tck_chen_mo_info": "对手下回合不能用技能。",
     "tck_niang": "娘",
