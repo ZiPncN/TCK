@@ -8548,7 +8548,6 @@ export const skills = {
         await player.draw(2)
       }
     },
-
     "tck_jue_sha": {
       unique: true,
       skillAnimation: true,
@@ -8637,6 +8636,144 @@ export const skills = {
           }
         },
       },
+    },
+    "tck_tian_tang": {
+      trigger: {
+        global: "roundStart"
+      },
+      filter(event, player) {
+        return !get.land("tck_land_tian_tang")
+      },
+      async content(event, trigger, player) {
+        const card = game.createCard('tck_land_tian_tang')
+        await player.useCard(card)
+      },
+    },
+    "tck_di_yu": {
+      trigger: {
+        global: "roundStart"
+      },
+      filter(event, player) {
+        return get.land("tck_land_tian_tang") && !get.land("tck_land_di_yu")
+      },
+      async content(event, trigger, player) {
+        const card = game.createCard('tck_land_di_yu')
+        await player.useCard(card)
+      },
+    },
+    "tck_chuan_tou": {
+      trigger: {
+        player: "useCardToPlayered"
+      },
+      forced: true,
+      logTarget: "target",
+      filter(event, player) {
+        return event.target != player
+      },
+      async content(event, trigger, player) {
+        await trigger.target.addTempSkill("tck_chuan_tou_effect")
+        if (trigger.target.hasCards("e")) {
+          const res = await player.judge(card => {
+            if (get.suit(card) == 'diamond') return 1
+            return -1
+          }).forResult()
+          if (get.suit(res) == 'diamond') {
+            await player.discardPlayerCard(trigger.target, 1, "e", true)
+          }
+        }
+      },
+      subSkill: {
+        "effect": {
+          direct: true,
+          forced: true,
+          charlotte: true,
+          trigger: {
+            player: ["damage", "damageCancelled", "damageZero"],
+            source: ["damage", "damageCancelled", "damageZero"],
+            target: ["shaMiss", "useCardToExcluded", "useCardToEnd", "eventNeutralized"],
+            global: ["useCardEnd"]
+          },
+          async content(event, trigger, player) {
+            await player.removeSkill("tck_chuan_tou_effect")
+          },
+          init(player) {
+            player.disableSkill("tck_chuan_tou_effect", lib.skill.tck_chuan_tou.getSkills(player));
+          },
+          onremove(player, skill) {
+            player.enableSkill(skill);
+          },
+          mark: true,
+          marktext: "※",
+          intro: {
+            content: "不能用装备技能",
+          },
+          mod: {
+            attackRangeBase(player, num) {
+              if (player != _status.currentPhase) {
+                return;
+              }
+              return 1;
+            },
+            globalFrom(from, to, distance) {
+              if (from != _status.currentPhase) {
+                return;
+              }
+              let num = 0;
+              for (let i of from.getVCards("e")) {
+                const info = get.info(i).distance;
+                if (!info) {
+                  continue;
+                }
+                if (info.globalFrom) {
+                  num += info.globalFrom;
+                }
+              }
+              return distance - num;
+            },
+            globalTo(from, to, distance) {
+              if (to != _status.currentPhase) {
+                return;
+              }
+              let num = 0;
+              for (let i of to.getVCards("e")) {
+                const info = get.info(i).distance;
+                if (!info) {
+                  continue;
+                }
+                if (info.globalTo) {
+                  num += info.globalTo;
+                }
+                if (info.attackTo) {
+                  num += info.attackTo;
+                }
+              }
+              return distance - num;
+            },
+          },
+        },
+      },
+      getSkills(player) {
+        return player.getCards("e").reduce((list, card) => {
+          const info = get.info(card);
+          if (info && info.skills) {
+            return list.addArray(info.skills);
+          }
+          return list;
+        }, []);
+      },
+    },
+    "tck_zi_ji_zi_zu": {
+      enable: "phaseUse",
+      filter(event, player) {
+        return player.countCards("he") >= 2
+      },
+      filterCard: true,
+      position: "he",
+      selectCard: 2,
+      async content(event, trigger, player) {
+        await player.draw(2)
+        await player.loseHp(1)
+      }
     },
 
     //============================================全局技能============================================
@@ -8779,6 +8916,14 @@ export const skills = {
     },
   },
   translate: {
+    "tck_zi_ji_zi_zu": "自给自足",
+    "tck_zi_ji_zi_zu_info": "弃两张得两张，扣一滴。",
+    "tck_chuan_tou": "穿透",
+    "tck_chuan_tou_info": "无视对方装备，如对方有装备则自己判定，♦弃之一个。",
+    "tck_tian_tang": "天堂",
+    "tck_tian_tang_info": "产生场地天堂，养生每人回一滴，自己判定出桃回两滴，毒回一滴。",
+    "tck_di_yu": "地狱",
+    "tck_di_yu_info": "天堂效果后产生，每人扣一滴，自己判定为毒则扣五滴，桃则三滴，基本牌一滴。",
     "tck_jue_sha": "绝杀",
     "tck_jue_sha_info": "[限定]选择一个人排大于体力则弃两张，反之摸。",
     "tck_tang_ping": "躺平",

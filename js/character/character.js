@@ -1138,12 +1138,21 @@ export const characters = {
       group: "tck_group_jue",
       hp: 2,
       maxHp: 2,
-      skills: ["tck_jue_sha", "", "bifa", "tck_yan_huo", "tck_shen_fa"],
+      skills: ["tck_jue_sha", "tck_tang_ping", "bifa", "tck_yan_huo", "tck_shen_fa"],
       img: "extension/TCK/imgs/charactors/tck_wangjue.jpg",
+    },
+    "tck_tianzhigouyewang": {
+      sex: "none",
+      group: "shen",
+      hp: 9,
+      maxHp: 9,
+      skills: ["tck_tian_tang", "tck_di_yu", "tck_chuan_tou", "tck_zi_ji_zi_zu"],
+      img: "extension/TCK/imgs/charactors/tck_tianzhigouyewang.jpg",
     },
 
   },
   translate: {
+    "tck_tianzhigouyewang": "天之狗也王",
     "tck_wangjue": "王绝",
     "tck_shengxi": "生息",
     "tck_jinxiong": "进雄",
@@ -1438,7 +1447,7 @@ export const characters = {
         "tck_character_fu", "tck_zpy", "tck_drxd_xjx", "tck_weiaola_ailian", "tck_jianqiming",
         "tck_jiyou", "tck_gou", "tck_character_??", "tck_yuzaoqian", "tck_falali", "tck_jinmailang",
         "tck_fyydarenwangzhewudi", "tck_yzx", "tck_leisai", "tck_yangbalu", "tck_pyge", "tck_pyjie",
-        "tck_jinxiong", "tck_shengxi", "tck_wangjue",
+        "tck_jinxiong", "tck_shengxi", "tck_wangjue", "tck_tianzhigouyewang",
       ],
 
       //三国

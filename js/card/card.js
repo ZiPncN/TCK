@@ -2365,6 +2365,30 @@ export const cards = {
       skills: ["tck_card_hcl_skill"],
       recastable: true,
     },
+    "tck_land_tian_tang": {
+      image: "ext:TCK/imgs/cards/tck_land_tian_tang.png",
+      fullskin: true,
+      type: "land",
+      enable: true,
+      notarget: true,
+      async content(event, trigger, player) {
+        game.players.forEach(p => p.recover(1))
+        player.changeTckLand("tck_land_tian_tang")
+        game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
+    "tck_land_di_yu": {
+      image: "ext:TCK/imgs/cards/tck_land_di_yu.png",
+      fullskin: true,
+      type: "land",
+      enable: true,
+      notarget: true,
+      async content(event, trigger, player) {
+        game.players.forEach(p => p.loseHp(1))
+        player.changeTckLand("tck_land_di_yu")
+        game.cardsGotoSpecial(event.card.cards, "toTckLand")
+      }
+    },
     // todo
     "tck_liu_long_can_jia": {
       image: "ext:TCK/imgs/cards/tck_liu_long_can_jia.png",
@@ -2409,6 +2433,45 @@ export const cards = {
           await player.discard(cards)
         }
       },
+    },
+
+    "tck_land_di_yu_tckland_skill": {
+      ruleSkill: true,
+      trigger: { player: "judge" },
+      forced: true,
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        const res = event.player.judging[0]
+        return get.name(res) == 'du' || taoList.includes(get.name(res)) || get.type(res) == 'basic'
+      },
+      async content(event, trigger, player) {
+        const res = trigger.player.judging[0]
+        if (get.name(res) == 'du') {
+          await player.loseHp(5)
+        } else if (taoList.includes(get.name(res))) {
+          await player.loseHp(3)
+        } else if (get.type(res) == 'basic') {
+          await player.loseHp(1)
+        }
+      }
+    },
+    "tck_land_tian_tang_tckland_skill": {
+      ruleSkill: true,
+      trigger: { player: "judge" },
+      forced: true,
+      filter(event, player) {
+        if (player.hasSkill("tck_tang_ping")) return false
+        const res = event.player.judging[0]
+        return taoList.includes(get.name(res)) || get.name(res) == 'du'
+      },
+      async content(event, trigger, player) {
+        const res = trigger.player.judging[0]
+        if (taoList.includes(get.name(res))) {
+          await player.recover(2)
+        } else if (get.name(res) == 'du') {
+          await player.recover(1)
+        }
+      }
     },
     "tck_yu_mao_qiu_pai_skill1": {
       equipSkill: true,
@@ -4389,11 +4452,11 @@ export const cards = {
       },
       async content(event, trigger, player) {
         let res = await player.judge((card) => {
-          if (get.name(card) == "tao" || get.name(card) == "taoyuan") return -1
+          if (taoList.includes(get.name(card)) || get.name(card) == "taoyuan") return -1
           return 1
         }
         ).forResult();
-        if (get.name(res) == "tao" || get.name(res) == "taoyuan") {
+        if (taoList.includes(get.name(res)) || get.name(res) == "taoyuan") {
           await player.loseHp(player.hp)
         }
       },
@@ -4403,7 +4466,7 @@ export const cards = {
           if (player == target) {
             return true
           }
-          return false
+          return player.hasSkill("tck_tang_ping")
         },
       }
     },
@@ -4717,6 +4780,14 @@ export const cards = {
     },
   },
   translate: {
+    "tck_land_tian_tang": "天堂",
+    "tck_land_tian_tang_info": "养生每人回一滴，场地效果：自己判定出桃回两滴，毒回一滴。",
+    "tck_land_tian_tang_tckland_skill": "天堂",
+    "tck_land_tian_tang_tckland_skill_info": "自己判定出桃回两滴，毒回一滴。",
+    "tck_land_di_yu": "地狱",
+    "tck_land_di_yu_info": "每人扣一滴，场地效果：自己判定为毒则扣五滴，桃则三滴，基本牌一滴。",
+    "tck_land_di_yu_tckland_skill": "地狱",
+    "tck_land_di_yu_tckland_skill_info": "自己判定为毒则扣五滴，桃则三滴，基本牌一滴。",
     "tck_yu_mao_qiu_pai": "羽毛球拍",
     "tck_yu_mao_qiu_pai_info": "你的黑色手牌可当“斗”使用，你拼点点数+3。",
     "tck_yu_mao_qiu_pai_skill1": "羽毛球拍",
