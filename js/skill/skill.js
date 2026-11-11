@@ -2539,9 +2539,9 @@ export const skills = {
           } return -1
         }).forResult()
         if (get.suit(res) == 'heart' && get.number(res) <= 9 && get.number(res) >= 2) {
-          game.players
-            .filter(p => p != player)
-            .forEach(p => p.damage(player, 3, 'fire'))
+          const players = [...game.players
+            .filter(p => p != player)]
+          players.forEach(p => p.damage(player, 3, 'fire'))
         }
       }
     },
@@ -8775,7 +8775,294 @@ export const skills = {
         await player.loseHp(1)
       }
     },
-
+    "tck_kong": {
+      trigger: {
+        player: "phaseDiscardBefore"
+      },
+      async content(event, trigger, player) {
+        await trigger.cancel()
+      },
+      mod: {
+        targetEnabled(card, player, target, now) {
+          if (get.type(card) == 'judge') {
+            return false
+          }
+        }
+      },
+    },
+    "tck_ji": {
+      trigger: {
+        player: "useCardToPlayered"
+      },
+      forced: true,
+      logTarget: "target",
+      filter(event, player) {
+        return event.target != player
+      },
+      async content(event, trigger, player) {
+        await trigger.target.addTempSkill("tck_ji_effect")
+      },
+      subSkill: {
+        "effect": {
+          direct: true,
+          forced: true,
+          charlotte: true,
+          trigger: {
+            player: ["damage", "damageCancelled", "damageZero"],
+            source: ["damage", "damageCancelled", "damageZero"],
+            target: ["shaMiss", "useCardToExcluded", "useCardToEnd", "eventNeutralized"],
+            global: ["useCardEnd"]
+          },
+          async content(event, trigger, player) {
+            await player.removeSkill("tck_ji_effect")
+          },
+          init(player) {
+            player.disableSkill("tck_ji_effect", lib.skill.tck_ji.getSkills(player));
+          },
+          onremove(player, skill) {
+            player.enableSkill(skill);
+          },
+          mark: true,
+          marktext: "※",
+          intro: {
+            content: "不能用装备技能",
+          },
+          mod: {
+            attackRangeBase(player, num) {
+              if (player != _status.currentPhase) {
+                return;
+              }
+              return 1;
+            },
+            globalFrom(from, to, distance) {
+              if (from != _status.currentPhase) {
+                return;
+              }
+              let num = 0;
+              for (let i of from.getVCards("e")) {
+                const info = get.info(i).distance;
+                if (!info) {
+                  continue;
+                }
+                if (info.globalFrom) {
+                  num += info.globalFrom;
+                }
+              }
+              return distance - num;
+            },
+            globalTo(from, to, distance) {
+              if (to != _status.currentPhase) {
+                return;
+              }
+              let num = 0;
+              for (let i of to.getVCards("e")) {
+                const info = get.info(i).distance;
+                if (!info) {
+                  continue;
+                }
+                if (info.globalTo) {
+                  num += info.globalTo;
+                }
+                if (info.attackTo) {
+                  num += info.attackTo;
+                }
+              }
+              return distance - num;
+            },
+          },
+        },
+      },
+      getSkills(player) {
+        return player.getCards("e").reduce((list, card) => {
+          const info = get.info(card);
+          if (info && info.skills) {
+            return list.addArray(info.skills);
+          }
+          return list;
+        }, []);
+      },
+    },
+    "tck_ru": {
+      trigger: { player: "useCardToPlayered" },
+      filter(event, player) {
+        return event.card.name === "sha"
+      },
+      logTarget: "target",
+      async content(event, trigger, player) {
+        const res = await player.judge(
+          card => {
+            if (get.color(card) != "black") {
+              return 1
+            }
+            return -0.5
+          }
+        ).forResult()
+        if (get.color(res) != "black") {
+          trigger.getParent()?.directHit.add(trigger.target)
+        } else {
+          await player.addTempSkill("tck_ru_effect")
+        }
+      },
+      subSkill: {
+        "effect": {
+          sub: true,
+          sourceSkill: "tck_ru",
+          forced: true,
+          popup: false,
+          trigger: { player: "shaMiss" },
+          async content(event, trigger, player) {
+            await player.discardPlayerCard(trigger.target, "he", true)
+            await player.removeSkill("tck_ru_effect")
+          }
+        },
+      }
+    },
+    "tck_skill_sha2": {
+      round: 1,
+      trigger: {
+        global: "phaseZhunbei"
+      },
+      filter(event, player) {
+        return _status.currentPhase != player && game.hasPlayer(p => player.canUse('sha', p, false, false))
+      },
+      async content(event, trigger, player) {
+        const sha = game.createCard({ name: 'sha', nature: 'fire' })
+        await player.chooseUseTarget(sha, 'nodistance', false)
+      }
+    },
+    "tck_wu_chen": {
+      unique: true,
+      skillAnimation: true,
+      limited: true,
+      enable: "phaseUse",
+      filter(event, player) {
+        if (player.storage.tck_wu_chen) return false
+        return true
+      },
+      async content(event, trigger, player) {
+        await player.awakenSkill("tck_wu_chen")
+        const targets = [...game.players.sortBySeat()]
+        for (let target of targets) {
+          await target.damage(3, player)
+        }
+        player.storage.tck_wu_chen = true
+      },
+    },
+    "tck_she": {
+      locked: true,
+      ai: {
+        viewHandcard: true,
+        skillTagFilter(player, tag, arg) {
+          if (player == arg) {
+            return false;
+          }
+        }
+      }
+    },
+    "tck_jun_huo_rong": {
+      trigger: { player: "useCard1" },
+      filter(event, player) {
+        if (event.card.name === "sha") {
+          return true;
+        }
+      },
+      prompt2(event, player) {
+        return `将${get.translation(event.card)}改为火属性`;
+      },
+      async content(event, trigger, player) {
+        game.setNature(trigger.card, "fire")
+        if (get.itemtype(trigger.card) === "card") {
+          const next = game.createEvent("zhuque_clear")
+          next.card = trigger.card
+          event.next.remove(next)
+          trigger.after.push(next)
+          next.setContent(async (event2, trigger2) => {
+            game.setNature(trigger2.card, [])
+          })
+        }
+      }
+    },
+    "tck_jun_zhu": {
+      trigger: { player: "damageEnd" },
+      filter(event, player) {
+        return game.hasPlayer((cur) => {
+          return cur !== player && cur.countCards("he") > 0
+        })
+      },
+      async content(event, trigger, player) {
+        let targets = game.filterPlayer((current) => current != player).sortBySeat()
+        player.line(targets)
+        await player.gainMultiple(targets, "he")
+      },
+    },
+    "tck_li_chong": {
+      trigger: {
+        player: "useCard"
+      },
+      forced: true,
+      filter(event, player) {
+        return !player.storage.tck_li_chong && _status.currentPhase == player
+      },
+      async content(event, trigger, player) {
+        player.storage.tck_li_chong = trigger.targets[0]
+      },
+      mod: {
+        playerEnabled(card, player, target) {
+          if (player.storage.tck_li_chong && player.storage.tck_li_chong != target) {
+            return false
+          }
+        },
+      },
+      group: ["tck_li_chong_remove"],
+      subSkill: {
+        "remove": {
+          charlotte: true,
+          forced: true,
+          popup: false,
+          trigger: { player: "phaseJieshuAfter" },
+          filter(event, player) {
+            return player.storage.tck_li_chong
+          },
+          async content(event, trigger, player) {
+            delete player.storage.tck_li_chong
+          }
+        }
+      }
+    },
+    "tck_rong_guang": {
+      trigger: { player: "phaseDrawBegin2" },
+      forced: true,
+      filter(event, player) {
+        return !event.numFixed
+      },
+      async content(event, trigger, player) {
+        trigger.num++
+      },
+      group: ["tck_rong_guang_1"],
+      subSkill: {
+        "1": {
+          trigger: { player: "phaseJieshu" },
+          direct: true,
+          async content(event, trigger, player) {
+            const res1 = await player.chooseTarget("请选择给牌的目标", true, 1, (card, player, target) => player != target).forResult()
+            const target = res1.targets[0]
+            await player.chooseToGive(target, 1, "he", true)
+          }
+        },
+      },
+    },
+    "tck_ku_bi": {
+      forced: true,
+      trigger: {
+        global: "die"
+      },
+      filter(event, player) {
+        return event.player.hasSex("female")
+      },
+      async content(event, trigger, player) {
+        await player.loseMaxHp(1)
+      }
+    },
     //============================================全局技能============================================
     /* // 添加语音
     "tck_send_skill_voice": {
@@ -8916,6 +9203,28 @@ export const skills = {
     },
   },
   translate: {
+    "tck_kong": "空",
+    "tck_kong_info": "可以跳过弃牌，无视判定。",
+    "tck_ji": "激",
+    "tck_ji_info": "无视场景，无视装备。",
+    "tck_ru": "入",
+    "tck_ru_info": "杀需判黑色才能闪，并弃一张。",
+    "tck_skill_sha2": "杀",
+    "tck_skill_sha2_info": "可需拟一张火杀，回合外使用。",
+    "tck_wu_chen": "无尘",
+    "tck_wu_chen_info": "制造大爆炸每人扣三滴。",
+    "tck_she": "蛇",
+    "tck_she_info": "可以观看对手手牌。",
+    "tck_jun_huo_rong": "军火容",
+    "tck_jun_huo_rong_info": "可以把所有杀属性变为火属性。",
+    "tck_jun_zhu": "君主",
+    "tck_jun_zhu_info": "可以在受伤后得到每人一张牌。",
+    "tck_li_chong": "立宠",
+    "tck_li_chong_info": "不可以一把对多人用牌只能一人。",
+    "tck_rong_guang": "容光",
+    "tck_rong_guang_info": "多摸一张牌，回合结束给对方一张。",
+    "tck_ku_bi": "苦逼",
+    "tck_ku_bi_info": "女性死亡扣一点体力上限和体力，优先扣体力上限。",
     "tck_zi_ji_zi_zu": "自给自足",
     "tck_zi_ji_zi_zu_info": "弃两张得两张，扣一滴。",
     "tck_chuan_tou": "穿透",

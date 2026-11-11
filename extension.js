@@ -383,6 +383,12 @@ export default function () {
                 }
                 return false
             }
+            /**
+             * 判断玩家是否有无视场地的技能
+             */
+            lib.element.player.hasIgnoreLandSkill = function () {
+                return this.hasSkill("tck_tang_ping") || this.hasSkill("tck_ji")
+            }
             lib.filter.tckWuxieSwap = function (event) {
                 if (event.type !== "wuxie") {
                     return false;

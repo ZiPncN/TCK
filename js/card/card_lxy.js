@@ -94,7 +94,7 @@ export const lxy_cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {

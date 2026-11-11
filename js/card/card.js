@@ -1158,7 +1158,7 @@ export const cards = {
       notarget: true,
       async content(event, trigger, player) {
         await player.changeTckLand("tck_land_hai")
-        for (let p of game.players.filter(p => !p.hasSkill("tck_tang_ping"))) {
+        for (let p of game.players.filter(p => !p.hasIgnoreLandSkill())) {
           await p.addSkill("tck_land_hai_tckland_effect")
           await p.disableSkill('tck_land_hai_tckland_effect', lib.skill.tck_land_hai_tckland_effect.getSkills(player))
         }
@@ -2440,7 +2440,7 @@ export const cards = {
       trigger: { player: "judge" },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         const res = event.player.judging[0]
         return get.name(res) == 'du' || taoList.includes(get.name(res)) || get.type(res) == 'basic'
       },
@@ -2460,7 +2460,7 @@ export const cards = {
       trigger: { player: "judge" },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         const res = event.player.judging[0]
         return taoList.includes(get.name(res)) || get.name(res) == 'du'
       },
@@ -2519,7 +2519,7 @@ export const cards = {
         player: "phaseDrawBegin2"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return !event.numFixed;
       },
       async content(event, trigger, player) {
@@ -2533,7 +2533,7 @@ export const cards = {
         player: "phaseDiscardBegin"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -3334,7 +3334,7 @@ export const cards = {
         return `本牌上还有${(_status.tck_scp_330 || []).length}张牌`
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return (_status.tck_scp_330 || []).length > 0
       },
       async content(event, trigger, player) {
@@ -3401,7 +3401,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return get.name(event.card) == "nanman"
       },
       async content(event, trigger, player) {
@@ -3416,7 +3416,7 @@ export const cards = {
         player: "useCard",
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return get.name(event.card) == "guohe" || get.name(event.card) == "shunshou"
       },
       async content(event, trigger, player) {
@@ -3435,7 +3435,7 @@ export const cards = {
           filterCard: { name: "shan" },
           viewAs: { name: "sha" },
           viewAsFilter(player) {
-            if (player.hasSkill("tck_tang_ping")) return false
+            if (player.hasIgnoreLandSkill()) return false
             if (!player.countCards("h", "shan")) {
               return false;
             }
@@ -3451,7 +3451,7 @@ export const cards = {
           prompt: "将一张杀当闪使用或打出",
           position: "h",
           viewAsFilter(player) {
-            if (player.hasSkill("tck_tang_ping")) return false
+            if (player.hasIgnoreLandSkill()) return false
             if (!player.countCards("h", "sha")) {
               return false;
             }
@@ -3466,7 +3466,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return get.name(event.card) == "nanman"
       },
       async content(event, trigger, player) {
@@ -3598,11 +3598,11 @@ export const cards = {
       async content(event, trigger, player) {
       },
       init(player) {
-        if (!player.hasSkill("tck_tang_ping"))
+        if (!player.hasIgnoreLandSkill())
           player.disableSkill("tck_land_hai", lib.skill.tck_land_hai_tckland_effect.getSkills(player));
       },
       onremove(player, skill) {
-        if (!player.hasSkill("tck_tang_ping"))
+        if (!player.hasIgnoreLandSkill())
           player.enableSkill(skill);
       },
       mark: true,
@@ -3612,14 +3612,14 @@ export const cards = {
       },
       mod: {
         attackRangeBase(player, num) {
-          if (player.hasSkill("tck_tang_ping")) return
+          if (player.hasIgnoreLandSkill()) return
           if (player != _status.currentPhase) {
             return;
           }
           return 1;
         },
         globalFrom(from, to, distance) {
-          if (from.hasSkill("tck_tang_ping")) return
+          if (from.hasIgnoreLandSkill()) return
           if (from != _status.currentPhase) {
             return;
           }
@@ -3636,7 +3636,7 @@ export const cards = {
           return distance - num;
         },
         globalTo(from, to, distance) {
-          if (to.hasSkill("tck_tang_ping")) return
+          if (to.hasIgnoreLandSkill()) return
           if (to != _status.currentPhase) {
             return;
           }
@@ -3818,7 +3818,7 @@ export const cards = {
         player: "phaseZhunbeiBegin"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -4080,7 +4080,7 @@ export const cards = {
         player: "phaseZhunbeiBegin"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -4117,7 +4117,7 @@ export const cards = {
         player: "phaseDrawBegin1",
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -4141,7 +4141,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -4212,7 +4212,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return get.name(event.card) == "sha" && (get.nature(event.card) == "fire" || get.nature(event.card) == "thunder");
       },
       async content(event, trigger, player) {
@@ -4227,7 +4227,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -4352,7 +4352,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         let card = event.card;
         return get.name(card) == "sha" ||
           get.subtype(card) == "equip1" ||
@@ -4432,7 +4432,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return get.name(event.card) == "wuxie" || get.name(event.card) == "wanjian";
       },
       async content(event, trigger, player) {
@@ -4447,7 +4447,7 @@ export const cards = {
         player: "phaseZhunbeiBegin"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -4463,10 +4463,9 @@ export const cards = {
       //不能对别人用牌
       mod: {
         playerEnabled(card, player, target) {
-          if (player == target) {
-            return true
+          if (player != target && !player.hasIgnoreLandSkill()) {
+            return false
           }
-          return player.hasSkill("tck_tang_ping")
         },
       }
     },
@@ -4478,7 +4477,7 @@ export const cards = {
         source: "damageBegin"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return get.name(event.card) == "sha" && game.hasNature(event.card) && !noNatures.includes(get.nature(event.card))
       },
       async content(event, trigger, player) {
@@ -4581,7 +4580,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return player.isDamaged()
       },
       async content(event, trigger, player) {
@@ -4595,7 +4594,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -4613,7 +4612,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return true
       },
       async content(event, trigger, player) {
@@ -4627,7 +4626,7 @@ export const cards = {
         player: "useCard"
       },
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return get.name(event.card) == "sha" && get.nature(event.card) == "fire"
       },
       async content(event, trigger, player) {
@@ -4641,7 +4640,7 @@ export const cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return get.name(event.card) == "sha" && (get.nature(event.card) == "fire" || get.nature(event.card) == "thunder");
       },
       async content(event, trigger, player) {

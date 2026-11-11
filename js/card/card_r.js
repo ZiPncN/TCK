@@ -43,7 +43,7 @@ export const r_cards = {
       ruleSkill: true,
       enable: "phaseUse",
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return player.countCards("h") > 0
       },
       async content(event, trigger, player) {
@@ -145,7 +145,7 @@ export const r_cards = {
       },
       forced: true,
       filter(event, player) {
-        if (player.hasSkill("tck_tang_ping")) return false
+        if (player.hasIgnoreLandSkill()) return false
         return !event.hasNature()
       },
       async content(event, trigger, player) {
