@@ -3328,7 +3328,7 @@ export const skills = {
             await trigger.cancel()
           }
         } else if (get.color(res) == 'black') {
-          await trigger.directHit.addArray(game.players)
+          await trigger.directHit.add(player)
         }
       }
     },
@@ -3842,7 +3842,7 @@ export const skills = {
       enable: "phaseUse",
       usable: 1,
       filter(event, player) {
-        return player.countCards("h") > 0
+        return player.countCards("h") > 0 && game.hasPlayer(p => p != player && p.isDamaged())
       },
       filterCard: true,
       position: "h",
@@ -7909,9 +7909,12 @@ export const skills = {
         const result = await player
           .chooseNumbers(get.prompt(event.name), [{ prompt: "请选择你要失去的体力值", min: 1, max: player.getHp() }], true)
           .forResult()
-        const number = result.numbers[0]
-        await player.loseHp(number)
-        await trigger.player.draw(2 * number)
+        console.log(result)
+        if (result.numbers) {
+          const number = result.numbers[0]
+          await player.loseHp(number)
+          await trigger.player.draw(2 * number)
+        }
       }
     },
     "tck_du_shui": {

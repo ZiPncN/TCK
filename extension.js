@@ -1,20 +1,26 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import characters from "./js/character/character.js"
-import skills from "./js/skill/skill.js"
-import guaiqi_characters from "./js/character/character_guaiqi.js"
-import guaiqi_skills from "./js/skill/skill_guaiqi.js"
-import cards from "./js/card/card.js"
-import ex_cards from "./js/card/card_ex.js"
-import r_characters from "./js/character/character_r.js"
-import r_skills from "./js/skill/skill_r.js"
-import r_cards from "./js/card/card_r.js"
-import lxy_cards from "./js/card/card_lxy.js"
+
 import character_cards from "./js/card/card_character.js"
 import du_cards from "./js/card/card_du.js"
+import ex_cards from "./js/card/card_ex.js"
+import lxy_cards from "./js/card/card_lxy.js"
+import r_cards from "./js/card/card_r.js"
+import cards from "./js/card/card.js"
+
+import guaiqi_characters from "./js/character/character_guaiqi.js"
+import mnzj_characters from "./js/character/character_mnzj.js"
+import r_characters from "./js/character/character_r.js"
+import characters from "./js/character/character.js"
+
+import globalSkills from "./js/skill/globalSkill.js"
+import guaiqi_skills from "./js/skill/skill_guaiqi.js"
+import mnzj_skills from "./js/skill/skill_mnzj.js"
+import skills from "./js/skill/skill.js"
+import r_skills from "./js/skill/skill_r.js"
+
 import groups from "./js/groups.js"
 import natureConfig from "./js/natures.js"
 import { noNatures } from './js/natures.js'
-import globalSkills from "./js/skill/globalSkill.js"
 export const type = "extension"
 export default function () {
     return {
@@ -608,6 +614,18 @@ export default function () {
                     // characterIntro: { ...r_characters.characterIntro },
                     translate: { ...r_characters.translate, ...r_skills.translate },
                     skill: { ...r_skills.skill },
+                }
+            })
+            game.import('character', function () {
+                return {
+                    name: "TCK_MNZJ",
+                    connect: true,
+                    character: { ...mnzj_characters.character },
+                    characterSort: mnzj_characters.characterSort,
+                    characterTitle: { ...mnzj_characters.characterTitle },
+                    // characterIntro: { ...r_characters.characterIntro },
+                    translate: { ...mnzj_characters.translate, ...mnzj_skills.translate },
+                    skill: { ...mnzj_skills.skill },
                 }
             })
             //--------------------- 添加卡牌 begin ---------------------
