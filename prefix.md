@@ -10,3 +10,5 @@ skill:      tck_skill
 负面效果：   _debuff
 
 _card：代表技能卡牌（锦囊）
+
+上传前限该版本号，然后执行genManifest.mjs
