@@ -8,7 +8,7 @@ export const mnzj_skills = {
         target: "useCardToTarget"
       },
       filter(event, player) {
-        return get.type2(event.card) == 'trick'
+        return event.source != player && get.type2(event.card) == 'trick'
       },
       async content(event, trigger, player) {
         const res = await player.judge(card => {
@@ -94,14 +94,81 @@ export const mnzj_skills = {
       },
     },
 
+    "tck_mnzj_yin_dao": {
+      enable: "phaseUse",
+      usable: 1,
+      filterCard: true,
+      position: "he",
+      filter(event, player) {
+        return player.hasCards("he")
+      },
+      async content(event, trigger, player) {
+        const card = game.createCard('tck_mnzj_mo_nv_zhi_jia')
+        await player.useCard(card)
+      }
+    },
+    "tck_mnzj_jue_wang": {
+      trigger: {
+        player: "phaseZhunbei"
+      },
+      forced: true,
+      filter(event, player) {
+        return player.isDamaged()
+      },
+      async content(event, trigger, player) {
+        await player.recoverTo(player.maxHp)
+      },
+      group: ["tck_mnzj_jue_wang_gameStart", "tck_mnzj_jue_wang_draw"],
+      subSkill: {
+        "gameStart": {
+          trigger: {
+            global: "gameStart"
+            // global: "phaseBefore",
+            // player: "enterGame"
+          },
+          forced: true,
+          filter(event, player) {
+            return !lib.inpile.includes("tck_card_mnzj_jue_wang")
+            // return (event.name !== "phase" || game.phaseNumber === 0) && !lib.inpile.includes("tck_card_mnzj_jue_wang");
+          },
+          async content(event, trigger, player) {
+            const card1 = game.createCard2("tck_card_mnzj_jue_wang", "spade", 3)
+            const card2 = game.createCard2("tck_card_mnzj_jue_wang", "spade", 2)
+            const card3 = game.createCard2("tck_card_mnzj_jue_wang", "club", 2)
+            const cards = [card1, card2, card3]
+            game.broadcastAll(() => void lib.inpile.add("tck_card_mnzj_jue_wang"))
+            game.cardsGotoPile(cards, () => ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)])
+          },
+        },
+        "draw": {
+          charlotte: true,
+          forced: true,
+          trigger: {
+            player: ["gainEnd"],
+            global: ["phaseBefore"],
+          },
+          firstDo: true,
+          filter(event, player) {
+            return player.hasCards("h", card => get.name(card) == "tck_card_mnzj_jue_wang")
+          },
+          async content(event, trigger, player) {
+            await player.die()
+          }
+        },
+      }
+    },
   },
   translate: {
+    "tck_mnzj_yin_dao": "引导",
+    "tck_mnzj_yin_dao_info": "出牌阶段限一次，你可弃1张牌，将场景改为“魔女之家”。",
+    "tck_mnzj_jue_wang": "绝望",
+    "tck_mnzj_jue_wang_info": "回合开始，你将体力回复至上限，游戏开始，你将3张“绝望”加入牌堆，当你摸到“绝望”后，你立即死亡。",
     "tck_mnzj_wei_shan": "伪善",
     "tck_mnzj_wei_shan_info": "出牌阶段限一次，你可指定一人，令其回复一点体力，然后其选择一项：①流失2点体力，②弃2张牌。",
     "tck_mnzj_de_cheng": "得逞",
     "tck_mnzj_de_cheng_info": "你使用锦囊牌时，若此牌为黑色，则不能响应；若为红色，你摸1张牌。",
     "tck_mnzj_dan_chun": "单纯",
-    "tck_mnzj_dan_chun_info": "锁定技，其他人对用锦囊时，应进行判定，若为黑色，你不能响应该锦囊，若为红色，来源需弃1张手牌，否则该锦囊失效。",
+    "tck_mnzj_dan_chun_info": "锁定技，其他人对你用锦囊时，应进行判定，若为黑色，你不能响应该锦囊，若为红色，来源需弃1张手牌，否则该锦囊失效。",
     "tck_mnzj_xin_shan": "心善",
     "tck_mnzj_xin_shan_info": "出牌阶段限1次，你可指定一人回复1点体力并摸1张牌，若其为满体力，则改为摸3张牌。",
   }

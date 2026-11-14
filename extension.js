@@ -1,11 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import update, { DEFAULT_REPO } from "./update.js";
+import update from "./update.js";
 import { EXTENSION_VERSION } from "./version.js";
 
 import character_cards from "./js/card/card_character.js"
 import du_cards from "./js/card/card_du.js"
 import ex_cards from "./js/card/card_ex.js"
 import lxy_cards from "./js/card/card_lxy.js"
+import mnzj_cards from "./js/card/card_mnzj.js"
 import r_cards from "./js/card/card_r.js"
 import cards from "./js/card/card.js"
 
@@ -420,7 +421,11 @@ export default function () {
                 const infoMap = event.info_map;
                 return Boolean(infoMap.player && infoMap.player.isTckUnderControl(true) && !infoMap.player.hasSkillTag("noautowuxie") && (!infoMap.targets || infoMap.targets.length <= 1) && !infoMap.noai);
             }
-            //检测当前地图
+            /**
+             * 检测当前地图
+             * @param {*} name 地图名 
+             * @returns 
+             */
             get.land = function (name) {
                 if (name && typeof name === 'string') {
                     if (lib.skill.global.includes(name + '_tckland_skill')) {
@@ -438,7 +443,11 @@ export default function () {
                 }
 
             }
-            //切换bgm
+            /**
+             * 切换bgm
+             * @param {*} name bgm名
+             * @param {*} ext  扩展名
+             */
             game.switchTCKBgm = function (name, ext) {
                 if (_status.tckBgm && name == _status.tckBgm) return;
                 _status.tckBgm = name;
@@ -454,7 +463,13 @@ export default function () {
                     game.switchTCKBgm(name, ext);
                 }, name, ext);
             }
-            // 弹出动画（未测试）
+            /**
+             * 弹出动画
+             * @param {*} src 
+             * @param {*} time 
+             * @param {*} bgm 
+             * @param {*} link 
+             */
             game.setTCKGif = (src, time, bgm, link) => {
                 if (bgm) game.switchTCKBgm(bgm);
                 _status.tempBackground = "extension:TCK/gifs/" + src + ".gif";
@@ -531,6 +546,9 @@ export default function () {
             }
             if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_DU')) {
                 lib.card.list.addArray(du_cards.list);
+            }
+            if (lib.card?.list && lib.config.cards.some(cards => cards == 'TCK_MNZJ')) {
+                lib.card.list.addArray(mnzj_cards.list);
             }
 
             natureConfig.resetLib()
@@ -714,6 +732,20 @@ export default function () {
             if (!lib.config.cards.includes('TCK_DU')) lib.config.cards.remove('TCK_DU');
             lib.translate['TCK_DU'] = 'TCK_DU';
             if (!lib.config.TCK_DU) game.saveConfig('cards', lib.config.cards.concat('TCK_DU')), game.saveConfig('TCK_DU', true);
+
+            game.import('card', function () {
+                return {
+                    name: "TCK_MNZJ",
+                    connect: true,
+                    translate: { ...mnzj_cards.translate },
+                    card: { ...mnzj_cards.card },
+                    skill: { ...mnzj_cards.skill },
+                }
+            })
+            lib.config.all.cards.push('TCK_MNZJ');
+            if (!lib.config.cards.includes('TCK_MNZJ')) lib.config.cards.remove('TCK_MNZJ');
+            lib.translate['TCK_MNZJ'] = 'TCK_MNZJ';
+            if (!lib.config.TCK_MNZJ) game.saveConfig('cards', lib.config.cards.concat('TCK_MNZJ')), game.saveConfig('TCK_MNZJ', true);
             //---------------------- 添加卡牌 end ----------------------
 
             //添加自定义属性
@@ -729,13 +761,6 @@ export default function () {
                 clear: true,
                 intro: `《TCK》当前版本 v${EXTENSION_VERSION}\n下方「检查更新」可获取最新版本`
             },
-            update_repo: {
-                name: `<span style="color:#ff9800;text-decoration: underline">当前更新源`,
-                clear: true,
-                onclick: function () {
-                    alert("当前更新源：\n" + (lib.config.extension_TCK_update_repo || DEFAULT_REPO) + "\n\n如需更换，请修改扩展目录下 update.js 的 DEFAULT_REPO。");
-                },
-            },
             update_source: {
                 name: `<font color="#9c27b0">更新镜像源`,
                 init: "3",
@@ -747,7 +772,7 @@ export default function () {
                 },
             },
             update_method: {
-                name: `<font color="#2196f3">极速更新`,
+                name: `<font color="#2196f3">快速更新`,
                 init: false,
                 intro: "开启后，在线更新将跳过图片等大文件，仅更新 .js 和 .css 代码文件，显著加快更新速度。",
             },
@@ -776,12 +801,12 @@ export default function () {
         package: {
             intro: [
                 '代码：ZPN',
-                '<a href="https://github.com/ZiPncN/TCK">点击前往TCKGithub仓库</a>',
+                '<a href="https://github.com/ZiPncN/TCK">点击前往 TCK Github仓库</a>',
             ].join('<br/>'),
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.5.0",
+            version: "1.5.1",
         },
         files: {},
         connect: true
