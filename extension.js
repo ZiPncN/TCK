@@ -305,7 +305,8 @@ export default function () {
             lib.element.player.clearTckTrueMe = function () {
                 if (this === game.me) {
                     if (!game.notMe) {
-                        game.swapPlayerAuto(this._tckTrueMe[0]);
+                        const first = this._tckTrueMe && this._tckTrueMe[0];
+                        if (first) game.swapPlayerAuto(first);
                     } else {
                         delete game.notMe;
                     }
@@ -313,8 +314,44 @@ export default function () {
                         ui.click.auto();
                     }
                 }
-                delete this._tckTrueMe;
-            }
+
+                const self = this;
+                const toClean = new Set();   // 需要从列表中剔除 self 的节点
+                const seen = new Set();
+                const stack = [];
+
+                const pushNode = (node) => {
+                    if (!node || seen.has(node)) return;
+                    seen.add(node);
+                    stack.push(node);
+                    if (node._trueMe) pushNode(node._trueMe);
+                };
+
+                pushNode(self);
+
+                // 收集所有能到达的、列表里含 self 的节点
+                while (stack.length) {
+                    const cur = stack.pop();
+                    const list = cur._tckTrueMe;
+                    if (!Array.isArray(list)) continue;
+
+                    if (list.includes(self)) toClean.add(cur);
+
+                    for (const m of list) {
+                        pushNode(m);
+                    }
+                }
+
+                // 从其他节点的列表里剔除 self（保留节点自身及其他成员）
+                for (const p of toClean) {
+                    if (p === self) continue;
+                    p._tckTrueMe = p._tckTrueMe.filter(x => x !== self);
+                    if (p._tckTrueMe.length === 0) delete p._tckTrueMe;
+                }
+
+                // self 自身清空
+                delete self._tckTrueMe;
+            };
             lib.element.player.isTckUnderControl = function (self, me) {
                 me = me || game.me;
 
@@ -822,7 +859,7 @@ export default function () {
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.5.2.1",
+            version: "1.5.2.2",
         },
         files: {},
         connect: true

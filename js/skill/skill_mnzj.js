@@ -434,7 +434,6 @@ export const mnzj_skills = {
             player: "useCardBegin"
           },
           async content(event, trigger, player) {
-            console.log(trigger)
             await player.chooseToDiscard("he", 1, true, card => !trigger.card.cards.includes(card))
           },
           mod: {
