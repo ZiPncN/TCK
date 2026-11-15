@@ -303,6 +303,16 @@ export default function () {
              * 清空操控权
              */
             lib.element.player.clearTckTrueMe = function () {
+                if (this === game.me) {
+                    if (!game.notMe) {
+                        game.swapPlayerAuto(this._tckTrueMe[0]);
+                    } else {
+                        delete game.notMe;
+                    }
+                    if (_status.auto) {
+                        ui.click.auto();
+                    }
+                }
                 delete this._tckTrueMe;
             }
             lib.element.player.isTckUnderControl = function (self, me) {
@@ -812,7 +822,7 @@ export default function () {
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.5.2",
+            version: "1.5.2.1",
         },
         files: {},
         connect: true

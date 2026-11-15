@@ -5865,7 +5865,7 @@ export const skills = {
         }
 
         if (player.storage.tck_shou_shu.get(target) == target.maxHp) {
-          game.broadcastAll(target.changeTckTrueMe(target, player))
+          game.broadcastAll(player.changeTckTrueMe(player, target))
         }
       },
       group: ["tck_shou_shu_effect"],

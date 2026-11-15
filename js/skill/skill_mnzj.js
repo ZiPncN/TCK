@@ -464,7 +464,7 @@ export const mnzj_skills = {
             player: "phaseBeginStart"
           },
           async content(event, trigger, player) {
-            game.broadcastAll(player.changeTckTrueMe(player, player.storage.tck_mnzj_mo_fa_3phaseBeginStart))
+            game.broadcastAll(player.changeTckTrueMe(player.storage.tck_mnzj_mo_fa_3phaseBeginStart, player))
           },
         },
         "3phaseJieshu": {
