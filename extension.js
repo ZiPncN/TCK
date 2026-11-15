@@ -299,6 +299,12 @@ export default function () {
                     if (!player._tckTrueMe.includes(p)) player._tckTrueMe.push(p);
                 }
             }
+            /**
+             * 清空操控权
+             */
+            lib.element.player.clearTckTrueMe = function () {
+                delete this._tckTrueMe;
+            }
             lib.element.player.isTckUnderControl = function (self, me) {
                 me = me || game.me;
 
@@ -806,7 +812,7 @@ export default function () {
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.5.1",
+            version: "1.5.2",
         },
         files: {},
         connect: true

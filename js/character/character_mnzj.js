@@ -16,6 +16,14 @@ export const mnzj_characters = {
       skills: ["tck_mnzj_yin_dao", "tck_mnzj_jue_wang"],
       img: "extension/TCK/imgs/charactors/tck_mnzj_ailian.jpg",
     },
+    "tck_mnzj_weiaola_after": {
+      sex: "female",
+      group: "tck_luan_ru",
+      hp: 6,
+      maxHp: 6,
+      skills: ["tck_mnzj_jue_fen", "tck_mnzj_after_jue_wang"],
+      img: "extension/TCK/imgs/charactors/tck_mnzj_weiaola_after.jpg",
+    },
     "tck_mnzj_ailian_after": {
       sex: "female",
       group: "tck_luan_ru",
@@ -24,8 +32,18 @@ export const mnzj_characters = {
       skills: ["tck_mnzj_wei_shan", "tck_mnzj_de_cheng"],
       img: "extension/TCK/imgs/charactors/tck_mnzj_ailian_after.jpg",
     },
+    "tck_mnzj_heimaoemo": {
+      sex: "male",
+      group: "tck_luan_ru",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_mnzj_tun_shi", "tck_mnzj_mo_fa"],
+      img: "extension/TCK/imgs/charactors/tck_mnzj_heimaoemo.jpg",
+    },
   },
   translate: {
+    "tck_mnzj_heimaoemo": "黑猫恶魔",
+    "tck_mnzj_weiaola_after": "薇奥拉",
     "tck_mnzj_ailian": "艾莲",
     "tck_mnzj_ailian_after": "艾莲",
     "TCK_MNZJ": "TCK 魔女之家",
@@ -33,6 +51,8 @@ export const mnzj_characters = {
     "tck_mnzj_weiaola": "薇奥拉",
   },
   characterTitle: {
+    "tck_mnzj_heimaoemo": "魔女之家",
+    "tck_mnzj_weiaola_after": "换身体后",
     "tck_mnzj_ailian": "魔女之家",
     "tck_mnzj_ailian_after": "换身体后",
     "tck_mnzj_weiaola": "魔女之家",
@@ -40,7 +60,8 @@ export const mnzj_characters = {
   characterSort: {
     "TCK_MNZJ": {
       "tck_mnzj_pack": [
-        "tck_mnzj_weiaola", "tck_mnzj_ailian_after", "tck_mnzj_ailian"
+        "tck_mnzj_weiaola", "tck_mnzj_ailian_after", "tck_mnzj_ailian", "tck_mnzj_weiaola_after",
+        "tck_mnzj_heimaoemo",
       ],
     }
   }
