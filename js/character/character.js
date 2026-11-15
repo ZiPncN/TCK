@@ -1157,9 +1157,18 @@ export const characters = {
       skills: ["tck_kong", "tck_ji", "tck_ru", "tck_skill_sha2", "tck_wu_chen", "tck_she", "tck_jun_huo_rong", "tck_jun_zhu", "tck_li_chong", "tck_rong_guang", "tck_ku_bi"],
       img: "extension/TCK/imgs/charactors/tck_jiguang.jpg",
     },
+    "tck_hcl": {
+      sex: "male",
+      group: "tck_jiang",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_zhong_jian_shang", "tck_zhui_zhai"],
+      img: "extension/TCK/imgs/charactors/tck_hcl.jpg",
+    },
 
   },
   translate: {
+    "tck_hcl": "胡晨亮",
     "tck_jiguang": "寂光",
     "tck_tianzhigouyewang": "天之狗也王",
     "tck_wangjue": "王绝",
@@ -1312,6 +1321,7 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_hcl": "可恶的中间商",
     "tck_jinxiong": "七人格",
     "tck_pyjie": "性转",
     "tck_pyge": "肉欲淫魔",
@@ -1457,7 +1467,7 @@ export const characters = {
         "tck_jiyou", "tck_gou", "tck_character_??", "tck_yuzaoqian", "tck_falali", "tck_jinmailang",
         "tck_fyydarenwangzhewudi", "tck_yzx", "tck_leisai", "tck_yangbalu", "tck_pyge", "tck_pyjie",
         "tck_jinxiong", "tck_shengxi", "tck_wangjue", "tck_tianzhigouyewang", "tck_jiguang",
-
+        "tck_hcl",
       ],
 
       //三国

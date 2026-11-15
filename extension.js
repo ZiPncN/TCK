@@ -859,7 +859,7 @@ export default function () {
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.5.2.2",
+            version: "1.5.3",
         },
         files: {},
         connect: true

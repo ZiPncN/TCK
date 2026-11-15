@@ -453,6 +453,7 @@ export const mnzj_skills = {
               return `下回合由${get.translation(storage)}操作`
             }
           },
+          firstDo: true,
           nopop: true,
           sub: true,
           forced: true,
@@ -472,6 +473,7 @@ export const mnzj_skills = {
           forced: true,
           charlotte: true,
           popup: false,
+          lastDo: true,
           sourceSkill: "tck_mnzj_mo_fa",
           trigger: {
             player: "phaseJieshuAfter"

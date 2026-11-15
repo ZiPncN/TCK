@@ -6397,7 +6397,6 @@ export const skills = {
           await player.$giveAuto(meCard, target)
           await target.$giveAuto(itCard, player)
           game.log(target, '从', player, '购买了一张牌')
-
         }
       }
     },
@@ -9066,6 +9065,105 @@ export const skills = {
         await player.loseMaxHp(1)
       }
     },
+    "tck_zhong_jian_shang": {
+      trigger: {
+        player: "phaseDrawEnd"
+      },
+      filter(event, player) {
+        return event.cards.some(card => get.type2(card) == 'trick')
+      },
+      direct: true,
+      async content(event, trigger, player) {
+        const meCards = trigger.cards.filter(card => get.type2(card) == 'trick')
+        const res1 = await player.chooseTarget("是否选择一名玩家购买你摸到的锦囊牌？", 1, (card, player, target) => player != target).forResult()
+        if (!res1.bool) return
+        const target = res1.targets[0]
+        const options = [["③", `不购买并损失1点体力`]]
+        if (target.hasCards("he")) {
+          options.unshift(["②", `用1张牌购买该锦囊并获得[讨债]标记`])
+        }
+        if (target.countCards("he") >= 2) {
+          options.unshift(["①", `用2张牌购买该锦囊`])
+        }
+        const result = await target
+          .chooseButton([
+            '请选择一项',
+            [options, "textbutton",]
+          ], true)
+          .forResult();
+        if (result.bool) {
+          switch (result.links[0]) {
+            case '①':
+              const res2 = await target.chooseCard(`用2张牌购买${get.translation(player)}的锦囊牌？`, 2, true, "he").forResult()
+              const itCards = res2.cards
+              await player.gain(itCards, target)
+              await target.gain(meCards, player)
+              await player.$giveAuto(meCards, target)
+              await target.$giveAuto(itCards, player)
+              game.log(target, '从', player, `购买了${meCards.length}张锦囊牌`)
+              break
+            case '②':
+              const res3 = await target.chooseCard(`用1张牌购买${get.translation(player)}的锦囊牌并获得[讨债]标记？`, 1, true, "he").forResult()
+              const itCards2 = res3.cards
+              await player.gain(itCards2, target)
+              await target.gain(meCards, player)
+              await player.$giveAuto(meCards, target)
+              await target.$giveAuto(itCards2, player)
+              game.log(target, '从', player, `购买了${meCards.length}张锦囊牌`)
+              await target.addMark("tck_zhong_jian_shang_mark")
+              await target.addSkill("tck_zhong_jian_shang_mark")
+              await target.markAuto("tck_zhong_jian_shang", [...game.players.filter(p => p.name == "tck_hcl")])
+              break
+            case '③':
+              await target.loseHp(1)
+              break
+          }
+        }
+      },
+      subSkill: {
+        "mark": {
+          sub: true,
+          sourceSkill: "tck_zhong_jian_shang",
+          marktext: "讨",
+          intro: {
+            name: "讨债",
+            content(storage, player) {
+              const ps = player.getStorage("tck_zhong_jian_shang").map(p => get.translation(p))
+              return `当前有${storage}个“讨债”标记<br/>无法对${ps.join('、')}使用基本牌`
+            }
+          },
+          onremove(player) {
+            player.unmarkAuto("tck_zhong_jian_shang", player.getStorage("tck_zhong_jian_shang"))
+          },
+          mod: {
+            playerEnabled(card, player, target) {
+              if (get.type(card) == 'basic' && player.getStorage("tck_zhong_jian_shang").includes(target)) {
+                return false
+              }
+            }
+          },
+        }
+      }
+    },
+    "tck_zhui_zhai": {
+      enable: "phaseUse",
+      filter(event, player) {
+        return game.hasPlayer(p => p.hasMark("tck_zhong_jian_shang_mark"))
+      },
+      filterTarget(card, player, target) {
+        return target.hasMark("tck_zhong_jian_shang_mark")
+      },
+      async content(event, trigger, player) {
+        const target = event.target
+        await target.removeMark("tck_zhong_jian_shang_mark")
+        if (!target.hasMark("tck_zhong_jian_shang_mark")) {
+          await target.removeSkill("tck_zhong_jian_shang_mark")
+        }
+        await player.discardPlayerCard(1, true, target)
+        await player.draw(1)
+      },
+    },
+
     //============================================全局技能============================================
     /* // 添加语音
     "tck_send_skill_voice": {
@@ -9206,6 +9304,11 @@ export const skills = {
     },
   },
   translate: {
+    "tck_zhong_jian_shang": "中间商",
+    "tck_zhong_jian_shang_info": "如果你在摸牌阶段摸到的牌中有锦囊牌，你可以令一名角色选择：<br/>①用2张牌购买该锦囊。<br/>②用1张牌购买该锦囊并获得[讨债]标记。<br/>③不购买并损失1点体力。",
+    "tck_zhong_jian_shang_append": "*：拥有讨债标记的角色无法对你使用基本牌。",
+    "tck_zhui_zhai": "追债",
+    "tck_zhui_zhai_info": "出牌阶段，你可以弃置有“讨债”标记的玩家的标记与一张牌，你从牌堆摸一张牌。",
     "tck_kong": "空",
     "tck_kong_info": "可以跳过弃牌，无视判定。",
     "tck_ji": "激",
