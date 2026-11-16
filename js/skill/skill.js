@@ -9163,7 +9163,78 @@ export const skills = {
         await player.draw(1)
       },
     },
-
+    "tck_bao_qi": {
+      mod: {
+        globalFrom(from, to, distance) {
+          const num = game.countPlayer((current) => {
+            return current.countCards("e")
+          })
+          return distance - num
+        }
+      }
+    },
+    "tck_qing_xi": {
+      trigger: { player: "useCardToPlayered" },
+      filter(event, player) { return get.is.damageCard(event.card) },
+      logTarget: "target",
+      async content(event, trigger, player) {
+        const res = await player.judge(card => {
+          let returnNum = -1
+          if (get.color(card) == "black") returnNum++
+          if (get.suit(card) == "club") returnNum++
+          else if (get.suit(card) == "spade") returnNum += 2
+          return returnNum
+        }).forResult()
+        if (get.color(res) == "black") {
+          const id = trigger.target.playerid;
+          if (id != null) {
+            const map = trigger.customArgs;
+            if (!map[id]) {
+              map[id] = {};
+            }
+            if (!map[id].extraDamage) {
+              map[id].extraDamage = 0;
+            }
+            map[id].extraDamage++;
+          }
+          if (get.suit(res) == "spade") {
+            await trigger.directHit.addArray(game.players);
+          } else if (get.suit(res) == "club") {
+            await player.discardPlayerCard(1, true, trigger.target)
+          }
+        }
+      }
+    },
+    "tck_fang_zhu": {
+      trigger: { player: "damageEnd" },
+      direct: true,
+      async content(event, trigger, player) {
+        const res = await player.chooseTarget(get.prompt(event.name), (card, player, target) => player != target).forResult()
+        if (!res.bool) return
+        const target = res.targets[0]
+        const damagedNum = player.getDamagedHp();
+        const res1 = await target
+          .chooseButton([
+            "请选择一项",
+            [[["①", `摸1张牌翻面`],
+            ["②", `弃${damagedNum}张牌并流失${damagedNum}点体力`],
+            ], "textbutton"]
+          ], true)
+          .forResult()
+        if (res1.bool) {
+          switch (res1.links[0]) {
+            case '①':
+              await target.draw(1)
+              await target.turnOver()
+              break
+            case '②':
+              await target.chooseToDiscard("he", damagedNum, true)
+              await target.loseHp(damagedNum)
+              break
+          }
+        }
+      },
+    },
     //============================================全局技能============================================
     /* // 添加语音
     "tck_send_skill_voice": {
@@ -9304,6 +9375,12 @@ export const skills = {
     },
   },
   translate: {
+    "tck_fang_zhu": "放逐",
+    "tck_fang_zhu_info": "当你受到伤害，你选择一人选择一项：<br/>①摸1张牌翻面。<br/>②弃X张牌并流失X点体力。（X为你已损失体力）",
+    "tck_bao_qi": "豹骑",
+    "tck_bao_qi_info": "你与其他角色距离-X。（X为场上装备数）",
+    "tck_qing_xi": "倾袭",
+    "tck_qing_xi_info": "你伤害牌指定目标后，你可判定：若结果为：黑色，伤害+1，若为黑桃，该牌不可被抵消，若为梅花，弃置其1张牌。",
     "tck_zhong_jian_shang": "中间商",
     "tck_zhong_jian_shang_info": "如果你在摸牌阶段摸到的牌中有锦囊牌，你可以令一名角色选择：<br/>①用2张牌购买该锦囊。<br/>②用1张牌购买该锦囊并获得[讨债]标记。<br/>③不购买并损失1点体力。",
     "tck_zhong_jian_shang_append": "*：拥有讨债标记的角色无法对你使用基本牌。",

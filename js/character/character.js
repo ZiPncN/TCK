@@ -1165,9 +1165,27 @@ export const characters = {
       skills: ["tck_zhong_jian_shang", "tck_zhui_zhai"],
       img: "extension/TCK/imgs/charactors/tck_hcl.jpg",
     },
+    "tck_caoxiu": {
+      sex: "male",
+      group: "wei",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_bao_qi", "tck_qing_xi"],
+      img: "extension/TCK/imgs/charactors/tck_caoxiu.jpg",
+    },
+    "tck_caopi": {
+      sex: "male",
+      group: "wei",
+      hp: 3,
+      maxHp: 3,
+      skills: ["tck_fang_zhu", "xingshang"],
+      img: "extension/TCK/imgs/charactors/tck_caopi.jpg",
+    },
 
   },
   translate: {
+    "tck_caopi": "曹丕",
+    "tck_caoxiu": "曹休",
     "tck_hcl": "胡晨亮",
     "tck_jiguang": "寂光",
     "tck_tianzhigouyewang": "天之狗也王",
@@ -1321,6 +1339,8 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_caopi": "仙福永享",
+    "tck_caoxiu": "雷厉风行",
     "tck_hcl": "可恶的中间商",
     "tck_jinxiong": "七人格",
     "tck_pyjie": "性转",
@@ -1481,7 +1501,7 @@ export const characters = {
         "tck_mo_zhaoyun", "tck_jie_caiwenji", "tck_jushou",
         "tck_liuzan", "tck_weiyan", "tck_wuhushangjiang",
         "tck_huangyueying", "tck_lingtong", "tck_mo_sunquan",
-
+        "tck_caoxiu", "tck_caopi",
       ],
 
       //附加
