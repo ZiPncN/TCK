@@ -9235,6 +9235,49 @@ export const skills = {
         }
       },
     },
+    "tck_ku_rou": {
+      enable: "phaseUse",
+      prompt: "自减1点体力，然后摸两张牌，并获得效果。",
+      delay: false,
+      manualConfirm: true,
+      async content(event, trigger, player) {
+        await player.loseHp(1)
+        await player.draw(2, "nodelay")
+        if (!player.hasSkill("tck_ku_rou_effect")) {
+          await player.addTempSkill("tck_ku_rou_effect", { player: "phaseJieshuAfter" })
+        }
+        await player.addMark("tck_ku_rou_effect", 1, false)
+      },
+      subSkill: {
+        "effect": {
+          mod: {
+            cardUsable(card, player, num) {
+              if (card.name == "sha") {
+                return num + player.countMark("tck_ku_rou_effect");
+              }
+            }
+          },
+          charlotte: true,
+          onremove: true,
+          trigger: { player: "useCard" },
+          sourceSkill: "tck_ku_rou",
+          filter(event, player) {
+            return event.card?.name == "sha" && get.suit(event.card) == "heart";
+          },
+          forced: true,
+          async content(event, trigger, player) {
+            trigger.directHit.addArray(game.players);
+          },
+          intro: { content: "♥杀不能闪，可多出#张杀" },
+          ai: {
+            directHit_ai: true,
+            skillTagFilter(player, tag, arg) {
+              return arg?.card?.name == "sha" && get.suit(arg.card) == "heart";
+            }
+          }
+        }
+      },
+    },
     //============================================全局技能============================================
     /* // 添加语音
     "tck_send_skill_voice": {
@@ -9375,6 +9418,8 @@ export const skills = {
     },
   },
   translate: {
+    "tck_ku_rou": "苦肉",
+    "tck_ku_rou_info": "出牌阶段，你可以自减1点体力，然后摸2张牌，并且本回合出杀次数+1。红杀无距离限制，♥杀无法闪避。",
     "tck_fang_zhu": "放逐",
     "tck_fang_zhu_info": "当你受到伤害，你选择一人选择一项：<br/>①摸1张牌翻面。<br/>②弃X张牌并流失X点体力。（X为你已损失体力）",
     "tck_bao_qi": "豹骑",

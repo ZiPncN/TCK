@@ -1181,9 +1181,18 @@ export const characters = {
       skills: ["tck_fang_zhu", "xingshang"],
       img: "extension/TCK/imgs/charactors/tck_caopi.jpg",
     },
+    "tck_huanggai": {
+      sex: "male",
+      group: "wu",
+      hp: 4,
+      maxHp: 4,
+      skills: ["tck_ku_rou"],
+      img: "extension/TCK/imgs/charactors/tck_huanggai.jpg",
+    },
 
   },
   translate: {
+    "tck_huanggai": "黄盖",
     "tck_caopi": "曹丕",
     "tck_caoxiu": "曹休",
     "tck_hcl": "胡晨亮",
@@ -1339,6 +1348,7 @@ export const characters = {
     "tck_pmk_ailian": "艾莲",
   },
   characterTitle: {
+    "tck_huanggai": "赴汤蹈火",
     "tck_caopi": "仙福永享",
     "tck_caoxiu": "雷厉风行",
     "tck_hcl": "可恶的中间商",
@@ -1501,7 +1511,7 @@ export const characters = {
         "tck_mo_zhaoyun", "tck_jie_caiwenji", "tck_jushou",
         "tck_liuzan", "tck_weiyan", "tck_wuhushangjiang",
         "tck_huangyueying", "tck_lingtong", "tck_mo_sunquan",
-        "tck_caoxiu", "tck_caopi",
+        "tck_caoxiu", "tck_caopi", "tck_huanggai",
       ],
 
       //附加
