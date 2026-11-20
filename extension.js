@@ -15,7 +15,7 @@ import mnzj_characters from "./js/character/character_mnzj.js"
 import r_characters from "./js/character/character_r.js"
 import characters from "./js/character/character.js"
 
-import globalSkills from "./js/skill/globalSkill.js"
+import initGlobalSkills, { globalSkills } from "./js/skill/globalSkill.js"
 import guaiqi_skills from "./js/skill/skill_guaiqi.js"
 import mnzj_skills from "./js/skill/skill_mnzj.js"
 import skills from "./js/skill/skill.js"
@@ -151,6 +151,23 @@ export default function () {
          * config为本扩展选项、pack为本扩展包
          */
         content: (config, pack) => {
+            /**
+             * 判断是否有XX扩展
+             * @param {*} ext  扩展名
+             * @returns 
+             */
+            game.trueHasExtension = function (ext) {
+                const extensionMenu = Object.keys(lib.extensionMenu);
+                return extensionMenu.includes(ext) || extensionMenu.includes(`extension_${ext}`);
+            }
+            /**
+             * 判断是否有开启的XX扩展
+             * @param {*} ext  扩展名
+             * @returns 
+             */
+            game.hasExtension = function (ext) {
+                return game.trueHasExtension(ext) && lib.config['extension_' + ext + '_enable'];
+            }
             //独立地图牌前提代码，参考BLEACH扩展代码
             lib.element.player.changeTckLand = async function (url) {
                 var next = game.createEvent('changeTckLand');
@@ -653,6 +670,7 @@ export default function () {
         precontent: () => {
             groups.forEach(g => game.addGroup(g.id, g.short, g.name, g.config))
             //添加武将和技能
+            initGlobalSkills()
             game.import('character', function () {
                 return {
                     name: "TCK",
@@ -801,18 +819,38 @@ export default function () {
             if (!lib.config.TCK_MNZJ) game.saveConfig('cards', lib.config.cards.concat('TCK_MNZJ')), game.saveConfig('TCK_MNZJ', true);
             //---------------------- 添加卡牌 end ----------------------
 
-            //添加自定义属性
+            // 添加自定义属性
             natureConfig.skills()
             natureConfig.translates()
+
+            // 座位号显示
+            if (lib.config.extension_TCK_show_seat) {
+                const originSetSeatNum = lib.element.player.setSeatNum;
+                lib.element.player.setSeatNum = function () {
+                    originSetSeatNum.apply(this, arguments);
+                    if (this.getSeatNum() != 0) this.setNickname(get.cnNumber(this.getSeatNum(), true) + '号位');
+                };
+                const originSwapSeat = game.swapSeat;
+                game.swapSeat = function (player1, player2) {
+                    originSwapSeat.apply(this, arguments);
+                    if (player1.getSeatNum() != 0) player1.setNickname(get.cnNumber(player1.getSeatNum(), true) + '号位');
+                    if (player2.getSeatNum() != 0) player2.setNickname(get.cnNumber(player2.getSeatNum(), true) + '号位');
+                };
+            }
         },
         // 扩展帮助
         help: {},
         // 扩展选项
         config: {
-            version_display: {
-                name: `<span style="color:#ffa348">当前版本：v${EXTENSION_VERSION}</span>`,
-                clear: true,
-                intro: `《TCK》当前版本 v${EXTENSION_VERSION}\n下方「检查更新」可获取最新版本`
+            voice_broadcast: {
+                name: `<font>语音播报`,
+                init: false,
+                intro: "开启后，击杀、回复、造成高伤害将播放语音播报",
+            },
+            show_seat: {
+                name: `<font>座次显示`,
+                init: false,
+                intro: "开启后，将显示座次",
             },
             update_source: {
                 name: `<font color="#9c27b0">更新镜像源`,
@@ -855,11 +893,13 @@ export default function () {
             intro: [
                 '代码：ZPN',
                 '<a href="https://github.com/ZiPncN/TCK">点击前往 TCK Github仓库</a>',
+                '==============================',
+                `<span style="color:#ffa348">当前版本：v${EXTENSION_VERSION}</span>`,
             ].join('<br/>'),
             author: "TCK",
             diskURL: "",
             forumURL: "",
-            version: "1.5.5",
+            version: "1.5.6",
         },
         files: {},
         connect: true

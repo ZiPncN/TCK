@@ -7296,6 +7296,9 @@ export const skills = {
         if (event.tck_zi_jiu) {
           return false
         }
+        if (player.hasMark("tck_zi_jiu_1")) {
+          return false
+        }
         return player.hp <= 0 && event.num < 0
       },
       async content(event, trigger, player) {
@@ -9212,6 +9215,7 @@ export const skills = {
         const res = await player.chooseTarget(get.prompt(event.name), (card, player, target) => player != target).forResult()
         if (!res.bool) return
         const target = res.targets[0]
+        player.line(target)
         const damagedNum = player.getDamagedHp();
         const res1 = await target
           .chooseButton([
@@ -9277,144 +9281,6 @@ export const skills = {
           }
         }
       },
-    },
-    //============================================全局技能============================================
-    /* // 添加语音
-    "tck_send_skill_voice": {
-      ruleSkill: true,
-      charlotte: true,
-      forced: true,
-      locked: true,
-      direct: true,
-      silent: true,
-      frequent: true,
-      firstDo: true,
-      popup: false,
-      enable: "phaseUse",
-      filter(event, player) {
-        const skills = player.getSkills(false, false)
-        if (skills.length == 0) return false
-        let allVoiceList = []
-        // 构建所有的技能：台词
-        skills.forEach(skill => {
-          const voiceMap = get.Audio.skill({ skill, player: player.name }).audioList
-          allVoiceList.push(...voiceMap)
-        })
-        if (allVoiceList.length == 0) return false
-        return true
-      },
-      async content(event, trigger, player) {
-        const skills = player.getSkills(false, false)
-        let allVoiceList = []
-        // 构建所有的技能：台词
-        skills.forEach(skill => {
-          const voiceMap = get.Audio.skill({ skill, player: player.name }).audioList
-          allVoiceList.push(...voiceMap)
-        })
-        if (allVoiceList.length == 0) return
-        let options = allVoiceList.map(voice => voice.text)
-        let result = await player.chooseButton(['选择一个语音播放', [options, "textbutton"]]).forResult()
-        if (result.bool) {
-          const skill = allVoiceList.find(voice => voice.text == result.links[0])
-          if (skill.text) {
-            await player.chat(skill.text)
-            game.broadcastAll(file => game.playAudio(file), skill.file)
-          }
-        }
-        player.markSkill(event.name)
-      }
-    }, */
-    // 交换控制权（随从由玩家自己操作）
-    "tck_swap_control": {
-      firstDo: true,
-      trigger: {
-        player: ["chooseToUseBegin", "chooseToRespondBegin", "chooseToDiscardBegin", "chooseToCompareBegin", "chooseButtonBegin", "chooseCardBegin", "chooseTargetBegin", "chooseCardTargetBegin", "chooseControlBegin", "chooseBoolBegin", "choosePlayerCardBegin", "discardPlayerCardBegin", "gainPlayerCardBegin", "chooseToMoveBegin", "chooseToPlayBeatmapBegin", "chooseToGiveBegin", "chooseToGuanxingBegin", "chooseButtonTargetBegin", "chooseNumbersBegin"]
-      },
-      forced: true,
-      priority: 100,
-      forceDie: true,
-      popup: false,
-      filter: function (event, player) {
-        if (event.autochoose && event.autochoose()) {
-          return false;
-        }
-        if (lib.filter.tckWuxieSwap(event)) {
-          return false;
-        }
-        if (_status.auto || !player.isTckUnderControl()) {
-          return false;
-        }
-        return true;
-      },
-      async content(event, trigger, player) {
-        game.swapPlayerAuto(player);
-      }
-    },
-    "tck_control_die": {
-      trigger: {
-        player: "dieBegin"
-      },
-      lastDo: true,
-      charlotte: true,
-      forceDie: true,
-      forced: true,
-      silent: true,
-      popup: false,
-      filter(event, player) {
-        return !!player._tckTrueMe && player != player._tckTrueMe[0]
-      },
-      async content(event, trigger, player) {
-        player.removeSkill(event.name);
-      },
-      onremove(player) {
-        var arr = player._tckTrueMe;
-        delete player._tckTrueMe;          // 先清，避免重入
-
-        if (!Array.isArray(arr)) return;   // 统一处理 undefined，后面不再判
-
-        // 从其他角色的真身列表里移除 player
-        for (const p of arr) {
-          if (p === player) continue;
-          if (!Array.isArray(p._tckTrueMe)) continue;   // p._tckTrueMe 可能 undefined，必要
-          const index = p._tckTrueMe.indexOf(player);
-          if (index !== -1) p._tckTrueMe.splice(index, 1);
-        }
-
-        if (player !== game.me || !arr.length) return;
-
-        var master = arr[0];
-        var target;
-
-        if (!master.isDead()) {
-          // 规则1：主人活着 → 选主人
-          target = master;
-        } else {
-          // 规则2：主人死了 → 从其他人里随机挑一个活着的
-          var alive = [];
-          for (var i = 0; i < arr.length; i++) {
-            var q = arr[i];
-            if (q === player) continue;
-            if (q.isDead()) continue;
-            alive.push(q);
-          }
-          if (alive.length) {
-            target = alive[Math.floor(Math.random() * alive.length)];
-          } else {
-            // 规则3：全都死了 → 仍然选主人
-            target = master;
-          }
-        }
-
-        if (!target || target === player) return;
-        if (!game.notMe) {
-          game.swapPlayerAuto(target);
-        } else {
-          delete game.notMe;
-        }
-        if (_status.auto) {
-          ui.click.auto();
-        }
-      }
     },
   },
   translate: {
